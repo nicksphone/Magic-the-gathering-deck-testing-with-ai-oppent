@@ -265,6 +265,8 @@ class WorkflowPublicationTests(unittest.TestCase):
         expected = [
             ('Upload exact public plan only', '${{ runner.temp }}/public-reference/plan.json',
              'backend-reference-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ steps.seal.outputs.plan_sha256 }}'),
+            ('Upload failed reference metadata only', '${{ steps.reference_metadata.outputs.metadata_file }}',
+             'backend-reference-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}'),
             ('Upload backend metadata', '${{ steps.backend_metadata.outputs.metadata_file }}',
              'backend-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-${{ matrix.shard }}'),
             ('Upload one bounded public worker envelope only', '${{ runner.temp }}/public-worker/worker.json',
@@ -283,8 +285,9 @@ class WorkflowPublicationTests(unittest.TestCase):
                 self.assertIn('if-no-files-found: error\n', upload)
                 for forbidden in ('outputs.evidence', 'reporter.log', 'runner.log', 'pytest.log', '.jsonl', '*'):
                     self.assertNotIn(forbidden, upload)
-        self.assertIn("if: ${{ always() && steps.diagnostic_bound.outcome == 'success' }}", uploads[1])
-        self.assertIn("if: ${{ success() && steps.seal.outcome == 'success' }}", uploads[2])
+        self.assertIn("if: ${{ always() && steps.execution.outcome == 'failure' && steps.reference_diagnostic_bound.outcome == 'success' }}", uploads[1])
+        self.assertIn("if: ${{ always() && steps.diagnostic_bound.outcome == 'success' }}", uploads[2])
+        self.assertIn("if: ${{ success() && steps.seal.outcome == 'success' }}", uploads[3])
         final = workflow.split('  backend:\n', 1)[1].split('  frontend:\n', 1)[0]
         self.assertIn('if: ${{ always() }}', final)
         self.assertIn('needs: [backend-reference, backend-workers]', final)

@@ -528,10 +528,11 @@ class PublisherBoundaryTests(unittest.TestCase):
                 self.assertIn('MTG_CI_SHARD_ROLE: ' + role + '\n', job)
                 self.assertEqual(job.count('bash .github/scripts/run-backend-ci.sh 5>&1'), 1)
         self.assertIn('bash .github/scripts/run-backend-ci.sh 5>&1', workflow)
-        self.assertEqual(workflow.count('uses: actions/upload-artifact@'), 4)
+        self.assertEqual(workflow.count('uses: actions/upload-artifact@'), 5)
         uploads = [step for step in workflow.split('      - ') if 'uses: actions/upload-artifact@' in step]
         self.assertEqual([step.split('\n', 1)[0] for step in uploads], [
-            'name: Upload exact public plan only', 'name: Upload backend metadata',
+            'name: Upload exact public plan only', 'name: Upload failed reference metadata only',
+            'name: Upload backend metadata',
             'name: Upload one bounded public worker envelope only',
             'name: Upload successful bounded four-session qualification only'])
         self.assertTrue(all('outputs.evidence' not in step for step in uploads))

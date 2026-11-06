@@ -120,6 +120,45 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Generate failed reference metadata
+        id: reference_metadata
+        if: ${{ always() && steps.execution.outcome == 'failure' && steps.execution.outputs.evidence != '' }}
+        timeout-minutes: 3
+        env:
+          BACKEND_EVIDENCE: ${{ steps.execution.outputs.evidence }}
+        run: |
+          metadata=$(mktemp -d "$RUNNER_TEMP/mtg-reference-metadata-XXXXXX" 2>/dev/null) || {
+            printf 'CI_BACKEND_METADATA_SETUP_ERROR\n' >&2
+            exit 2
+          }
+          printf 'metadata_file=%s\n' "$metadata/backend-metadata.json" 2>/dev/null >> "$GITHUB_OUTPUT" || {
+            printf 'CI_BACKEND_METADATA_SETUP_ERROR\n' >&2
+            exit 2
+          }
+          status=0
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_metadata.py \
+            collection-failure "$BACKEND_EVIDENCE" "$GITHUB_WORKSPACE" \
+            "$metadata/backend-metadata.json" > "$metadata/reporter.log" 2>&1 || status=$?
+          if ((status != 0)); then printf 'CI_BACKEND_METADATA_FAILED\n' >&2; fi
+          exit "$status"
+      - name: Bound failed reference metadata
+        id: reference_diagnostic_bound
+        if: ${{ always() && steps.reference_metadata.outputs.metadata_file != '' }}
+        timeout-minutes: 3
+        env:
+          METADATA_FILE: ${{ steps.reference_metadata.outputs.metadata_file }}
+        run: |
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_shards.py diagnostic-file "$METADATA_FILE"
+      - name: Upload failed reference metadata only
+        if: ${{ always() && steps.execution.outcome == 'failure' && steps.reference_diagnostic_bound.outcome == 'success' }}
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-reference-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ steps.reference_metadata.outputs.metadata_file }}
+          if-no-files-found: error
+          retention-days: 7
+
   backend-workers:
     needs: backend-reference
     runs-on: ubuntu-24.04

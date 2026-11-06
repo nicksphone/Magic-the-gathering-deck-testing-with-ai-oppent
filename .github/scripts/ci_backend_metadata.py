@@ -13,6 +13,7 @@ import math
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import tempfile
@@ -639,14 +640,181 @@ def build_metadata(evidence, source):
     return document, 2
 
 
+def _collection_text(root, name, limit, required=False):
+    path = root / name
+    try:
+        before = path.lstat()
+    except FileNotFoundError:
+        if required:
+            raise MetadataError('EVIDENCE_MISSING') from None
+        return None
+    if has_symlink_component(path) or not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+        raise MetadataError('EVIDENCE_NOT_REGULAR')
+    if before.st_size > limit:
+        raise MetadataError('EVIDENCE_TYPE_INVALID')
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, 'rb') as stream:
+        fields = ('st_dev', 'st_ino', 'st_mode', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        pin = tuple(getattr(before, field) for field in fields)
+        if tuple(getattr(os.fstat(stream.fileno()), field) for field in fields) != pin:
+            raise MetadataError('EVIDENCE_NOT_REGULAR')
+        raw = stream.read(limit + 1)
+        after = os.fstat(stream.fileno())
+        if len(raw) > limit or tuple(getattr(after, field) for field in fields) != pin:
+            raise MetadataError('EVIDENCE_TYPE_INVALID')
+    return raw.decode('utf-8')
+
+
+def _collection_json(text):
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise MetadataError('EVIDENCE_JSON_INVALID')
+            value[key] = item
+        return value
+
+    def invalid(_):
+        raise MetadataError('EVIDENCE_JSON_INVALID')
+
+    try:
+        return json.loads(text, object_pairs_hook=unique, parse_constant=invalid)
+    except ValueError:
+        raise MetadataError('EVIDENCE_JSON_INVALID') from None
+
+
+def build_collection_failure(evidence, source):
+    """Observe failed-reference metadata without auditing or importing any tests."""
+    document = empty_metadata()
+    partial = {'status': 'unavailable', 'nonfinal': True}
+    document['partial_diagnostics'] = partial
+    try:
+        evidence, source = Path(evidence), Path(source)
+        if any(has_symlink_component(path) or not path.is_dir() for path in (evidence, source)):
+            raise MetadataError('EVIDENCE_NOT_REGULAR')
+        commit = _collection_text(evidence, 'source-head.txt', 128, required=True).strip()
+        if not re.fullmatch(r'(?:[0-9a-f]{40}|[0-9a-f]{64})', commit):
+            raise MetadataError('SOURCE_COMMIT_INVALID')
+        if commit != git(source, 'rev-parse', 'HEAD').strip():
+            raise MetadataError('SOURCE_COMMIT_MISMATCH')
+        document['source_commit'] = commit
+        exit_text = _collection_text(evidence, 'pytest-exit-code.txt', 16)
+        if exit_text is not None:
+            exit_text = exit_text.strip()
+            if not re.fullmatch(r'[0-9]{1,3}', exit_text) or int(exit_text) > 255:
+                raise MetadataError('EXIT_CODE_INVALID')
+            document['pytest_exit_code'] = int(exit_text)
+        document.update(closeout_fields(evidence, document['pytest_exit_code']))
+
+        # Module collectors have no test definition. Resolve only regular committed
+        # backend blobs, never a guessed namespace, live worktree body or raw suffix.
+        aliases = {}
+        for entry in git(source, 'ls-tree', '-rz', commit, '--', 'backend').split('\0'):
+            if not entry:
+                continue
+            header, path = entry.split('\t', 1)
+            mode, kind, digest = header.split(' ')
+            if (mode not in ('100644', '100755') or kind != 'blob'
+                    or not re.fullmatch(r'(?:[0-9a-f]{40}|[0-9a-f]{64})', digest)
+                    or not path.startswith('backend/') or not path.endswith('.py')
+                    or len(path) > 1024 or '\\' in path
+                    or any(part in ('', '.', '..') for part in path.split('/'))):
+                continue
+            for alias in (path, path.removeprefix('backend/')):
+                aliases.setdefault(alias, set()).add(path)
+
+        def identity(value):
+            if type(value) is not str or not value or len(value) > 8192:
+                raise MetadataError('EVIDENCE_TYPE_INVALID')
+            return value
+
+        def ledger(name, limit, maximum):
+            text = _collection_text(evidence, name, limit)
+            if text is None:
+                return None
+            if text and not text.endswith('\n'):
+                raise MetadataError('EVIDENCE_JSON_INVALID')
+            lines = text.splitlines()
+            if len(lines) > maximum:
+                raise MetadataError('EVIDENCE_TYPE_INVALID')
+            values = [_collection_json(line) for line in lines]
+            if any(type(row) is not dict for row in values):
+                raise MetadataError('EVIDENCE_TYPE_INVALID')
+            return values
+
+        discovered = ledger('discovered.jsonl', 16 * 1024 * 1024, 100000)
+        errors = ledger('collection-errors.jsonl', 1024 * 1024, 4096)
+        events = ledger('session.jsonl', 4096, 2)
+        for row in discovered or []:
+            identity(row.get('nodeid'))
+        for row in errors or []:
+            # Root/Directory CollectReports can have an opaque empty identity.
+            if row.get('nodeid') != '':
+                identity(row.get('nodeid'))
+        text = _collection_text(evidence, 'collected.json', 16 * 1024 * 1024)
+        collected = None
+        if text is not None:
+            value = _collection_json(text)
+            if (type(value) is not dict or type(value.get('nodeids')) is not list
+                    or len(value['nodeids']) > 100000):
+                raise MetadataError('EVIDENCE_TYPE_INVALID')
+            collected = [identity(value) for value in value['nodeids']]
+        sessions = []
+        for index, row in enumerate(events or []):
+            if index == 0 and row.get('event') == 'start':
+                sessions.append({'event': 'start'})
+            elif (index == 1 and row.get('event') == 'finish'
+                  and type(row.get('exitstatus')) is int and 0 <= row['exitstatus'] <= 255):
+                sessions.append({'event': 'finish', 'exitstatus': row['exitstatus']})
+            else:
+                raise MetadataError('SESSION_INVALID')
+        safe_errors = []
+        unresolved = 0
+        for row in errors or []:
+            matches = aliases.get(row['nodeid'].split('::', 1)[0], set())
+            module = next(iter(matches)) if len(matches) == 1 else None
+            unresolved += module is None
+            if len(safe_errors) < 64:
+                safe_errors.append({'public_module': module, 'category': 'collection_report_failed',
+                                    'exception': None, 'exception_status': 'not_recorded'})
+        counts = {'discovered_count': None if discovered is None else len(discovered),
+                  'collected_count': None if collected is None else len(collected),
+                  'collection_error_count': None if errors is None else len(errors)}
+        complete = (all(value is not None for value in counts.values())
+                    and document['pytest_exit_code'] is not None and len(sessions) == 2
+                    and sessions[-1]['exitstatus'] == document['pytest_exit_code']
+                    and document.get('runner_closeout', {}).get('status') == 'complete')
+        partial.update(status='available' if complete else 'partial', collection={
+            **counts, 'exported_error_count': len(safe_errors),
+            'omitted_error_count': None if errors is None else len(errors) - len(safe_errors),
+            'unresolved_module_count': None if errors is None else unresolved,
+            'errors': safe_errors, 'sessions': sessions})
+        return document, 0 if complete else 2
+    except MetadataError as error:
+        candidate = error.args[0] if error.args else None
+        code = candidate if type(candidate) is str and candidate in ERROR_CODES else 'METADATA_INTERNAL_ERROR'
+    except (OSError, UnicodeError):
+        code = 'EVIDENCE_IO_ERROR'
+    except (KeyError, TypeError, ValueError, RecursionError):
+        code = 'EVIDENCE_TYPE_INVALID'
+    except Exception:
+        code = 'METADATA_INTERNAL_ERROR'
+    document['metadata_error_codes'] = [code]
+    return document, 2
+
+
 def main(args=None):
     args = sys.argv[1:] if args is None else args
+    collection_failure = len(args) == 4 and args[0] == 'collection-failure'
+    if collection_failure:
+        args = args[1:]
     if len(args) != 3:
         print('CI_BACKEND_METADATA_ARGUMENT_ERROR', file=sys.stderr)
         return 2
     try:
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            document, status = build_metadata(args[0], args[1])
+            builder = build_collection_failure if collection_failure else build_metadata
+            document, status = builder(args[0], args[1])
     except Exception:
         document = empty_metadata()
         document['metadata_error_codes'] = ['METADATA_INTERNAL_ERROR']
