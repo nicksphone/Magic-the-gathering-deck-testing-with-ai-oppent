@@ -38,7 +38,14 @@ not permit redirected writes or cleanup of someone else's directory. A directory
 fsync failure after rename can leave a complete profile with uncertain durability;
 inspect that failure instead of blindly retrying or deleting it.
 
-Fifteen labelled synthetic tests cover this metadata boundary. Native cost
+Additional trusted bundle schemas require complete compositions: schema 2 adds
+the actor boundary (four sources/six classes), schema 3 adds damage timing
+(five sources/seven classes), and schema 4 additionally requires the shared
+damage policy (six sources/eight classes). A schema number never authorizes
+missing, extra or changed payloads. Each actual composition still requires its
+own reviewed source/class hashes and native qualification.
+
+Twenty-two labelled synthetic tests cover this metadata boundary. Native cost
 qualification and actual built-app qualification are separate, documented in
 [the current knowledge-boundary status](../../../../docs/testing/native-ai-knowledge-boundary.md).
 Neither a successful profile derivation nor its test count proves broad AI

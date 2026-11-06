@@ -240,6 +240,54 @@ not strategic superiority, both-seat/browser-family acceptance, durable BO3,
 new-profile cold-save qualification or a complete native-AI fairness audit.
 Generated hands, RNG/game streams and screenshots remain private NFS evidence.
 
+## Fallback-Only Sorcery Pressure
+
+A separate [two-source policy correction](../../tools/engine_evaluation/forge/native-ai/sorcery-pressure-policy/README.md)
+addresses a reproduced small-hand hold. In both seats, Default paid and resolved
+one Lava Spike, then declined the next decision with two Spikes and two untapped
+Mountains remaining. The inherited `hand.size() > 2` condition excluded the
+nonlethal player-damage preference. The earlier eight-case first-cast family
+remains passing; its separate two-case three-cast supplement remains the frozen
+failing baseline, not a silently rewritten regression.
+
+The shared four-argument policy retains its existing behavior. A five-argument
+opt-in is used only by DamageDealAi's final player-target fallback. It admits
+positive forecast damage for direct, noncompound, player/planeswalker-only
+sorcery spells at the actor's own MAIN2, after existing safety checks. Earlier
+planeswalker choices, flexible creature removal, instants and activated abilities
+retain their existing paths. No card-name, deck-name, seed or hand2 exception is
+added. The native forecast is reused; deterministic pressure changes decision/RNG
+history within the admitted domain, not a claim of universal strategic parity.
+
+The corrected test driver produced **60 passes / 10 expected pressure failures**
+on the baseline and **70 passes** on the candidate. These comprise 42 new
+canonical controls, two unchanged chain-check methods and 26 unchanged lethal
+check methods. The method cohorts use the new driver's declared random history;
+they are not reruns of predecessor standalone programs with historical RNG.
+
+The parent independently rebuilt both sources/classes byte-identically and
+composed exactly six sources/eight classes. On that single-prefix runtime,
+the same 70 checks passed, followed by **38 knowledge**, **48 boundary** and
+**four synthetic empty-source** checks. All source/payload pins remained equal.
+The profile boundary's **22 synthetic checks** retain all original 20 test
+bodies and require complete schema-4 approval before artifact reads.
+
+One fresh built-UI game used operator profile
+`414c78eb02a07a5f857b905fd1b15a6978ade74ed7c89218ae438c927194feae`.
+Burn won naturally against human-side Ramp in seat 1 on turn 17 after **248
+accepted rendered-control answers and 248 native starts/returns**, in
+**138.752 seconds**, supervisor exit zero. The unchanged picker is an integration
+driver, not expert play; this single win is not a win-rate or superiority result.
+Reload, wrong-capability/stale/duplicate behavior and four root-purity checks
+passed. Offline verification checked all eight loaded override origins, six
+source hashes, 33 base resources and 29 loaded unoverridden base origins.
+All 4,581 tracked clean-app files and ten private gate inputs retained their
+hashes; all 22 observed owned processes ended.
+
+This is an isolated component/profile check, not live adoption, new-profile
+cold-save qualification, durable BO3, a complete fairness audit or AI completion.
+Native/game/RNG/browser evidence remains private NFS data, not public fixtures.
+
 ## Profile Publication
 
 The operator-only [profile builder](../../tools/engine_evaluation/forge/native-ai/runtime_profile.py)
@@ -248,7 +296,7 @@ or later overriding mounts cannot silently reuse its identity. Source/class
 approval is checked before artifact reads; explicit null approval rejects.
 It publishes both profile files through private descriptor-anchored staging,
 file/directory fsync and a no-replace directory rename. Twenty labelled synthetic
-checks pass, including partial-write failure, parent replacement and competing
+checks pass in the timing checkpoint, including partial-write failure, parent replacement and competing
 output/staging directories. These are not native games or a general hostile-host
 sandbox proof. The earlier one-class profile/game above retains its historical
 identity and is not relabelled as this hardened builder's execution.

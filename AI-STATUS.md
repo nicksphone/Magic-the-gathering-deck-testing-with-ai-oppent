@@ -148,6 +148,14 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   18-answer prefix now executes that actual discard and closes deliberately.
   Those are not additional expert-policy games, app cold-save or broad-fairness
   acceptance. The complete committed frontend command/lint/build also pass.
+- [x] **Bounded native burn pressure:** the new fallback-only policy closes ten
+  reproduced pressure failures without redirecting useful planeswalker/removal
+  targets. The independently rebuilt eight-class runtime passed 70 pressure and
+  safety checks, 38 knowledge checks, 48 boundary checks and four synthetic
+  empty-source checks; 22 separate synthetic profile checks pass. One real
+  built-UI Burn/Ramp game completed naturally with 248 answers in 138.752 seconds
+  (Burn wins turn 17). This is not a win-rate, expert-play, durable-BO3 or live
+  adoption certificate. See [the exact scope](docs/testing/native-ai-knowledge-boundary.md#fallback-only-sorcery-pressure).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts
@@ -262,10 +270,12 @@ evidence that Ramp strategy is finished.
   corrected-policy loss where baseline won. No overall strength gain claimed.
 
 See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
-Neither engine is integrated into the application yet. Raw Forge views are not
-safe browser payloads; the tested projection must still be integrated with real
-API authentication, complete choices and saved-state handling. The bounded
-prototype demonstrates useful rules reuse, not an approved live cutover.
+Those initial foundation runs were not application integration. A later opt-in
+Forge table now connects actor-filtered views, capability-protected API choices
+and tested built-UI games. Raw Forge views are still not safe browser payloads.
+Complete choice coverage, durable saved-state handling and production adoption
+remain open; neither engine has replaced the live Python backend. The bounded
+integration demonstrates useful rules reuse, not an approved live cutover.
 
 See [native naming and complete-series evidence](docs/testing/forge-public-naming.md).
 Practical native search and a human-controller process bridge have now been

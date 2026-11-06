@@ -283,6 +283,57 @@ class SyntheticProfileTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     P.main(*args, root / "output", approval)
 
+    def pressure_bundle(self):
+        bundle = self.tactical_bundle()
+        bundle["schema"] = 4
+        bundle["sources"]["forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java"] = "1" * 64
+        bundle["classes"]["forge/ai/ability/DamageAiBase.class"] = "2" * 64
+        return bundle
+
+    def test_pressure_bundle_requires_exact_six_sources_and_eight_classes(self):
+        bundle = self.pressure_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bundle)
+        self.assertEqual(profile["overrides"], bundle)
+        self.assertEqual(len(bundle["sources"]), 6)
+        self.assertEqual(len(bundle["classes"]), 8)
+        self.assertNotEqual(runtime["build_id"], P.derive_bundle(
+            self.base, self.identity, "/build/shadow", "/profile", self.tactical_bundle())[0]["build_id"])
+        for bad in [
+            {**bundle, "schema": 4.0}, {**bundle, "schema": 3},
+            {**bundle, "sources": {k: v for k, v in bundle["sources"].items() if "DamageAiBase" not in k}},
+            {**bundle, "classes": {k: v for k, v in bundle["classes"].items() if "DamageAiBase" not in k}},
+            {**bundle, "classes": {**bundle["classes"], "forge/game/Game.class": "3" * 64}},
+        ]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bad)
+
+    def test_pressure_publication_rejects_changed_shared_policy_bytes(self):
+        with tempfile.TemporaryDirectory(prefix="synthetic-pressure-profile-") as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.pressure_bundle()
+            for folder, key in [("source", "sources"), ("shadow", "classes")]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(("SYNTHETIC; NOT NATIVE: " + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / "approval.json"
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / "output", approval)
+            self.assertEqual(json.loads((root / "output/BUILD-IDENTITY.json").read_text())["overrides"], bundle)
+            for folder, relative in [
+                ("source", "forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java"),
+                ("shadow", "forge/ai/ability/DamageAiBase.class"),
+            ]:
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b"SYNTHETIC CHANGED")
+                with self.assertRaisesRegex(ValueError, "byte identity"):
+                    P.main(*args, root / ("rejected-" + folder), approval)
+                self.assertFalse((root / ("rejected-" + folder)).exists())
+                path.write_bytes(original)
+
     def test_parent_replacement_cannot_redirect_profile_writes(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

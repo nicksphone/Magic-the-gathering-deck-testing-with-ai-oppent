@@ -1,0 +1,76 @@
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java
+@@ -4,6 +4,7 @@
+ import forge.ai.ComputerUtilCombat;
+ import forge.ai.SpellAbilityAi;
+ import forge.game.Game;
++import forge.game.ability.ApiType;
+ import forge.game.card.Card;
+ import forge.game.card.CardCollectionView;
+ import forge.game.keyword.Keyword;
+@@ -15,6 +16,7 @@
+ import forge.game.trigger.TriggerType;
+ import forge.game.zone.ZoneType;
+ import forge.util.MyRandom;
++import forge.util.TextUtil;
+ 
+ public abstract class DamageAiBase extends SpellAbilityAi {
+     protected boolean avoidTargetP(final Player comp, final SpellAbility sa) {
+@@ -43,6 +45,11 @@
+     }
+ 
+     protected boolean shouldTgtP(final Player comp, final SpellAbility sa, final int d, final boolean noPrevention) {
++        return shouldTgtP(comp, sa, d, noPrevention, false);
++    }
++
++    protected boolean shouldTgtP(final Player comp, final SpellAbility sa, final int d, final boolean noPrevention,
++            final boolean allowSorceryPressure) {
+         int restDamage = d;
+         final Game game = comp.getGame();
+         Player enemy = comp.getWeakestOpponent();
+@@ -103,6 +110,10 @@
+             return true;
+         }
+ 
++        if (allowSorceryPressure && restDamage > 0 && isPlayerOnlySorceryPressure(comp, sa)) {
++            return true;
++        }
++
+         if (sa.isSpell()) {
+             final CardCollectionView hand = comp.getCardsIn(ZoneType.Hand);
+             PhaseHandler phase = game.getPhaseHandler();
+@@ -150,4 +161,23 @@
+ 
+         return false;
+     }
++
++    private boolean isPlayerOnlySorceryPressure(final Player comp, final SpellAbility sa) {
++        final PhaseHandler phase = comp.getGame().getPhaseHandler();
++        if (!sa.isSpell() || sa.getApi() != ApiType.DealDamage || !sa.getHostCard().isSorcery()
++                || sa.getParent() != null || sa.getSubAbility() != null || !sa.usesTargeting()
++                || !phase.is(PhaseType.MAIN2) || !phase.isPlayerTurn(comp) || !isSorcerySpeed(sa, comp)) {
++            return false;
++        }
++        boolean playerAlternative = false;
++        for (String selector : sa.getTargetRestrictions().getValidTgts()) {
++            String root = TextUtil.split(selector, '.')[0];
++            if (root.equals("Player") || root.equals("Opponent")) {
++                playerAlternative = true;
++            } else if (!root.equals("Planeswalker")) {
++                return false;
++            }
++        }
++        return playerAlternative;
++    }
+ }
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
+@@ -712,7 +712,7 @@
+                         // Lethal damage need not wait; all ordinary target and cast gates still apply.
+                         || isLethalDamageToPlayer(enemy, source, dmg, noPrevention))
+                         && ((sa.isPwAbility() && sa.getPayCosts().hasSpecificCostType(CostPutCounter.class))
+-                        || shouldTgtP(ai, sa, dmg, noPrevention)))) {
++                        || shouldTgtP(ai, sa, dmg, noPrevention, true)))) {
+                     tcs.add(enemy);
+                     if (divided) {
+                         sa.addDividedAllocation(enemy, dmg);

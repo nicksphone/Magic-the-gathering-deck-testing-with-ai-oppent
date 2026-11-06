@@ -73,19 +73,22 @@ def _check_bundle(bundle):
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilMana"]}
     classes = {"forge/ai/" + name + ".class"
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilCost$1", "ComputerUtilMana"]}
-    if isinstance(bundle, dict) and bundle.get("schema") in (2, 3):
+    if isinstance(bundle, dict) and bundle.get("schema") in (2, 3, 4):
         sources.add("tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java")
         classes.update({"forge/evaluation/ActorBoundary.class", "forge/evaluation/ActorBoundary$Pending.class"})
-    if isinstance(bundle, dict) and bundle.get("schema") == 3:
+    if isinstance(bundle, dict) and bundle.get("schema") in (3, 4):
         sources.add("forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java")
         classes.add("forge/ai/ability/DamageDealAi.class")
+    if isinstance(bundle, dict) and bundle.get("schema") == 4:
+        sources.add("forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java")
+        classes.add("forge/ai/ability/DamageAiBase.class")
     if (not isinstance(bundle, dict) or set(bundle) != {"schema", "sources", "classes"}
-            or type(bundle["schema"]) is not int or bundle["schema"] not in (1, 2, 3)
+            or type(bundle["schema"]) is not int or bundle["schema"] not in (1, 2, 3, 4)
             or not isinstance(bundle["sources"], dict) or set(bundle["sources"]) != sources
             or not isinstance(bundle["classes"], dict) or set(bundle["classes"]) != classes
             or not all(isinstance(v, str) and HEX.fullmatch(v)
                        for group in [bundle["sources"], bundle["classes"]] for v in group.values())):
-        raise ValueError("Expected an approved AI, actor-boundary or lethal-timing composition")
+        raise ValueError("Expected an approved AI, actor-boundary, lethal-timing or pressure composition")
 
 
 def derive_bundle(runtime, identity, shadow, output, bundle):
