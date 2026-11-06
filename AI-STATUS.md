@@ -121,7 +121,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   boundary and unchanged inherited cases pass a 223-case native cohort. Genuine
   completion is no longer rejected for absent test-only coverage; native outcome,
   balanced callbacks and causal/reference verification remain mandatory.
-  Integration, complete complex games, durable resume and broad quality remain open.
+  Fresh Control/Ramp games now finish in both seats, and a separate process
+  consumes the first game's reference with matching choices, native/RNG states
+  and outcome. Application integration, durable resume and broad quality remain open.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed

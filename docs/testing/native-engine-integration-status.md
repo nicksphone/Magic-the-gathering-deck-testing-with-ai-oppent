@@ -101,9 +101,40 @@ The four new cases first produced two failures on real Default-AI paid Bolt wins
 and two passing unfinished-game controls in both seats. The same four cases now
 pass within the full 223-case cohort above. Only the Worker class changes among
 the 28 loaded payload classes; all other payload bytes and inherited test inputs
-are unchanged. Current-source complex games and reference replay are a separate
-acceptance cohort, not implied by these controlled positions. Mixed card/stack
-dialogs and the full callback surface remain unqualified.
+are unchanged. The natural-game cohort below is separate evidence, not implied
+by these controlled positions. Mixed card/stack dialogs and the full callback
+surface remain unqualified.
+
+## Complex-Deck Qualification
+
+Three fresh, bounded processes ran on the completion-corrected source, with the
+same 60-card Control/Ramp mains, empty sideboards, seed and Default native AI.
+The human-controller client uses offered native choices; it is not an expert
+opponent or training label. No game budget, card rule or AI policy was changed.
+
+| Process | Human Seat/Deck | Actual Native Outcome | Starts/Returns | Wall Time |
+| --- | --- | --- | --- | --- |
+| A | 0 / Dimir Control | Ramp won, turn 16 | 236 / 236 | 42.81 s |
+| B | 1 / Ramp | Dimir Control won, turn 18 | 233 / 233 | 43.07 s |
+| Fresh Replay Of A | 0 / Dimir Control | Same outcome, turn 16 | 236 / 236 | 44.82 s |
+
+All three exited zero with genuine `game_complete` frames and no outstanding
+callbacks. Starts/returns count protocol invocations, not casts or paid actions.
+Both original games include actual human paid-spell evidence. Neither needed a
+reverse-order dialog; `coverage.reverse_order` correctly remains false.
+
+The replay actually loaded A's retained reference. Parsed starts, completions
+including arrival order, native/RNG states, paid-pending, final and observation
+streams match. Its completion contract records reference comparison, no displaced
+pairs and strict global completion order. This is this replay's result, not a
+universal callback-order guarantee. All registered 120 card IDs/owners, loaded
+class origins and before/end input pins were checked; all game processes ended.
+The genuine two-of-four selection and distinct stack-instance selection also
+completed through native callbacks in A and its replay.
+
+Protected hand/RNG/game evidence is archived privately, not published as fixtures.
+These are completed native integration games, not a strategy-strength benchmark,
+durable save/resume check, browser test or live engine migration.
 
 ## Bounded Native AI Checks
 
@@ -122,7 +153,8 @@ not a claim of clean zero-attempted-IO qualification.
 
 ## Still Required
 
-- Complete complex-deck human/native-AI games with the corrected choice bridge.
+- Broaden completed native games beyond the qualified Control/Ramp pair and
+  cover the remaining native choice surface.
 - Review ordinary native-AI hidden-information boundaries and strategic play;
   a protected human view alone does not establish that native AI never peeks.
 - Integrate game state, choices, payments and rendering with the application.
