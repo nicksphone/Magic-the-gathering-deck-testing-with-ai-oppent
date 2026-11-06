@@ -285,6 +285,14 @@ the live service or establish broad AI strength.
 
 ## Still Required
 
+The [native AI knowledge audit](native-ai-knowledge-boundary.md) now documents a
+corrected private-card identity leak, its twenty controlled checks, and one
+completed built-UI game on a distinct identity-only candidate. A second hidden
+mana affordability leak is reproduced on that historical candidate and corrected
+in a separate three-source increment with thirty native checks and an independent
+byte-identical rebuild. Broader native-AI fairness remains open; the live backend
+has not changed.
+
 - Broaden completed native games beyond the qualified Control/Ramp pair and
   cover the remaining native choice surface.
 - Review ordinary native-AI hidden-information boundaries and strategic play;

@@ -78,8 +78,9 @@ function question(v: unknown): v is ForgeQuestion {
     && new Set(v.choices.map(c => c.token)).size === v.choices.length;
 }
 function inputMetadata(v: unknown, actor: unknown, stackSelection: boolean) {
+  // Anonymous native inputs have no simple class name; identities still bind choices.
   return record(v) && keys(v, ['chosen','input','generation','priority_epoch','revision','actor', ...(stackSelection ? [] : ['min','max'])])
-    && text(v.input) && v.input.length > 0 && v.input.length <= 200 && count(v.actor) && v.actor === actor
+    && text(v.input) && v.input.length <= 200 && count(v.actor) && v.actor === actor
     && ['generation','priority_epoch','revision'].every(k => count(v[k]))
     && Array.isArray(v.chosen) && v.chosen.length <= 1000
     && v.chosen.every(c => stackSelection ? stack(c) : card(c) || hidden(c) || player(c))

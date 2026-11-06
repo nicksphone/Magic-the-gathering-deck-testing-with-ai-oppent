@@ -46,7 +46,7 @@ test('malformed nested selection metadata fails in the parser with a clean error
       {...valid, chosen: [null]}, {...valid, chosen: [true]}, {...valid, chosen: ['card-id']},
       {...valid, chosen: [{card_id: 42}]}, {...valid, chosen: [{player_id: 19, name: 0}]},
       {...valid, chosen: [{hidden: false}]}, {...valid, chosen: Array(1001).fill(valid.chosen[0])},
-      {...valid, actor: 19}, {...valid, actor: true}, {...valid, input: ''}, {...valid, input: {}},
+      {...valid, actor: 19}, {...valid, actor: true}, {...valid, input: {}},
       ...['generation','priority_epoch','revision'].flatMap(field => [-1, true, 0.5, '1', null, Number.MAX_SAFE_INTEGER + 1]
         .map(value => ({...valid, [field]: value}))),
       ...Object.keys(valid).map(field => {const missing = {...valid}; delete missing[field]; return missing;})];

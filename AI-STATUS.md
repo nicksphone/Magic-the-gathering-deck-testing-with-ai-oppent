@@ -136,6 +136,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   adoption, durable BO3, remaining choices, fairness and broad strategic quality
   remain open; native Default AI is not an accepted trained replacement.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
+  A later isolated native-AI identity correction passes twenty controlled checks
+  and one real built-UI reverse-seat game (257 accepted answers, Control wins
+  turn 20). A separate hidden-mana affordability correction now passes thirty
+  native checks on an independently rebuilt three-source candidate; broad
+  fairness and expert-AI acceptance remain open. See [the exact boundary and remaining
+  work](docs/testing/native-ai-knowledge-boundary.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

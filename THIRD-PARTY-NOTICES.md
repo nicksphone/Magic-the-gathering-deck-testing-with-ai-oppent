@@ -25,6 +25,13 @@ were retained. We did not author their engines or card implementations.
   beside their use. They transport native views and choices; the upstream
   rules, card scripts and Default AI are not our implementations. See the
   [app integration scope](docs/testing/forge-app-session.md).
+- The isolated native-AI visibility/cost/mana patches and compatibility tests also
+  credit the Forge Team, pin the upstream source preimages and retain modification
+  notices, and are marked GPL-3.0-or-later. These are our modifications to their
+  existing AI, not an AI or card implementation authored from scratch here.
+  See [the native-AI notice](tools/engine_evaluation/forge/native-ai/NOTICE.md).
+  The separate [known-mana increment notice](tools/engine_evaluation/forge/native-ai/known-mana/NOTICE.md)
+  identifies the three modified upstream AI sources and their retained headers.
 
 ### XMage
 
