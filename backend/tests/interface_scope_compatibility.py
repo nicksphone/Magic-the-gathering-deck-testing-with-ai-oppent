@@ -37,6 +37,53 @@ assert LAND_CHOICE_MAIN['source'] == 'main.py'
 LAND_CHOICE_MAIN_DELTA = LAND_CHOICE_MAIN['accepted_main_delta']
 assert LAND_CHOICE_MAIN_DELTA['old_sha256'] == CURRENT_MAIN_DELTA['new_sha256']
 
+# Exact public 74356fcfbec00ba66877adabe47734c3a48ff44a inverse; old witnesses stay unchanged.
+NATIVE_FORGE_MAIN_DELTA = {
+    'old_sha256': '4bc041adc47412fb97f0b4527ada9ca2f823c27dea4bb999fd9b95cee997512c',
+    'new_sha256': '3b3adaa2503c574420dee33d71231fab456c4c24b0c2cf9a84b81917b089693a',
+    'hunks': [
+        {'start': 51, 'end': 53,
+         'new': ('from forge_routes import create_forge_router\n'
+                 'from native_forge import ForgeManager\n'),
+         'old': ''},
+        {'start': 95, 'end': 101,
+         'new': ('            try:\n'
+                 '                _shutdown_simulation_workers()\n'
+                 '            finally:\n'
+                 '                native = getattr(app_instance.state, "forge_manager", None)\n'
+                 '                if native is not None:\n'
+                 '                    native.close_all()\n'),
+         'old': '            _shutdown_simulation_workers()\n'},
+        {'start': 102, 'end': 107,
+         'new': ('            try:\n'
+                 '                owner.fence_admission()\n'
+                 '                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                 '            finally:\n'
+                 '                owner.close()\n'),
+         'old': ('            owner.fence_admission()\n'
+                 '        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                 '        owner.close()\n')},
+        {'start': 110, 'end': 125,
+         'new': ('FORGE_MANAGER_LOCK = threading.Lock()\n'
+                 '\n'
+                 '\n'
+                 'def _forge_manager() -> ForgeManager:\n'
+                 '    # Opt-in and lazy: importing the app never installs or launches an engine.\n'
+                 '    with FORGE_MANAGER_LOCK:\n'
+                 '        manager = getattr(app.state, "forge_manager", None)\n'
+                 '        if manager is None:\n'
+                 '            manager = ForgeManager.from_environment()\n'
+                 '            app.state.forge_manager = manager\n'
+                 '        return manager\n'
+                 '\n'
+                 '\n'
+                 'app.include_router(create_forge_router(_forge_manager))\n'
+                 '\n'),
+         'old': ''},
+    ],
+}
+assert NATIVE_FORGE_MAIN_DELTA['old_sha256'] == LAND_CHOICE_MAIN_DELTA['new_sha256']
+
 REPOSITORY_DELTA_PATH = PATH.with_name('accepted_phase1_repository_delta.json')
 repository_raw = REPOSITORY_DELTA_PATH.read_bytes()
 assert hashlib.sha256(repository_raw).hexdigest() == '7617e4b9dbf6f1512bfd7bba51dc5a5e2506ade3163c28dca035e90c53b0e144'
@@ -161,6 +208,8 @@ def restore_reviewed_source(name, current, historical):
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == NATIVE_FORGE_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), NATIVE_FORGE_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == LAND_CHOICE_MAIN_DELTA['new_sha256']:
         current = _restore(current.decode(), LAND_CHOICE_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() not in {
