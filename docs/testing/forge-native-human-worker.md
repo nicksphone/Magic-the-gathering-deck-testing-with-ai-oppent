@@ -31,6 +31,11 @@ not an authenticated HTTP service or a live engine replacement.
   `coverage` reports observed reverse-order and paid-human scenarios as diagnostics,
   not prerequisites for a real game result. Balanced callbacks, causal completion
   and complete reference consumption remain required.
+- The separate local command `{"checkpoint_request_id":"CURRENT_REQUEST_UUID"}`
+  captures a pending question without answering or invalidating it. A still-returning
+  nonblocking dispatch reports retryable `checkpoint_busy`. A successful
+  `checkpoint_saved` frame contains only the request ID and private-file digest,
+  not either player's saved cards or state.
 
 The current worker supports the exercised scalar/list dialogs and native
 card/player/stack-instance clicks. Selection metadata describes the actual current
@@ -90,7 +95,7 @@ are not relabeled as successful games.
 ## Reproduce
 
 Use the previously built pinned Forge classpath. From the application checkout,
-compile the explicit 19-source list; this includes all current helpers and the
+compile the explicit 22-source list; this includes all current helpers and the
 four modified native input classes, rather than relying on an older cached
 adapter. The output directory must not exist and must be outside this repository:
 
@@ -128,8 +133,40 @@ discovery. Byte-identical reproduction additionally requires the qualified JDK
 
 ## Save/Resume Boundary
 
-This bridge does not claim durable engine restart. Native `GameState` is a
-position format; source inspection found no drop-in serialization of suspended
-human choices, RNG and BO3 history. In-memory undo/copies are not durable resume.
-An actual fresh-process compatibility audit is separate. Do not replace saved
-app matches or claim full adoption from successful process games.
+Native `GameState` is a position format, not a drop-in serialization of suspended
+human choices, RNG and BO3 history. The checkpoint design reconstructs accepted
+choices on the same pinned engine rather than attempting to pickle its Java heap.
+It does not replace the application's existing Python saves or supply a browser
+resume endpoint.
+
+The worker writes `CHECKPOINT.json` atomically with mode `0600` in its owned
+directory, retaining the actual spec/imported deck text, accepted invocation
+journals, pending offer, actor view and existing private native-state projection.
+That projection is not every internal Java object. Input generation/currentness,
+completed producing dispatches and the input lifetime are fenced through capture
+and acknowledgment. No native callback is dispatched by saving. A recoverable
+write failure emits `checkpoint_failed` without closing the game; its `committed`
+flag distinguishes failure before replacement from unconfirmed durability after it.
+
+The original GPL host helper `stdio/checkpoint_store.py` archives exact snapshot
+bytes under a trusted deployment-supplied build ID, rejects altered/mismatched
+inputs and restores only spec/deck files into a fresh private directory. It never
+executes a stored command, installs an engine or restores opaque wire tokens.
+`verify_frontier` requires the entire validated captured frontier to match before
+new play. Supplying a build ID is the deployment host's responsibility, not an
+automatic installation-authenticity check by this helper.
+
+Private atomic directory publication uses Linux `renameat2(RENAME_NOREPLACE)` and
+fails closed if unavailable. The Java snapshot also requires POSIX private-file
+attributes. Other platforms, interruption points and pending-choice families
+require their own qualification. In-memory undo or successful complete-game replay
+alone is not durable resume. Keep snapshots and journals private, never in a web
+media directory or public game fixture.
+
+The first actual cold experiment reached the same partial two-of-four choice,
+with identical captured native state, actor view, pending offer and accepted
+invocations. Continuation remained blocked because callback completion arrival
+order differed, despite exact whole completion rows by start ID. No new choice
+was released. Resume is therefore **not qualified**. Supporting a proven causal
+reordering requires the existing narrowly checked producer rule; sorting or
+discarding completion evidence is not an acceptable fix.

@@ -17,3 +17,6 @@ stdio/unit-source/PartialManaReadyUnit.java
 stdio/unit-source/CombinedControlledUnit.java
 stdio/unit-source/NativeStackBoundaryTest.java
 stdio/unit-source/NativeWorkerCompletionTest.java
+stdio/unit-source/NativeWorkerCheckpointTest.java
+stdio/unit-source/NativeWorkerCheckpointRaceTest.java
+stdio/unit-source/CheckpointReplyContractUnit.java

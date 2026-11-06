@@ -66,6 +66,8 @@ import java.util.function.Consumer;
 
 public final class NativeHumanWorker implements IRemote {
     private Path evidence;
+    private JsonObject matchSpec;
+    private final Map<String,String> importedDecks = new TreeMap<>();
     private boolean replay;
     private long rngBase;
     private final Map<String,List<JsonElement>> expected = new TreeMap<>();
@@ -225,6 +227,86 @@ public final class NativeHumanWorker implements IRemote {
         String value = reader.nextString();
         if (!value.matches("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")) throw new IllegalArgumentException();
         return value;
+    }
+
+    static String decodeCheckpoint(String line) {
+        try (JsonReader reader = new JsonReader(new StringReader(line))) {
+            if (line.length() > MAX_LINE) throw new IllegalArgumentException();
+            reader.setLenient(false);
+            reader.beginObject();
+            if (!reader.hasNext() || !reader.nextName().equals("checkpoint_request_id")) return null;
+            String request = opaque(reader);
+            if (reader.hasNext()) throw new IllegalArgumentException();
+            reader.endObject();
+            if (reader.peek() != JsonToken.END_DOCUMENT) throw new IllegalArgumentException();
+            return request;
+        } catch (Exception malformed) {
+            throw new IllegalArgumentException("invalid_checkpoint_request");
+        }
+    }
+
+    private synchronized void checkpoint(String requestId) {
+        if (aborted || terminal || failed || actor == null || reply == null || request == null ||
+                !request.equals(requestId) || actor.getGame().isGameOver()) {
+            throw new IllegalArgumentException("checkpoint_not_current");
+        }
+        var human = (PlayerControllerHuman)gui.getGameController(actor.getView());
+        var queue = human.getInputQueue();
+        // Queue transitions invoke host callbacks only after releasing this monitor.
+        // Retain that input lifetime through capture/publication, in worker->queue order.
+        synchronized (queue) {
+            if (!blocking) {
+                if (starts != decisions) throw new IllegalArgumentException("checkpoint_busy");
+                if (readyInput == null || readyEpoch != priorityEpoch ||
+                        !queue.isCurrentPresentation(readyInput,readyGeneration)) {
+                    throw new IllegalArgumentException("checkpoint_input_replaced");
+                }
+            }
+            if (matchSpec == null || importedDecks.isEmpty()) throw new IllegalStateException("checkpoint_inputs_absent");
+            boolean committed = false;
+            try {
+                Map<String,Object> journals = new TreeMap<>();
+                for (String stream : List.of("starts","completions","native","paid-pending","final")) {
+                    Path file = evidence.resolve(stream+".jsonl");
+                    List<JsonElement> rows = new ArrayList<>();
+                    if (Files.exists(file)) for (String line : Files.readAllLines(file)) rows.add(JsonParser.parseString(line));
+                    if (rows.size() != cursors.getOrDefault(stream,0)) throw new IllegalStateException("checkpoint_journal_count_"+stream);
+                    journals.put(stream,rows);
+                }
+                if (cursors.getOrDefault("final",0) != 0) throw new IllegalStateException("checkpoint_already_final");
+                String body = JSON.toJson(Map.of("schema",1,"spec",matchSpec.deepCopy(),"decks",Map.copyOf(importedDecks),
+                        "starts",starts,"completions",decisions,"pending_offer",pendingOffer.deepCopy(),
+                        "actor_view",boundary.snapshot(gui.getGameView()),"native_state",nativeState(actor.getGame()),"journals",journals));
+                Path target = evidence.resolve("CHECKPOINT.json");
+                if (Files.isSymbolicLink(target)) throw new IOException("checkpoint_target_symlink");
+                Path temporary = Files.createTempFile(evidence,".checkpoint-",".tmp",
+                        java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
+                                java.nio.file.attribute.PosixFilePermissions.fromString("rw-------")));
+                try {
+                    byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+                    try (var output = java.nio.channels.FileChannel.open(temporary,java.nio.file.StandardOpenOption.WRITE)) {
+                        var buffer = java.nio.ByteBuffer.wrap(bytes);
+                        while (buffer.hasRemaining()) output.write(buffer);
+                        output.force(true);
+                    }
+                    Files.move(temporary,target,java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    committed = true;
+                    try (var directory = java.nio.channels.FileChannel.open(evidence,java.nio.file.StandardOpenOption.READ)) { directory.force(true); }
+                    String digest = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
+                    emit(Map.of("event","checkpoint_saved","request_id",requestId,"sha256",digest));
+                } finally { Files.deleteIfExists(temporary); }
+            } catch (IOException | java.security.NoSuchAlgorithmException error) {
+                error.printStackTrace(System.err);
+                emit(Map.of("event","checkpoint_failed","request_id",requestId,"committed",committed,
+                        "reason",committed ? "durability_unconfirmed_after_commit" : "write_failed_before_commit"));
+            }
+        }
+    }
+
+    static String rejectionReason(String checkpoint,IllegalArgumentException error) {
+        return checkpoint != null && "checkpoint_busy".equals(error.getMessage())
+                ? "checkpoint_busy" : "invalid_or_stale_response";
     }
 
     static int[] choiceBounds(int min,int max,int count) {
@@ -617,6 +699,7 @@ public final class NativeHumanWorker implements IRemote {
             if (seat < 0 || seat > 1 || !spec.get("open_decklists").getAsBoolean() || spec.getAsJsonArray("decks").size() != 2) {
                 throw new IllegalArgumentException("invalid_match_spec");
             }
+            remote.matchSpec=spec.deepCopy();
             System.setProperty("java.awt.headless","true");
             GuiBase.setInterface(new GuiDesktop());
             FModel.initialize(null,null);
@@ -639,6 +722,7 @@ public final class NativeHumanWorker implements IRemote {
                 row.getAsJsonObject("main").entrySet().forEach(e -> expected.put(e.getKey(),e.getValue().getAsInt()));
                 if (deck == null || deck.getMain().countAll() != 60 || !cards(deck).equals(expected) ||
                         expected.values().stream().anyMatch(n -> n <= 0)) throw new IllegalArgumentException("changed_deck_import");
+                remote.importedDecks.put(filename,Files.readString(root.resolve("decks").resolve(filename)));
                 disclosed.put(i,Map.copyOf(expected));
                 players.add(new RegisteredPlayer(deck));
             }
@@ -675,8 +759,13 @@ public final class NativeHumanWorker implements IRemote {
                 Input input = inbound.poll(200,TimeUnit.MILLISECONDS);
                 if (input == null) continue;
                 if (input.eof()) { remote.abort(); exit = 2; break; }
-                try { remote.accept(decode(input.line())); }
-                catch (IllegalArgumentException rejected) { remote.emit(Map.of("event","rejected","reason","invalid_or_stale_response")); }
+                String checkpoint = null;
+                try {
+                    checkpoint = decodeCheckpoint(input.line());
+                    if (checkpoint == null) remote.accept(decode(input.line()));
+                    else remote.checkpoint(checkpoint);
+                }
+                catch (IllegalArgumentException rejected) { remote.emit(Map.of("event","rejected","reason",rejectionReason(checkpoint,rejected))); }
             }
             if (remote.terminal && !remote.failed) exit = 0;
             if (remote.failed) remote.emit(Map.of("event","error","reason","unsupported_or_failed_native_callback"));

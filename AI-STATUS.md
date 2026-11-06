@@ -124,6 +124,10 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   Fresh Control/Ramp games now finish in both seats, and a separate process
   consumes the first game's reference with matching choices, native/RNG states
   and outcome. Application integration, durable resume and broad quality remain open.
+  New checkpoint capture passes 243 native cases and 92 client/store checks, but
+  actual cold continuation is held: the recovered choice/state matches, while
+  completion arrival order differs. No new choice was released after that mismatch;
+  it is not accepted save/resume support.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed

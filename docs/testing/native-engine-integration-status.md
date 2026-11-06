@@ -26,7 +26,7 @@ the opposing player uses the native AI. That client is not an expert policy.
   replacement selection remained usable and the original payment completed.
   This is a controlled native payment check, not another natural game.
 - The earlier 17-source checkpoint reproduces all 28 qualified payload classes
-  byte-for-byte. The current build adds native boundary/completion units and lists 19
+  byte-for-byte. The current build adds native boundary/checkpoint units and lists 22
   explicit Java inputs, without implicitly compiling another upstream copy.
   Source reproducibility is not application integration.
 
@@ -107,7 +107,8 @@ surface remain unqualified.
 
 ## Complex-Deck Qualification
 
-Three fresh, bounded processes ran on the completion-corrected source, with the
+Three fresh, bounded processes ran on completion source `2a814bdd`, before the
+checkpoint additions below, with the
 same 60-card Control/Ramp mains, empty sideboards, seed and Default native AI.
 The human-controller client uses offered native choices; it is not an expert
 opponent or training label. No game budget, card rule or AI policy was changed.
@@ -135,6 +136,57 @@ completed through native callbacks in A and its replay.
 Protected hand/RNG/game evidence is archived privately, not published as fixtures.
 These are completed native integration games, not a strategy-strength benchmark,
 durable save/resume check, browser test or live engine migration.
+
+## Pending-Choice Checkpoint Component
+
+The worker can now capture a current unresolved question without consuming its
+tokens or advancing play. Snapshot data contains private state and remains in
+host-owned files; only the request ID and digest are acknowledged on the wire.
+The host store checks snapshot bytes, schema and a trusted build ID, restores
+only the original spec/deck inputs, and requires full captured-frontier equality
+before further play. This is replay reconstruction, not complete Java heap
+serialization, and it is not yet an application save/resume endpoint.
+
+- Final **243 native cases passed**, zero failures/skips, in 42.71 seconds across
+  thirteen whole classes. All original 209 identities/parameters and all inherited
+  243 test bytes are retained on the final wire-label build. All 28 actual loaded
+  payload resources are pinned before/end. The build lists 22 explicit sources.
+- **92 Python client/store tests passed**: the unchanged 29 client checks and 63
+  new labelled synthetic persistence/schema checks, not 92 game episodes. Four
+  separate labelled Java protocol assertions cover busy-versus-legacy rejection.
+- The first 17 native checks failed on the absent API, then passed in a 240-case
+  cohort. Review found producing-dispatch and input-replacement races plus a fatal
+  save-I/O path. Three deterministic native/API tests reproduced all three; they
+  now pass. Original 17-test source and all previous native test inputs are unchanged.
+- Capture now waits for nonblocking dispatch returns and retains the actual queue
+  monitor through snapshot/publication. Recoverable I/O reports pre/postcommit
+  status without invalidating the human question. A distinct busy reason remains
+  available to the host; ordinary answer rejection is unchanged.
+
+Those component checks do not establish that every native choice can be resumed.
+The actual cold pending-choice experiment below is separate evidence. Existing full
+reference/causal verification, AI policy, game budgets, costs and card rules are
+unchanged. All earlier failing stages are preserved rather than relabelled green.
+
+### Actual Cold Reconstruction: Held
+
+The original native process genuinely reached a Memory Deluge two-of-four choice
+after its first selected card. It saved with 186 balanced starts/returns, then
+closed stdin and exited 2 with an abort, not a game outcome. The real host store
+saved/loaded the protected bytes and restored spec/deck inputs for a fresh JVM.
+
+The new process replayed all 186 accepted invocations with fresh native tokens.
+Its pending offer, actor view, existing native-state projection, spec, decks,
+starts, native/RNG journal and paid-pending data match the saved checkpoint.
+Whole completion rows also match by start ID, but their arrival order does not.
+The strict frontier comparison rejected this difference before any new answer.
+The resumed process was stopped without a completed game; the declared third
+uninterrupted run was not started. These are **two processes and a failed resume
+qualification**, not completed games or an accepted save/resume feature.
+
+The next correction must verify any permitted inversion with the existing
+producer/parent causal rules, while retaining every completion row and all other
+frontier checks. Matching current board state or sorting IDs alone is insufficient.
 
 ## Bounded Native AI Checks
 
