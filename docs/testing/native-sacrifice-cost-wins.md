@@ -1,5 +1,9 @@
 # Native Sacrifice-Cost Wins
 
+This document records the cost-only schema-9 revision. A later, separately tested
+[token/return planner](native-token-return-planning.md) closes its retained
+two-action fixtures; it does not retroactively change the results below.
+
 ## Reproduced Defects
 
 The native Default AI passed funded winning sacrifice activations. Unchanged

@@ -114,10 +114,21 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   The unchanged portable 22 cases and separate 12 internal-protocol checks pass;
   32 synthetic profile checks require the exact twelve-source/twenty-class
   closure. These are not 34 games or expert-play acceptance. The genuine
-  Oven/Food/Familiar two-action line without Blood Artist still fails both-seat
-  first-choice tests, and four preceding-revision natural Drain games all lost.
+  Oven/Food/Familiar two-action line without Blood Artist was not closed by that
+  cost-only revision; four preceding-revision natural Drain games all lost.
   No live switch or strength gain is claimed. See
   [scope, retained failures and open boundaries](docs/testing/native-sacrifice-cost-wins.md).
+- [x] **Bounded native token/return planning:** typed resource production and
+  intrinsic graveyard return now admit both-seat Oven/Familiar and Goose/Familiar
+  wins through ordinary AI choices and real native payment. The portable 46-row
+  family passes, including refusal, sacrifice-preference, danger and internal
+  protocol controls. Separate unchanged sacrifice 22 and counter 16 pass; 38
+  synthetic profile checks enforce the exact thirteen-source/twenty-one-class
+  closure. Four source-pinned natural games complete without errors, but Drain
+  still loses all four: no strategic strength gain, training completion or live
+  adoption is claimed. Genuine paid-copy regressions also reject returning a
+  sacrificed token while retaining its use as a resource for a real card's return.
+  See [scope and evidence](docs/testing/native-token-return-planning.md).
 - [ ] **Multi-card planning and complex targeting:** validate whole-hand lines,
   modal targets and supported synergies beyond the individual fixed regressions.
 - [ ] **Useful learned policy:** demonstrate generalization to unseen situations

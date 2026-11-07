@@ -621,6 +621,73 @@ class SyntheticProfileTests(unittest.TestCase):
                 self.assertFalse(output.exists())
                 path.write_bytes(original)
 
+    def observer_bundle(self):
+        bundle = self.sacrifice_bundle()
+        bundle['schema'] = 10
+        bundle['sources']['forge-game/src/main/java/forge/game/trigger/TriggerHandler.java'] = 'e' * 64
+        bundle['classes']['forge/game/trigger/TriggerHandler.class'] = 'f' * 64
+        return bundle
+
+    def test_observer_bundle_accepts_only_the_thirteen_source_twenty_one_class_extension(self):
+        parent, bundle = self.sacrifice_bundle(), self.observer_bundle()
+        before = copy.deepcopy(bundle)
+        runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        self.assertEqual(bundle, before)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (13, 21))
+        self.assertEqual(set(bundle['sources']) - set(parent['sources']),
+                         {'forge-game/src/main/java/forge/game/trigger/TriggerHandler.java'})
+        self.assertEqual(set(bundle['classes']) - set(parent['classes']),
+                         {'forge/game/trigger/TriggerHandler.class'})
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', parent)[0]['build_id'])
+        for group, name in (
+            ('sources', 'forge-game/src/main/java/forge/game/trigger/TriggerHandler.java'),
+            ('classes', 'forge/game/trigger/TriggerHandler.class'),
+        ):
+            changed = copy.deepcopy(bundle)
+            changed[group][name] = '0' * 64
+            self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+                self.base, self.identity, '/build/shadow', '/profile', changed)[0]['build_id'])
+
+    def test_observer_bundle_rejects_every_missing_source(self):
+        bundle = self.observer_bundle()
+        for missing in bundle['sources']:
+            bad = {**bundle, 'sources': {k: v for k, v in bundle['sources'].items() if k != missing}}
+            with self.subTest(missing=missing), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_observer_bundle_rejects_every_missing_class(self):
+        bundle = self.observer_bundle()
+        for missing in bundle['classes']:
+            bad = {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if k != missing}}
+            with self.subTest(missing=missing), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_observer_bundle_rejects_extra_sources(self):
+        bundle = self.observer_bundle()
+        for extra in ('forge-game/src/main/java/forge/game/Game.java',
+                      'forge-game/src/main/java/forge/game/trigger/TriggerHandlerExtra.java',
+                      '../forbidden.java'):
+            bad = {**bundle, 'sources': {**bundle['sources'], extra: '0' * 64}}
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_observer_bundle_rejects_extra_classes(self):
+        bundle = self.observer_bundle()
+        for extra in ('forge/game/trigger/TriggerHandler$Extra.class',
+                      'forge/game/Game.class', '../forbidden.class'):
+            bad = {**bundle, 'classes': {**bundle['classes'], extra: '0' * 64}}
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_observer_bundle_rejects_schema_relabeling_and_non_integer_schemas(self):
+        bundle = self.observer_bundle()
+        for schema in (*range(1, 10), 0, 11, True, False, 10.0, '10', None):
+            with self.subTest(schema=schema), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                                {**bundle, 'schema': schema})
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)
