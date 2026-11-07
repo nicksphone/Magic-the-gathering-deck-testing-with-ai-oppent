@@ -440,3 +440,15 @@ because one fixture or one game passed.
 See [the full finish plan](plan.md),
 [opening-hand scope](docs/ai-opening-retained-hand.md) and
 [friendly-material scope](docs/ai-friendly-material-conservation.md).
+
+## Optional Native Decision Observation (2026-11-07)
+
+- [x] Actual offered/visited/opinion stages now have an opt-in, immutable bounded
+  hook in the native chooser. Controlled root20, protocol6, lifecycle101 and
+  profile48 checks passed as separate cohorts. Two review defects were reproduced
+  and fixed; the initial privacy-fixture RED remains separately recorded.
+  [Contract and honest limits](docs/testing/native-root-decision-observer.md).
+- [ ] Connect that observer to declared natural studies and check full-game
+  off/on behavior before using its traces for a broader strategic assessment.
+  Unknown affordability and incomplete legal-action coverage stay unknown; this
+  instrumentation is not an AI-strength or overall release-completion claim.
