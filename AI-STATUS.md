@@ -172,6 +172,16 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   adoption is claimed. Genuine paid-copy regressions also reject returning a
   sacrificed token while retaining its use as a resource for a real card's return.
   See [scope and evidence](docs/testing/native-token-return-planning.md).
+- [x] **Bounded native own-library bottom selection:** the generic selector no
+  longer retains its best card when choosing what to put on its own library's
+  bottom. Real AI Iteration allocation/followup now keeps a counter and casts
+  the exiled Bolt with actual payment in both seats. Independent review also
+  exposed a nullable-helper mandatory-choice edge; its unchanged native
+  regressions pass after a valid-card fallback. Final qualification is twenty
+  internal direction checks, four AI/manual paid controls, two mandatory checks
+  and 101 lifecycle checks; 45 synthetic profile tests pass separately. This is
+  not a joint allocator, natural-game strength gain or a live/default switch.
+  See [the reproduced defect, review and limits](docs/testing/native-dig-direction-ai.md).
 - [ ] **Multi-card planning and complex targeting:** validate whole-hand lines,
   modal targets and supported synergies beyond the individual fixed regressions.
 - [ ] **Useful learned policy:** demonstrate generalization to unseen situations

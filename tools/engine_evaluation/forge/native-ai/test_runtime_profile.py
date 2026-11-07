@@ -781,6 +781,88 @@ class SyntheticProfileTests(unittest.TestCase):
                     self.assertFalse(list(root.glob('.' + output.name + '.pending-*')))
                 path.write_bytes(original)
 
+    def dig_direction_bundle(self):
+        bundle = self.priority_bundle()
+        bundle['schema'] = 12
+        bundle['sources']['forge-ai/src/main/java/forge/ai/ability/DigAi.java'] = '4' * 64
+        bundle['classes']['forge/ai/ability/DigAi.class'] = '5' * 64
+        return bundle
+
+    def test_dig_direction_bundle_accepts_only_fifteen_source_twenty_four_class_extension(self):
+        parent, bundle = self.priority_bundle(), self.dig_direction_bundle()
+        before = copy.deepcopy(bundle)
+        try:
+            runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        except ValueError as error:
+            self.fail('Exact Dig-direction composition was rejected: ' + str(error))
+        self.assertEqual(bundle, before)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (15, 24))
+        for group, added in (
+            ('sources', 'forge-ai/src/main/java/forge/ai/ability/DigAi.java'),
+            ('classes', 'forge/ai/ability/DigAi.class'),
+        ):
+            self.assertEqual(set(bundle[group]) - set(parent[group]), {added})
+            self.assertEqual({k: v for k, v in bundle[group].items() if k != added}, parent[group])
+            changed = copy.deepcopy(bundle)
+            changed[group][added] = '0' * 64
+            self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+                self.base, self.identity, '/build/shadow', '/profile', changed)[0]['build_id'])
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', parent)[0]['build_id'])
+
+    def test_dig_direction_bundle_rejects_missing_extra_invalid_and_relabelled_inputs(self):
+        bundle = self.dig_direction_bundle()
+        for group in ('sources', 'classes'):
+            for missing in bundle[group]:
+                bad = {**bundle, group: {k: v for k, v in bundle[group].items() if k != missing}}
+                with self.subTest(group=group, missing=missing), self.assertRaises(ValueError):
+                    P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+            extra = 'forge/ai/ability/DigAi$Unapproved.class' if group == 'classes' else '../unapproved.java'
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                                {**bundle, group: {**bundle[group], extra: '0' * 64}})
+        for schema in (*range(1, 12), 0, 13, True, False, 12.0, '12', None):
+            with self.subTest(schema=schema), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                                {**bundle, 'schema': schema})
+        with self.assertRaises(ValueError):
+            P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                            {**self.priority_bundle(), 'schema': 12})
+
+    def test_dig_direction_publication_checks_source_and_class_before_any_publish(self):
+        with tempfile.TemporaryDirectory(prefix='synthetic-dig-profile-') as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.dig_direction_bundle()
+            for folder, key in [('source', 'sources'), ('shadow', 'classes')]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(('SYNTHETIC; NOT NATIVE: ' + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / 'approval.json'
+            approval.write_text(json.dumps(bundle))
+            try:
+                P.main(*args, root / 'output', approval)
+            except ValueError as error:
+                self.fail('Exact Dig-direction publication was rejected: ' + str(error))
+            self.assertEqual(json.loads((root / 'output/BUILD-IDENTITY.json').read_text())['overrides'], bundle)
+            for folder, relative in (
+                ('source', 'forge-ai/src/main/java/forge/ai/ability/DigAi.java'),
+                ('shadow', 'forge/ai/ability/DigAi.class'),
+            ):
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b'SYNTHETIC CHANGED')
+                output = root / ('rejected-' + folder)
+                with self.subTest(relative=relative), mock.patch.object(P, '_publish') as publish:
+                    with self.assertRaisesRegex(ValueError, 'byte identity'):
+                        P.main(*args, output, approval)
+                    publish.assert_not_called()
+                    self.assertFalse(output.exists())
+                path.write_bytes(original)
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)
