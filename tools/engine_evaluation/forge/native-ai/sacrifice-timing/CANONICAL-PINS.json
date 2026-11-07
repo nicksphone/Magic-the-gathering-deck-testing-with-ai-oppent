@@ -1,0 +1,62 @@
+{
+  "blood_artist.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/b/blood_artist.txt",
+    "sha256": "010f5d73f93116a287960c18fa06e01695db0639648e281515f03e7aadd6b1ec",
+    "bytes": 612
+  },
+  "cauldron_familiar.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/c/cauldron_familiar.txt",
+    "sha256": "5ee429e104621646a12c21b52d6c882f6832beced6281d425fef1470bd8dfb6a",
+    "bytes": 885
+  },
+  "witchs_oven.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/w/witchs_oven.txt",
+    "sha256": "fcfc1613c389c9d4040420466d33ffb089ac58be0eb354440212195211194467",
+    "bytes": 732
+  },
+  "icy_manipulator.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/i/icy_manipulator.txt",
+    "sha256": "dc5d914ce3a505a19fd4381eef0b74c4d511d38e7b241b5a03b809324d5516d9",
+    "bytes": 277
+  },
+  "mountain.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/m/mountain.txt",
+    "sha256": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+    "bytes": 80
+  },
+  "swamp.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/s/swamp.txt",
+    "sha256": "96a473942577dee4fffe52906874ef343a7e8d1413872334baa576066112d252",
+    "bytes": 74
+  },
+  "viscera_seer.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/v/viscera_seer.txt",
+    "sha256": "f3c81fa949046f1088072544e94f6dd90fe0448d57313f181b6ca74891bddd19",
+    "bytes": 351
+  },
+  "village_rites.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/v/village_rites.txt",
+    "sha256": "9d75126c5f9548e4ae1484bd6b76893dfaf32f174c00091bf5360f6fef77b015",
+    "bytes": 219
+  },
+  "rest_in_peace.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/r/rest_in_peace.txt",
+    "sha256": "7b2c4c5c44a4b05eb23751e557c3abdaee0e7af60195d39fd5dd29fdfc06f94b",
+    "bytes": 821
+  },
+  "platinum_angel.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/p/platinum_angel.txt",
+    "sha256": "aa191deaeda5eaaf9a0861e72c3d98f62ee5f916b95ed269bfe9a817e74aa93f",
+    "bytes": 501
+  },
+  "hushbringer.txt": {
+    "upstream_path": "forge-gui/res/cardsfolder/h/hushbringer.txt",
+    "sha256": "75c6d6cbda112a8d02b0b5b8d1c4eaa9d6f7d341cf58e3763a1c6cce3fe3f9cc",
+    "bytes": 632
+  },
+  "c_a_food_sac.txt": {
+    "upstream_path": "forge-gui/res/tokenscripts/c_a_food_sac.txt",
+    "sha256": "7b6aa427661e3a0cb1b50e7eb9a25a10f1a13ca83dde81eebc07ea345eebdadf",
+    "bytes": 216
+  }
+}

@@ -565,6 +565,62 @@ class SyntheticProfileTests(unittest.TestCase):
                 self.assertFalse(output.exists())
                 path.write_bytes(original)
 
+    def sacrifice_bundle(self):
+        bundle = self.counter_bundle()
+        bundle['schema'] = 9
+        for name in ('SpellAbilityAi', 'AiController'):
+            bundle['sources']['forge-ai/src/main/java/forge/ai/' + name + '.java'] = 'c' * 64
+        for name in ('SpellAbilityAi', 'AiController', 'AiController$1'):
+            bundle['classes']['forge/ai/' + name + '.class'] = 'd' * 64
+        return bundle
+
+    def test_sacrifice_bundle_requires_complete_twelve_source_twenty_class_prefix(self):
+        bundle = self.sacrifice_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (12, 20))
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', self.counter_bundle())[0]['build_id'])
+        bad_bundles = [{**bundle, 'schema': 9.0}, {**bundle, 'schema': 8}]
+        for group in ('sources', 'classes'):
+            for missing in bundle[group]:
+                bad_bundles.append({**bundle, group: {k: v for k, v in bundle[group].items() if k != missing}})
+        bad_bundles.append({**bundle, 'classes': {**bundle['classes'], 'forge/ai/AiController$Extra.class': 'e' * 64}})
+        for bad in bad_bundles:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_sacrifice_publication_checks_both_sources_and_all_three_classes(self):
+        with tempfile.TemporaryDirectory(prefix='synthetic-sacrifice-profile-') as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.sacrifice_bundle()
+            for folder, key in [('source', 'sources'), ('shadow', 'classes')]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(('SYNTHETIC; NOT NATIVE: ' + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / 'approval.json'
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / 'output', approval)
+            self.assertEqual(json.loads((root / 'output/BUILD-IDENTITY.json').read_text())['overrides'], bundle)
+            for folder, relative in (
+                ('source', 'forge-ai/src/main/java/forge/ai/SpellAbilityAi.java'),
+                ('source', 'forge-ai/src/main/java/forge/ai/AiController.java'),
+                ('shadow', 'forge/ai/SpellAbilityAi.class'),
+                ('shadow', 'forge/ai/AiController.class'),
+                ('shadow', 'forge/ai/AiController$1.class'),
+            ):
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b'SYNTHETIC CHANGED')
+                output = root / ('rejected-' + folder + '-' + path.stem)
+                with self.assertRaisesRegex(ValueError, 'byte identity'):
+                    P.main(*args, output, approval)
+                self.assertFalse(output.exists())
+                path.write_bytes(original)
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

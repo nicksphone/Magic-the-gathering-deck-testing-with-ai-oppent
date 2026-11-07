@@ -109,6 +109,15 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   or a playing-strength estimate. Both rejected drafts and the new-test fixture
   failures remain recorded. Application adoption and broad Control strategy are
   still open. See [the executed scope and limits](docs/testing/native-counter-tactics.md).
+- [x] **Bounded native sacrifice-cost wins:** the shared timing preference and
+  AI-deck-exclusion filter now admit the tested immediate death-drain wins.
+  The unchanged portable 22 cases and separate 12 internal-protocol checks pass;
+  32 synthetic profile checks require the exact twelve-source/twenty-class
+  closure. These are not 34 games or expert-play acceptance. The genuine
+  Oven/Food/Familiar two-action line without Blood Artist still fails both-seat
+  first-choice tests, and four preceding-revision natural Drain games all lost.
+  No live switch or strength gain is claimed. See
+  [scope, retained failures and open boundaries](docs/testing/native-sacrifice-cost-wins.md).
 - [ ] **Multi-card planning and complex targeting:** validate whole-hand lines,
   modal targets and supported synergies beyond the individual fixed regressions.
 - [ ] **Useful learned policy:** demonstrate generalization to unseen situations
