@@ -1,0 +1,18 @@
+{
+  "CANONICAL-PINS.json": "b2fd68c7e4b9a8688746d0b746d6eab73c0ca6dfc60484f16b8aa30a54660d40",
+  "LICENSE": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+  "NOTICE": "8994e2943b8ba76f865d8a17c15bc4b6c6cb19475fd686fe2da00170aa307053",
+  "NativeSkullcrackPreservation10.java": "7c558483472e0f9c46831bf3879d12722d71db3fbfa2393194b5297b759cebb4",
+  "NativeSkullcrackResponse6.java": "24ec033310444b0231ba38a6f89cb727f486b724d00d4956030d58d709bdbfc4",
+  "PAYLOAD.json": "400dbbbeeabe257728c3d1f1828633c9d8aa2da3be31ea83fb4e001e7dfe1e84",
+  "README.md": "7429757c9870081d50c67ff0821960d37a8aee463770642a7ff4396c54db7305",
+  "SOURCE-PINS.json": "e89a41f0a9c572205de57940e79cf8756e9bc4000ff6a4d880cd857ca35befbf",
+  "canonical/leyline_of_sanctity.txt": "1b6f0ba8fb4d7c9b8f3ec6e4278a98dfc6adfec67a0b8df2bf531fc4314ea56f",
+  "canonical/mountain.txt": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+  "canonical/sheoldred_the_apocalypse.txt": "cdd90a9aee1ee947ec7e9ba04ff968b4840a6eb1ee50e5323f3f9b5cf93bc293",
+  "canonical/skullcrack.txt": "1a1c1a6b1821378264f994a8a2be1c27c952a80efd17fb0226650eb4c01fe19a",
+  "canonical/sulfuric_vortex.txt": "e04a3b65b8c65b79bd22957b82dbe4b08842c815a313d41ae133fee2acd9972f",
+  "canonical/tainted_remedy.txt": "24a197451d2b0ebfcc4e87cd58b95fc7e4c70e3aa05ee38a72522624a538112a",
+  "gain-denial.patch": "9488985866be35999cc7b68f3deca6c7946c5ec0977fa56697f73b2708f18c9e",
+  "selfcheck.py": "864f7cad62cc5b609216c8be5aea4858c1cf070d18780d842e9146f0f44d5683"
+}

@@ -103,6 +103,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **Decision review:** turn recorded passes, attacks, blocks, targets and
   sequencing into verified findings. A pass with playable cards is a review
   candidate, not automatically a mistake.
+  The native life-gain-denial lead is now reproduced and corrected in an isolated
+  two-source candidate: both funded responses change from refusal to real AI-paid
+  casts, ten safety cases and 156 existing checks pass, and four matched natural
+  games finish cleanly. Natural casts are legally countered and all four outcomes
+  remain Control wins; this is not trained-policy or broad strength acceptance.
+  See [the source delta and measured scope](docs/testing/native-gain-denial.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all

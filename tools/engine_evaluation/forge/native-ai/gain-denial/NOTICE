@@ -1,0 +1,18 @@
+Derived from the Forge Team / Card-Forge contributors' rules, card programs and AI.
+Upstream: https://github.com/Card-Forge/forge
+Qualified upstream revision: 61e9442c433711a82258daca3236f936a1d6f70e
+
+This source delta builds on the existing thirteen-source/twenty-one-class
+project prefix, not a pristine upstream checkout. The original work is Forge's;
+project changes recognize a bounded, typed pending-life-gain prevention benefit.
+The patch prologue and native test sources retain explicit attribution.
+
+Forge-derived material is distributed under GPL-3.0-or-later with the unchanged
+GNU General Public License version 3 text in LICENSE. Existing upstream notices
+are retained. The six canonical native programs and two Java fixtures are copied
+byte-for-byte from the qualified inputs; no shortened card abilities substitute
+for their printed programs. No private game trace or compiled class is included.
+
+Constructed fixtures, observed natural games and internal source checks have
+different scopes. This package is not an installer, a trained model, live
+deployment, a win-rate improvement certificate or general strategic acceptance.
