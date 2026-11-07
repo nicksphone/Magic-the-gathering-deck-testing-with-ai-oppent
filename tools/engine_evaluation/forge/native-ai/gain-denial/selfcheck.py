@@ -19,12 +19,12 @@ FILES = {
 
 
 def check(root=ROOT):
-    pins = json.loads((root / "PINS.json").read_text())
-    if set(pins) != FILES:
-        raise ValueError("Unexpected package input path")
     entries = list(root.rglob("*"))
     if any(path.is_symlink() for path in entries):
         raise ValueError("Package symlinks are not supported")
+    pins = json.loads((root / "PINS.json").read_text())
+    if set(pins) != FILES:
+        raise ValueError("Unexpected package input path")
     if {p.relative_to(root).as_posix() for p in entries if p.is_file()} != FILES | {"PINS.json"}:
         raise ValueError("Package has missing or extra files")
     for name, digest in pins.items():
