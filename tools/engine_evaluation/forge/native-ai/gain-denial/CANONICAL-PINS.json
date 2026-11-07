@@ -1,0 +1,41 @@
+{
+  "forge_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "files": {
+    "canonical/leyline_of_sanctity.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/l/leyline_of_sanctity.txt",
+      "sha256": "1b6f0ba8fb4d7c9b8f3ec6e4278a98dfc6adfec67a0b8df2bf531fc4314ea56f",
+      "bytes": 681,
+      "full_program_unchanged": true
+    },
+    "canonical/mountain.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/m/mountain.txt",
+      "sha256": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+      "bytes": 80,
+      "full_program_unchanged": true
+    },
+    "canonical/sheoldred_the_apocalypse.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/s/sheoldred_the_apocalypse.txt",
+      "sha256": "cdd90a9aee1ee947ec7e9ba04ff968b4840a6eb1ee50e5323f3f9b5cf93bc293",
+      "bytes": 718,
+      "full_program_unchanged": true
+    },
+    "canonical/skullcrack.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/s/skullcrack.txt",
+      "sha256": "1a1c1a6b1821378264f994a8a2be1c27c952a80efd17fb0226650eb4c01fe19a",
+      "bytes": 744,
+      "full_program_unchanged": true
+    },
+    "canonical/sulfuric_vortex.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/s/sulfuric_vortex.txt",
+      "sha256": "e04a3b65b8c65b79bd22957b82dbe4b08842c815a313d41ae133fee2acd9972f",
+      "bytes": 621,
+      "full_program_unchanged": true
+    },
+    "canonical/tainted_remedy.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/t/tainted_remedy.txt",
+      "sha256": "24a197451d2b0ebfcc4e87cd58b95fc7e4c70e3aa05ee38a72522624a538112a",
+      "bytes": 485,
+      "full_program_unchanged": true
+    }
+  }
+}

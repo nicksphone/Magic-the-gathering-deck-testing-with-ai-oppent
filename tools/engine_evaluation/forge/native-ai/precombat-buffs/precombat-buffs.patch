@@ -1,0 +1,99 @@
+--- a/forge-ai/src/main/java/forge/ai/ComputerUtil.java
++++ b/forge-ai/src/main/java/forge/ai/ComputerUtil.java
+@@ -37,6 +37,7 @@
+ import forge.game.card.sticker.StickerKind;
+ import forge.game.combat.Combat;
+ import forge.game.combat.CombatUtil;
++import forge.game.combat.AttackRestriction;
+ import forge.game.cost.*;
+ import forge.game.keyword.Keyword;
+ import forge.game.phase.PhaseHandler;
+@@ -1365,6 +1366,77 @@
+                 return true;
+             }
+         }
++        return hasPrecombatStaticBuff(ai, sa);
++    }
++
++    private static boolean hasPrecombatStaticBuff(final Player ai, final SpellAbility sa) {
++        final Card source = sa.getHostCard();
++        if (!sa.isSpell() || !source.getController().equals(ai)
++                || !source.getView().canBeShownTo(ai.getView())
++                || !source.getView().canFaceDownBeShownTo(ai.getView())
++                || sa.getPayCosts() == null || !sa.getPayCosts().isOnlyManaCost()
++                || sa.getPayCosts().getTotalMana().countX() != 0) {
++            return false;
++        }
++
++        // Do not forecast layers, attack taxes or changed mana rules by mutating the live game.
++        for (final Card card : ai.getGame().getCardsIn(ZoneType.STATIC_ABILITIES_SOURCE_ZONES)) {
++            if (!card.getView().canBeShownTo(ai.getView())
++                    || !card.getView().canFaceDownBeShownTo(ai.getView())) {
++                return false;
++            }
++            if (card.isPhasedOut()) continue;
++            for (final StaticAbility ability : card.getStaticAbilities()) {
++                if (ability.isSuppressed() || (ability.getActiveZone() == null
++                        ? !card.isInZone(ZoneType.Battlefield)
++                        : !ability.getActiveZone().contains(card.getZone().getZoneType()))) continue;
++                if (!Set.of(StaticAbilityMode.Continuous).containsAll(ability.getMode())) return false;
++                for (final String parameter : ability.getMapParams().keySet()) {
++                    if (parameter.startsWith("Remove") || parameter.startsWith("Set") || parameter.startsWith("GainText")
++                            || Set.of("AddType", "AddColor", "ChangeColorWordsTo", "GainControl").contains(parameter)) return false;
++                }
++            }
++            // Replaced mana can invalidate the ordinary-basic-land funding witness.
++            for (final ReplacementEffect effect : card.getReplacementEffects()) {
++                if (!effect.isSuppressed() && effect.zonesCheck(ai.getGame().getZoneOf(card))) return false;
++            }
++        }
++
++        final List<String> selectors = new ArrayList<>();
++        for (final StaticAbility ability : source.getStaticAbilities()) {
++            if (!ability.getMode().contains(StaticAbilityMode.Continuous)
++                    || (ability.getActiveZone() != null && !ability.getActiveZone().contains(ZoneType.Battlefield))) continue;
++            if (ability.isSuppressed() || !Set.of("Mode", "Affected", "AddPower", "AddToughness", "Description",
++                    "EffectZone", "AffectedZone").containsAll(ability.getMapParams().keySet())
++                    || !"Battlefield".equals(ability.getParamOrDefault("EffectZone", "Battlefield"))
++                    || !"Battlefield".equals(ability.getParamOrDefault("AffectedZone", "Battlefield"))
++                    || !ability.getParamOrDefault("AddPower", "0").matches("[1-9][0-9]*")
++                    || !ability.getParamOrDefault("AddToughness", "0").matches("0|[1-9][0-9]*")) return false;
++            final String selector = ability.getParamOrDefault("Affected", "");
++            final String[] parts = selector.split("\\.", -1);
++            if (parts.length != 2 || !("Creature".equals(parts[0]) || CardType.isACreatureType(parts[0]))) return false;
++            final Set<String> properties = new HashSet<>();
++            for (final String property : parts[1].split("\\+", -1)) {
++                if (!properties.add(property) || !("YouCtrl".equals(property) || "Other".equals(property)
++                        || ("Creature".equals(parts[0]) && CardType.isACreatureType(property)))) return false;
++            }
++            if (!properties.contains("YouCtrl")) return false;
++            selectors.add(selector);
++        }
++        if (selectors.isEmpty() || !SpellAbilityAi.knownSimpleManaAvailable(ai, sa)) return false;
++
++        for (final Card attacker : ai.getCreaturesInPlay()) {
++            if (!attacker.getView().canBeShownTo(ai.getView())
++                    || !attacker.getView().canFaceDownBeShownTo(ai.getView())) continue;
++            final AttackRestriction restriction = new AttackRestriction(attacker, CombatUtil.getAllPossibleDefenders(ai));
++            if (!restriction.getTypes().isEmpty()) continue;
++            for (final Player defender : ai.getOpponents()) {
++                if (!restriction.canAttack(defender)) continue;
++                for (final String selector : selectors) {
++                    if (attacker.isValid(selector, ai, source, sa)) return true;
++                }
++            }
++        }
+         return false;
+     }
+ 
+--- a/forge-ai/src/main/java/forge/ai/SpellAbilityAi.java
++++ b/forge-ai/src/main/java/forge/ai/SpellAbilityAi.java
+@@ -442,7 +442,7 @@
+         return Math.min(Integer.parseInt(comparison.group(2)), Integer.parseInt(comparison.group(3)));
+     }
+ 
+-    private static boolean knownSimpleManaAvailable(final Player ai, final SpellAbility sa) {
++    static boolean knownSimpleManaAvailable(final Player ai, final SpellAbility sa) {
+         if (!sa.getPayCosts().hasManaCost()) return true;
+         final ManaCost cost = sa.getPayCosts().getCostMana().getMana();
+         // String-color payment carries no snow provenance; leave these costs to native admission.

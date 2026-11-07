@@ -1,0 +1,9 @@
+{
+  "upstream_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "files": {
+    "canonical/expressive_iteration.txt": "6609a6e67a8ee37e65c2e71dfc9bf6da65a846922e9bfaf685f661f8bee6b13f",
+    "canonical/island.txt": "e590434de75aa3e39a03555d0c91788cdabe37f5fdf91ce7c1a189c79f4cade6",
+    "canonical/mountain.txt": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+    "canonical/sprite_dragon.txt": "bcb4b1be9e0e1856e6958f4335c53f6c73d9be900bb34ef969b146b88aa3a186"
+  }
+}

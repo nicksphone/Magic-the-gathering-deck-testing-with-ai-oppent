@@ -94,9 +94,40 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **Broad full-game quality:** demonstrate competent play on a fixed current
   source across Aggro/Burn, Control, Midrange, Tempo, Ramp and Tribal, then the
   supported more complex deck families. Historical games are not current acceptance.
+  The isolated native candidate now completes a declared 24-game, six-archetype
+  baseline with zero native errors or incomplete games. It covers six pairings,
+  both seat orders and two seeds, not all fifteen matchups or expert decision
+  quality. Review identified funded life-gain-denial windows for a separate
+  reproduction; no training completion or live switch is claimed. See
+  [the measured baseline and guard scope](docs/testing/native-six-archetype-baseline.md).
 - [ ] **Decision review:** turn recorded passes, attacks, blocks, targets and
   sequencing into verified findings. A pass with playable cards is a review
   candidate, not automatically a mistake.
+  The native life-gain-denial lead is now reproduced and corrected in an isolated
+  two-source candidate: both funded responses change from refusal to real AI-paid
+  casts, ten safety cases and 156 existing checks pass, and four matched natural
+  games finish cleanly. Natural casts are legally countered and all four outcomes
+  remain Control wins; this is not trained-policy or broad strength acceptance.
+  See [the source delta and measured scope](docs/testing/native-gain-denial.md).
+  A subsequent native land-choice reproduction now spends a known expiring
+  exile land before an equal-scored hand land. Six unchanged cases and seventeen
+  labelled helper checks pass, existing 156 plus prior gain cohorts remain green,
+  and four natural Tempo/Ramp games finish cleanly with the original source-choice
+  error corrected. This is not a complete land planner or a strength certificate.
+  See [the permission boundary and measured scope](docs/testing/native-expiring-land-ai.md).
+  A shared native timing correction now recognizes incoming friendly stat buffs
+  before combat without adding named-card hints. Both original funded refusals
+  are corrected; two canonical lords/both seats use actual Forest payments and
+  preserve ready mana-Elf attackers. Existing 172 controls pass and matched four
+  parent/four corrected Tribal/Ramp games complete. This does not close arbitrary
+  combat planning, training or application adoption.
+  See [the timing and payment evidence](docs/testing/native-precombat-buff-ai.md).
+- [x] **Bounded native entry-sweeper priority:** the shared comparator now gives
+  supported self-entry creature debuffs its existing board-wipe bonus. The
+  unchanged ten-case choice/payment regression passes, including both former
+  Meathook/Nissa failures; four fixed-seed Ramp/Tribal games complete. This is
+  component evidence, not expert strategy or a live engine migration. See the
+  [decision evidence and limits](docs/testing/native-entry-sweeper-ai.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all

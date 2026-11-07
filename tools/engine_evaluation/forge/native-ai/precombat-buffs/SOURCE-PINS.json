@@ -1,0 +1,27 @@
+{
+  "parent_content_id": "2b086a13c67644cc8d23f178544f3942b6274e9f1af0e363c171e9ea7e26f929",
+  "candidate_content_id": "a721ca75042823349ad3a37bbbfb18d4311b92914ca81ddb213df6e8e9f655d9",
+  "changed_sources": {
+    "forge-ai/src/main/java/forge/ai/ComputerUtil.java": {
+      "before": "257cb44971161566ea23296c179e7728827a96f5f63ffa339fcf5ad61ba055ff",
+      "after": "6c91ff3ae3cc9c977f57d4f4d125416e5a4d78319f3086c7d2020a8b42bdfa7d"
+    },
+    "forge-ai/src/main/java/forge/ai/SpellAbilityAi.java": {
+      "before": "b8e4cd6e55049b7fd13c4c82d22f9c109c7ba5142126e85adf9063f1d2fc19b8",
+      "after": "534613c425655c9569bb4c6de9f3cdb008c17e95c64bb70b9c216dae375e5139"
+    }
+  },
+  "changed_classes": {
+    "forge/ai/ComputerUtil.class": {
+      "before": "c198a18b6837a0daf7dbc2d98c63f0f6f0b29a2219ad76edce158bac106e0eb2",
+      "after": "94d22c5e3ace9d312269ec45e600c6a032468a11160d716610334b9c015e8a38"
+    },
+    "forge/ai/SpellAbilityAi.class": {
+      "before": "1a33adf0b335d794b2b68fb0090b698eb8f0d95bff21fe62f917c042a861ccdc",
+      "after": "fb6ff0d48c0c0dbc94adad6372d3dd6da0be352ade356e049760e3edb636efcd"
+    }
+  },
+  "source_count": 13,
+  "physical_class_count": 21,
+  "not_a_standalone_installer": true
+}
