@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "single_source": "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java",
+  "base_sha256": "6237f0491d82781b8c4e242d7bd49b9bc7b83c08cbcb570a7d93cf5c9c94dc7d",
+  "post_sha256": "25caf630e8c75540ba80d6a9439e2b18ccf7b8a808e586177bf155aace5072e9",
+  "inherited13sources22classes_unchanged": true,
+  "all_other_source_method_bytes_exact": true,
+  "inverse_explicit_changed_helper_and_two_call_sites_restores_entire_C10_file": true
+}
