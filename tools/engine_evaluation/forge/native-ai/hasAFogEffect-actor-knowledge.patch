@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Modified 2026-11-06: generic actor-identity knowledge gate in hasAFogEffect only.
+# Based on Forge Team/Card-Forge GPL work, revision 61e9442c433711a82258daca3236f936a1d6f70e.
+# Original preimage SHA256: 10aa934b5efca931d34d39cbcf5dcd9a703ff0145edfad3466ffbd9dc3a4937d
+# Retain the original native source header and ../LICENSE; see NOTICE.md.
+--- a/forge-ai/src/main/java/forge/ai/ComputerUtil.java
++++ b/forge-ai/src/main/java/forge/ai/ComputerUtil.java
+@@ -1577,9 +1577,15 @@
+         final CardCollection all = new CardCollection(defender.getCardsIn(ZoneType.Battlefield));
+ 
+         all.addAll(defender.getCardsActivatableInExternalZones(true));
+-        // TODO check if cards can be viewed instead
+-        if (!checkingOther) {
+-            all.addAll(defender.getCardsIn(ZoneType.Hand));
++        all.addAll(defender.getCardsIn(ZoneType.Hand));
++        if (checkingOther) {
++            // Modified 2026-11-06: inspect only identities visible to the actual observer.
++            for (final Iterator<Card> it = all.iterator(); it.hasNext();) {
++                final CardView view = it.next().getView();
++                if (!view.canBeShownTo(ai.getView()) || !view.canFaceDownBeShownTo(ai.getView())) {
++                    it.remove();
++                }
++            }
+         }
+ 
+         Set<Card> revealed = AiCardMemory.getMemorySet(ai, MemorySet.REVEALED_CARDS);

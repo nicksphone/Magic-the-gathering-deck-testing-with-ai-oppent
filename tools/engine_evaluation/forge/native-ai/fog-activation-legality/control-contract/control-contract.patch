@@ -1,0 +1,154 @@
+--- NativeFogActivationControls.java
++++ NativeFogActivationControls.java
+@@ -4,6 +4,7 @@
+ package forge.evaluation;
+ 
+ import com.google.gson.Gson;
++import com.google.gson.JsonParser;
+ import forge.StaticData;
+ import forge.ai.*;
+ import forge.card.ICardFace;
+@@ -47,6 +48,43 @@
+         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
+     }
+ 
++    private static String serializedRng() throws Exception {
++        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
++        try (ObjectOutputStream stream = new ObjectOutputStream(bytes)) {
++            stream.writeObject(MyRandom.getRandom());
++        }
++        return Base64.getEncoder().encodeToString(bytes.toByteArray());
++    }
++
++    private static Map<String, Object> physicalRoot(Game game) {
++        List<Object> players = new ArrayList<>(), stack = new ArrayList<>();
++        for (Player player : game.getRegisteredPlayers()) {
++            Map<String, Object> zones = new TreeMap<>();
++            for (ZoneType zone : List.of(ZoneType.Hand, ZoneType.Library, ZoneType.Battlefield,
++                    ZoneType.Graveyard, ZoneType.Exile, ZoneType.Command, ZoneType.Sideboard)) {
++                List<Object> cards = new ArrayList<>();
++                for (Card card : player.getCardsIn(zone)) {
++                    cards.add(List.of(card.getId(), card.getName(), card.getOwner().getId(),
++                            card.getController().getId(), card.isTapped(), card.hasSickness(),
++                            card.isFaceDown(), card.isToken(), card.getGameTimestamp(),
++                            card.getManaCost().toString(), card.getCounters().toString()));
++                }
++                zones.put(zone.name(), cards);
++            }
++            List<Object> mana = new ArrayList<>();
++            for (var item : player.getManaPool()) mana.add(List.of(item.getColor(),
++                    item.getSourceCard().getId(), item.getPlayer().getId(), item.isRestricted(), item.isSnow()));
++            players.add(Map.of("id", player.getId(), "life", player.getLife(), "zones", zones, "mana", mana));
++        }
++        for (var item : game.getStack()) {
++            SpellAbility ability = item.getSpellAbility();
++            stack.add(List.of(item.getId(), ability.getId(), ability.getHostCard().getId(),
++                    ability.getActivatingPlayer().getId(), ability.getTargets().toString()));
++        }
++        return Map.of("players", players, "stack", stack, "turn", game.getPhaseHandler().getTurn(),
++                "phase", String.valueOf(game.getPhaseHandler().getPhase()), "game_over", game.isGameOver());
++    }
++
+     private Map<String, Object> supplement(int seat, String scene) throws Exception {
+         boolean manifest = scene.startsWith("Manifest");
+         // Fresh controlled fixture seed BEFORE constructing this game; never reset after setup/choice.
+@@ -133,24 +171,41 @@
+         if (!manifest) need(source.getView().canBeShownTo(observer.getView()), "Future Sight genuinely exposes the instant");
+         Map<String, Object> before = new ActorBoundary(observer).snapshot(game.getView());
+         String rngBefore = rng();
++        String fullRngBefore = serializedRng();
+         Combat combat = new Combat(observer);
+         game.getPhaseHandler().setCombat(combat);
+         observer.getController().declareAttackers(observer, combat);
+         String rngAfter = rng();
++        String fullRngAfter = serializedRng();
+         need(combat.getAttackers().size() == 1 && combat.isAttacking(wurm), "One genuine Default attack callback");
+         GameEntity defenderChosen = combat.getDefenderByAttacker(wurm);
+         String attack = defenderChosen == defender ? "opponent" : defenderChosen == jace ? "Jace Beleren" : "unexpected";
+         Map<String, Object> diagnosticBefore = new ActorBoundary(observer).snapshot(game.getView());
++        Map<String, Object> rootBefore = physicalRoot(game);
+         String queryBefore = rng();
++        String fullQueryBefore = serializedRng();
++        String restriction = "UNKNOWN_FACE_NOT_PROBED";
++        boolean spellRoute = false;
++        if (!manifest) {
++            SpellAbility instant = source.getSpellAbilities().stream().filter(sa -> sa.getApi() == ApiType.Fog)
++                    .findFirst().orElseThrow();
++            spellRoute = instant.isSpell();
++            need(spellRoute, "Canonical instant control must use the native spell route");
++            restriction = Boolean.toString(instant.checkRestrictions(defender));
++        }
+         boolean forecast = ComputerUtil.hasAFogEffect(defender, observer, true);
+         boolean ownerForecast = ComputerUtil.hasAFogEffect(defender, defender, false);
+         String queryAfter = rng();
++        String fullQueryAfter = serializedRng();
+         Map<String, Object> diagnosticAfter = new ActorBoundary(observer).snapshot(game.getView());
++        Map<String, Object> rootAfter = physicalRoot(game);
+         boolean expected = scene.equals("InstantFunded");
+         List<String> failed = new ArrayList<>();
+         if (forecast != expected || ownerForecast != expected) failed.add("Knowledge/owner affordability preservation");
+         if (!attack.equals(expected ? "Jace Beleren" : "opponent")) failed.add("Default attack preservation");
+-        if (!diagnosticBefore.equals(diagnosticAfter) || !queryBefore.equals(queryAfter)) failed.add("Diagnostic actor/RNG mutation");
++        if (!diagnosticBefore.equals(diagnosticAfter) || !rootBefore.equals(rootAfter)) failed.add("Diagnostic actor/physical-root mutation");
++        if (!spellRoute && !fullQueryBefore.equals(fullQueryAfter)) failed.add("Nonspell-route diagnostic RNG mutation");
++        if (!manifest && !restriction.equals("true")) failed.add("Instant restriction outcome changed");
+         if (game.isGameOver()) failed.add("Unexpected manufactured outcome");
+         Map<String, Object> row = new LinkedHashMap<>();
+         row.put("label", "NEW-CONTROLLED-PRESERVATION"); row.put("seat", seat); row.put("scene", scene);
+@@ -159,12 +214,23 @@
+         row.put("diagnostic_actor_view_unchanged", diagnosticBefore.equals(diagnosticAfter));
+         row.put("diagnostic_rng_unchanged", queryBefore.equals(queryAfter));
+         row.put("rng_before_queries", queryBefore); row.put("rng_after_queries", queryAfter);
++        row.put("serialized_rng_before_attack", fullRngBefore); row.put("serialized_rng_after_attack", fullRngAfter);
++        row.put("serialized_rng_before_queries", fullQueryBefore); row.put("serialized_rng_after_queries", fullQueryAfter);
++        row.put("physical_root_before_queries", rootBefore); row.put("physical_root_after_queries", rootAfter);
++        row.put("actor_view_after_attack", diagnosticBefore); row.put("actor_view_after_queries", diagnosticAfter);
++        row.put("restriction_outcome", restriction);
++        row.put("native_spell_route", spellRoute);
++        row.put("legacy_spell_query_rng_mutation", spellRoute && !fullQueryBefore.equals(fullQueryAfter));
+         row.put("failed", failed); row.put("status", failed.isEmpty() ? "PASS" : "CONTROL_FAIL");
+         return row;
+     }
+ 
+     public static void main(String[] args) throws Exception {
++        need(args.length == 2 && args[1].equals("baseline")
++                || args.length == 3 && args[1].equals("candidate"), "Explicit baseline or paired candidate contract required");
+         Path out = Path.of(args[0]);
++        boolean candidate = args[1].equals("candidate");
++        Path reference = candidate ? Path.of(args[2]) : null;
+         MyRandom.setRandom(new Random(SEED));
+         NativeFogActivationAudit original = new NativeFogActivationAudit();
+         original.initializeModel();
+@@ -172,7 +238,7 @@
+         FModel.getPreferences().setPref(FPref.UI_RECORD_REPLAYS, false);
+         Method check = NativeFogActivationAudit.class.getDeclaredMethod("runCase", int.class, String.class);
+         check.setAccessible(true);
+-        int oldPass = 0, oldRed = 0, errors = 0, newPass = 0, controlFail = 0, pairPass = 0;
++        int oldPass = 0, oldRed = 0, errors = 0, newPass = 0, controlFail = 0, pairPass = 0, exactPaired = 0;
+         for (int seat = 0; seat < 2; seat++) for (String scene : List.of("NeedleFrog", "NeedleOther", "NeedleLeaves", "Absent")) {
+             try {
+                 @SuppressWarnings("unchecked") Map<String, Object> row = (Map<String, Object>) check.invoke(original, seat, scene);
+@@ -190,6 +256,13 @@
+             for (String scene : List.of("ManifestFrog", "ManifestForest", "InstantFunded", "InstantUnfunded")) {
+                 try {
+                     Map<String, Object> row = test.supplement(seat, scene);
++                    if (candidate) {
++                        Path prior = reference.resolve("supplement-" + seat + "-" + scene + ".private.json");
++                        boolean equal = JsonParser.parseString(Files.readString(prior)).equals(JSON.toJsonTree(row));
++                        Files.writeString(out.resolve("baseline-pair-" + seat + "-" + scene + ".json"),
++                                JSON.toJson(Map.of("full_row_equal", equal, "field_drop_or_normalization", false)) + "\n");
++                        if (equal) exactPaired++; else controlFail++;
++                    }
+                     Files.writeString(out.resolve("supplement-" + seat + "-" + scene + ".private.json"), JSON.toJson(row) + "\n");
+                     if (row.get("status").equals("PASS")) newPass++; else controlFail++;
+                     if (scene.equals("ManifestFrog")) frog = row;
+@@ -206,7 +279,8 @@
+         }
+         Map<String, Object> summary = Map.of("original8", Map.of("pass", oldPass, "policy_red", oldRed),
+                 "supplement8", Map.of("pass", newPass), "privacy_pairs_pass", pairPass,
+-                "control_fail", controlFail, "harness_errors", errors, "natural_game", false);
++                "control_fail", controlFail, "harness_errors", errors, "natural_game", false,
++                "exact_full_row_pairs_pass", exactPaired, "baseline_reference_only", !candidate);
+         Files.writeString(out.resolve("summary.private.json"), JSON.toJson(summary) + "\n");
+         System.out.println(JSON.toJson(summary));
+         System.exit(errors != 0 || controlFail != 0 ? 2 : oldRed != 0 ? 1 : 0);

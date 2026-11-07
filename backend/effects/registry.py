@@ -10,17 +10,19 @@ from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change 
 from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
 from rules_engine.graveyard_batch_entry import resolve as resolve_graveyard_batch
 from rules_engine.activation_copy import resolve_copy_referred_ability
+from rules_engine.activated_grants import resolve_grant as resolve_activated_grant
 
 from collections.abc import Callable
 
 from effects import handlers
-from game_state.state import MatchState
+from game_state.state import MatchState, Zone
 from rules_engine.ward import resolve_ward
 
 
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'grant_activated_ability': resolve_activated_grant,
     'return_graveyard_permanents_batch': resolve_graveyard_batch,
     'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
     'ownership_end_step_draw': resolve_ownership_end_step_draw,
@@ -213,6 +215,10 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         from rules_engine.entry_counters import resume_entry_batch
         resume_entry_batch(state, controller, payload)
         return
+    if effect_key == 'land_play_entry':
+        from rules_engine.entry_counters import resume_land_entry
+        resume_land_entry(state, controller, payload)
+        return
     if effect_key == 'opening_hand_entry':
         from rules_engine.opening_hand import complete_opening_entry
         complete_opening_entry(state, controller, payload)
@@ -246,6 +252,19 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         source_lki = payload.get("__source_lki")
         snow_mana_spent = payload.get("snow_mana_spent")
         effects = payload.get("effects", [])
+        if payload.get('__exile_controller_life') is True:
+            if (len(effects) != 2 or effects[0].get('effect_key') != 'exile'
+                    or effects[1].get('effect_key') != 'gain_life'):
+                return
+            target = state.cards.get(effects[0].get('payload', {}).get('target_card_id'))
+            if (target is None or target.zone != Zone.BATTLEFIELD
+                    or target.id not in state.players[target.controller].battlefield):
+                return
+            # Prepare the real recipient before departure resets control, including
+            # continuation payloads if an effect pauses. Read the resolved target,
+            # not a separate cast-time ID that a spell copy could retarget.
+            effects = [effects[0], {**effects[1], 'payload': {
+                **effects[1].get('payload', {}), 'target_player': target.controller}}]
         for index, item in enumerate(effects):
             key = item.get("effect_key")
             data = {**retained, **dict(item.get("payload", {}) or {})}

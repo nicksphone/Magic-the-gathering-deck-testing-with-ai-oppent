@@ -163,6 +163,26 @@ SHARK_TOKEN_RE = re.compile(
     re.IGNORECASE,
 )
 EXILE_TOP_PLAYABLE_RE = re.compile(r"exile the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?may play those cards", re.IGNORECASE)
+
+
+def compile_exile_play_instruction(text):
+    """Compile complete duration-bearing bodies; never infer a missing duration."""
+    lines = without_reminder_text(text).strip().splitlines()
+    if lines and re.fullmatch(r'(?:casualty\s+\d+|spectacle\s+(?:\{[^{}]+\})+)\.?', lines[0].strip(), re.I):
+        lines = lines[1:]
+    body = ' '.join(' '.join(lines).split())
+    candidate = EXILE_TOP_PLAYABLE_RE.search(body)
+    if candidate:
+        prefix = rf'exile the top\s+{re.escape(candidate[1])}\s+cards? of your library\.\s*'
+        endings = {
+            'this_turn': r'you may play those cards this turn\.?',
+            'controller_next_turn': r'until the end of your next turn,\s*you may play those cards\.?',
+            'next_controller_end_step': r'until your next end step,\s*you may play those cards\.?',
+        }
+        for duration, ending in endings.items():
+            if re.fullmatch(prefix + ending, body, re.I):
+                return {'amount': _parse_count_token(candidate[1]), 'play_duration': duration}
+    return {'__unsupported_exile_play_duration': text}
 REVEAL_DEFENDING_TOP_LAND_RE = re.compile(r"defending player reveals the top card of their library.*?if it's a land card", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
     r"put (?:a|one) land card from your hand onto the battlefield tapped",
@@ -234,19 +254,26 @@ def optional_land_instruction_candidate(instruction: str) -> bool:
 
 
 def compile_optional_land_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
-    """Recognize the complete optional own-hand clause, with an ordered draw."""
+    """Recognize a complete ordered draw/hand-land/selected-subtype instruction."""
     body = re.sub(r'\s+', ' ', instruction.strip()).lower()
-    draw = None
-    if body.startswith('draw '):
-        prefix, separator, body = body.partition('. ')
-        draw = compile_draw_life_instruction(prefix)
-        if not separator or draw is None or draw[0] != 'draw_cards':
-            return None
-    land = re.fullmatch(r'you may put (?:a|one) land card from your hand onto the battlefield'
-                        r'(?P<tapped> tapped)?\.?', body)
+    number = r'(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
+    land = re.fullmatch(
+        r'(?:(?P<draw>draw [^.]+?)(?:, then|\.) )?'
+        r'you may put (?:a|one) land card from your hand onto the battlefield'
+        r'(?P<tapped> tapped)?(?:\. if you put (?:a|an) (?P<subtype>[a-z\x27 -]+) '
+        r'onto the battlefield this way, you gain (?P<life>' + number + r') life)?\.?', body)
     if land is None:
         return None
+    draw = compile_draw_life_instruction(land['draw']) if land['draw'] else None
+    if land['draw'] and (draw is None or draw[0] != 'draw_cards'):
+        return None
     data = {'optional': True, 'tapped': bool(land['tapped'])}
+    if land['subtype']:
+        from rules_engine.land_types import LAND_TYPES
+        subtype = next((kind for kind in LAND_TYPES if kind.lower() == land['subtype']), None)
+        if subtype is None:
+            return None
+        data['gain_life_if_put_subtype'] = {'subtype': subtype, 'amount': _parse_count_token(land['life'])}
     if draw is None:
         return 'put_land_from_hand', data
     return 'effect_sequence', {'effects': [
@@ -518,6 +545,28 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.activated_grants import compile_instruction as compile_activated_grant, reference
+    try:
+        granted = compile_activated_grant(card.oracle_text or '', card.name)
+    except ValueError:
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if granted is not None:
+        source = state.cards.get(card.id)
+        if source is None:
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        return 'grant_activated_ability', {**granted, 'target_card_id': card.id,
+                                          'reference': reference(source)}
+    from rules_engine.token_descriptors import complete_quoted_creature_token_body
+    token = complete_quoted_creature_token_body(card.oracle_text or '')
+    if token is not None:
+        return 'create_token', token
+    if re.match(r'create\b', (card.oracle_text or '').strip(), re.I) and re.search(
+            r'creature tokens? with [\"\u201c\']This (?:token|creature|permanent) gets '
+            r'[+-]\d+/[+-]\d+ for each artifact you control\.', card.oracle_text or '', re.I):
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if 'search your library for' in (card.oracle_text or '').lower() and re.search(
+            r'\bwith mana cost\b', card.oracle_text or '', re.I):
+        return _infer_search_effect(card.oracle_text.lower().strip(), action_targets)
     from rules_engine.graveyard_batch_entry import compile_instruction as compile_graveyard_batch
     from rules_engine.action_validation import ActionRejected
     try:
@@ -570,6 +619,26 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    if (re.match(r'exile target creature\b', oracle.strip(), re.I)
+            and re.search(r'\bits controller gains? \d+ life\b', oracle, re.I)):
+        fixed_life = re.fullmatch(
+            r'exile target creature(?: with mana value less than or equal to '
+            r'the number of [a-z]+ you control)?\.\s*its controller gains (\d+) life\.?',
+            oracle.strip(), re.I)
+        if fixed_life is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'effect_sequence', {'__exile_controller_life': True, 'effects': [
+            {'effect_key': 'exile', 'payload': {
+                'target_card_id': action_targets.get('target_card_id')}},
+            {'effect_key': 'gain_life', 'payload': {'amount': int(fixed_life[1])}},
+        ]}
+    if (re.match(r'exile target creature\b', oracle.strip(), re.I)
+            and re.search(r'\bits controller gains? life\b', oracle, re.I)):
+        if not re.fullmatch(r'exile target creature\.\s*its controller gains life equal to its power\.?',
+                            oracle.strip(), re.I):
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'exile', {'target_card_id': action_targets.get('target_card_id'),
+                         '__gain_exiled_power_life': True}
     if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
         cost_draw = compile_additional_cost_draw_instruction(oracle, name)
         if cost_draw is not None:
@@ -607,10 +676,11 @@ def infer_effect_from_oracle(
         return self_change
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
     # Whole permanent surfaces contain costs/abilities; activation proxies do not.
-    if (not set(getattr(card, 'types', []) or []).intersection(
+    graveyard_body = without_reminder_text(action_targets.get('mode_text') or oracle)
+    if (not action_targets.get('mode_texts') and not set(getattr(card, 'types', []) or []).intersection(
             {'Artifact', 'Creature', 'Enchantment', 'Land', 'Planeswalker', 'Battle'})
-            and re.search(r"\bexile target player's graveyard\b", oracle, re.I)):
-        if not re.fullmatch(r"exile target player's graveyard\.?", oracle.strip(), re.I):
+            and re.search(r"\bexile target player's graveyard\b", graveyard_body, re.I)):
+        if not re.fullmatch(r"exile target player's graveyard\.?", graveyard_body.strip(), re.I):
             return 'noop', {'__unsupported_instruction': oracle}
         return 'exile_all_graveyards', {'target_player': action_targets.get('target_player')}
     from rules_engine.turn_spell_protection import compile_instruction as compile_turn_protection
@@ -779,8 +849,8 @@ def infer_effect_from_oracle(
             "linked_source_id": card.id, "linked_source_timestamp": object_incarnation(card),
         }
     linked_target = re.fullmatch(
-        r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
-        r'(?: an opponent controls| you control)? until (?:this (?:creature|permanent|artifact|enchantment)|'
+        r'exile target (?:creature(?: or planeswalker)?|permanent|nonland permanent|artifact|enchantment)'
+        r'(?: an opponent controls| you control)? until (?:this (?:creature|permanent|artifact|enchantment|aura)|'
         + re.escape(card.name.lower()) + r') leaves the battlefield\.?', oracle.strip())
     if linked_target:
         return 'exile_until_source_leaves', {
@@ -808,6 +878,8 @@ def infer_effect_from_oracle(
         if target:
             return "exile_return_transformed", {"target_card_id": target}
     if mode_text:
+        action_targets = {**action_targets,
+                          **(action_targets.get("mode_targets") or {}).get(mode_text, {})}
         oracle = without_reminder_text(mode_text.lower())
     elif mode_texts:
         effects = []
@@ -944,7 +1016,12 @@ def infer_effect_from_oracle(
         return "topdeck_reveal_creature_to_hand", payload
     exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
     if exile_playable:
-        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
+        program = compile_exile_play_instruction(oracle)
+        if '__unsupported_exile_play_duration' in program:
+            if report_unsupported:
+                state.log.append(f'Unsupported complete exile-play duration/body on {card.name}.')
+            return 'noop', program
+        return "exile_top_cards_playable", program
     if REVEAL_DEFENDING_TOP_LAND_RE.search(oracle):
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
@@ -1265,6 +1342,17 @@ def compile_search_life_instruction(text):
 
 
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    if 'search your library for' in oracle and re.search(r'\bwith mana cost\b', oracle):
+        match = re.fullmatch(
+            r'search your library for (?:a|an|one) '
+            r'(artifact|creature|enchantment|land|planeswalker|instant|sorcery|permanent) card '
+            r'with mana cost (\{(?:0|[1-9]\d*)\}(?: or \{(?:0|[1-9]\d*)\})*), '
+            r'put (?:it|that card) (onto the battlefield(?: tapped)?|into your hand), then shuffle\.', oracle)
+        if match is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'search_library', {'contains': match[1], 'printed_mana_costs': match[2].split(' or '),
+            'destination': 'battlefield' if match[3].startswith('onto') else 'hand',
+            'tapped': match[3].endswith(' tapped'), 'count': 1, 'shuffle': True}
     targeted = _infer_targeted_search_effect(oracle, action_targets)
     if targeted is not None:
         return targeted
@@ -1336,7 +1424,7 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     return "search_library", payload
 
 
-def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | None = None) -> bool:
+def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | None = None, *, printed_mana_costs=None) -> bool:
     """Return whether a card satisfies a structured library-search filter."""
     if not contains:
         return False
@@ -1369,6 +1457,12 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
         matched = needle in subtypes or needle in type_line or needle in str(getattr(card, "name", "")).lower()
     if not matched:
         return False
+    if printed_mana_costs is not None:
+        if (type(printed_mana_costs) is not list or not printed_mana_costs
+                or any(type(cost) is not str or not re.fullmatch(r'\{(?:0|[1-9]\d*)\}', cost)
+                       for cost in printed_mana_costs)
+                or (card.mana_cost or '') not in printed_mana_costs):
+            return False
     if mv_max is not None:
         from rules_engine.mana import parse_mana_cost
 
@@ -1672,6 +1766,8 @@ def inspect_target_hints(
             "destination": search_payload.get("destination", "hand"),
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
+            **({'printed_mana_costs': search_payload['printed_mana_costs']}
+               if 'printed_mana_costs' in search_payload else {}),
         }
         if _infer_targeted_search_effect(oracle, {}) is not None and 'up to one target artifact or creature' in oracle:
             hints['creature_targets'] = [
@@ -2066,7 +2162,7 @@ def _pure_self_graveyard_return_instruction(card, instruction):
             'tapped': bool(match[2])}
 
 
-def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
+def extract_activated_abilities(card: CardInstance, *, state=None) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
     raw = card.oracle_text or ''
@@ -2140,11 +2236,21 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
                     'raw_body': raw_body, 'raw_effect_text': raw_effect,
                     "activation_zone": 'graveyard' if self_return else 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
-    return out
+    from rules_engine.activated_grants import ordinary_specs
+    return out + ordinary_specs(card, state)
 
 
 def activation_source_eligible(state, player_id, card_id, ability):
     card = state.cards.get(card_id)
+    from rules_engine.continuous import printed_abilities_suppressed
+    if card is None:
+        return False
+    if '__granted_ability' in ability:
+        from rules_engine.activated_grants import ordinary_specs
+        if ability not in ordinary_specs(card, state):
+            return False
+    elif printed_abilities_suppressed(state, card_id):
+        return False
     zone = ability.get('activation_zone', 'battlefield')
     return (card is not None and card.zone.value == zone
             and card_id in getattr(state.players[player_id], zone)
@@ -2200,6 +2306,9 @@ def _infer_clause_effect(
     action_targets: dict[str, Any],
     x_value: int,
 ) -> tuple[str, dict[str, Any]] | None:
+    if EXILE_TOP_PLAYABLE_RE.search(oracle):
+        program = compile_exile_play_instruction(oracle)
+        return ('noop' if '__unsupported_exile_play_duration' in program else 'exile_top_cards_playable'), program
     self_return = _pure_self_graveyard_return_instruction(card, oracle)
     if self_return and _pure_self_graveyard_return_instruction(card, card.oracle_text) == self_return:
         payload = {'target_card_id': card.id, 'target_player': controller,
@@ -2639,10 +2748,6 @@ def _infer_clause_effect(
         if "x_value" in action_targets:
             payload["x_value"] = max(0, int(action_targets.get("x_value", 0) or 0))
         return "create_shark_token", payload
-
-    exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
-    if exile_playable:
-        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:

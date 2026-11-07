@@ -1,0 +1,23 @@
+{
+  "content_id": "9763dbe0a798c962bed5421a9f1eec7ba5b8b960edacfbd4655721d8c0f05311",
+  "identity": {
+    "schema": "native-targeted-draw-one-source-one-class-v1",
+    "base_build_id": "59228745bfcbec403b038019815d8e94f74273fd4494a2e5799479d61abd3605",
+    "parent_content_id": "3f595b71da5b339b2c9f5f6bced98fb25291db7d55c6427835d52b6d532e38ee",
+    "preimage_sha256": "e1180554abd656c86e9081fbe1ab2ecc292dffa21231b3ca4337eece275dc6c4",
+    "sources": [
+      {
+        "path": "forge-ai/src/main/java/forge/ai/ability/DrawAi.java",
+        "sha256": "d18e7a443e01df1e6e4cefc3550a488114193d245d65d755c2b3bea4341f6304"
+      }
+    ],
+    "patch_sha256": "39ca293705de879729b898730e93df33796d815411ef800ddf46be63fb1b1612",
+    "payloads": [
+      {
+        "path": "forge/ai/ability/DrawAi.class",
+        "sha256": "36a3f771062e6891bda85f887786bc88d67ed5223b8002b380caf00318794664",
+        "class_name": "forge.ai.ability.DrawAi"
+      }
+    ]
+  }
+}

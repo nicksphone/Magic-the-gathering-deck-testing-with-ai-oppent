@@ -14,7 +14,7 @@ from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
 from game_state.state import CardInstance, MatchState, Step, Zone, object_incarnation
 from rules_engine.engine import RulesEngine
-from ai.pending_effects import planning_copy, prospective_creature_stats, simulation_take_action, UncertainSimulation
+from ai.pending_effects import planning_copy, prospective_creature_stats, simulation_take_action, UncertainSimulation, combat_expansion_available
 from rules_engine import combat
 from rules_engine.continuous import effective_combat_stats, effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
@@ -24,7 +24,7 @@ from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 from rules_engine.replacement import graveyard_destination
 from rules_engine.costs import PAY_X_LIFE_RE
-from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, _parse_count_token
+from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, TARGETED_DRAW_RE, _parse_count_token
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import spell_cant_be_countered, stack_object_kind
 
@@ -36,6 +36,8 @@ _PURE_COUNTER_SPELL_RE = re.compile(
 )
 
 NEXT_COMBAT_FORECAST_BUDGET = 13
+STRATEGIC_COMBAT_ATTACKER_LIMIT = 16
+STRATEGIC_COMBAT_BLOCKER_LIMIT = 8
 
 
 def _terminal_utility(winner, player_id, magnitude):
@@ -74,6 +76,23 @@ def _card_for_move(state, move):
         from rules_engine.bestow import bestow_cast_view
         card = bestow_cast_view(card)
     return card
+
+
+def _entry_only_removal_aura_instruction(card):
+    """A complete, narrow public surface, not a substring removal tag."""
+    from rules_engine.attachments import enchant_restriction, is_aura
+    if (card is None or not is_aura(card) or card.card_faces
+            or card.selected_face_index is not None):
+        return None
+    lines = [line.strip() for line in (card.oracle_text or '').splitlines() if line.strip()]
+    if len(lines) != 2 or enchant_restriction(lines[0]) is None:
+        return None
+    reference = r'(?:this (?:aura|enchantment)|' + re.escape(card.name) + r')'
+    match = re.fullmatch(
+        r'(?:When|Whenever) ' + reference + r' enters(?: the battlefield)?, '
+        r'(exile target creature(?: or planeswalker)? an opponent controls until '
+        + reference + r' leaves the battlefield\.?)', lines[1], re.I)
+    return match[1] if match else None
 
 
 def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
@@ -139,39 +158,82 @@ class AIAgent:
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
         from ai.information import decision_view
-        authoritative_state = state
-        state, legal_moves = decision_view(state, player_id, legal_moves)
-        previous_usage = self._knowledge_usage
-        self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
-                                                         'fallback_reasons': {}}}
-        try:
-            with decision_projection_scope(state, player_id):
-                if self.learned_binding is not None:
-                    from ai.learned_policy import choose_learned_action
-                    from rules_engine.action_validation import checked_action
-                    action = choose_learned_action(
-                        self.learned_binding, self, state, legal_moves, player_id,
-                        admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed))
+        from ai.learned_qv import _decision_encoder_scope
+        encoder_policy = (self.learned_binding._policy if _native_planner_snapshot(self) is not None
+                          and self.learned_binding is not None else None)
+        with _decision_encoder_scope(encoder_policy, self, player_id):
+            authoritative_state = state
+            state, legal_moves = decision_view(state, player_id, legal_moves)
+            previous_usage = self._knowledge_usage
+            self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
+                                                             'fallback_reasons': {}}}
+            try:
+                with decision_projection_scope(state, player_id,
+                        {'master': 128, 'master_plus': 256}.get(self.difficulty)):
+                    action = None
+                    terminal_win = []
+                    if self.learned_binding is not None:
+                        from ai.learned_policy import choose_learned_action
+                        from rules_engine.action_validation import checked_action
+                        action = choose_learned_action(
+                            self.learned_binding, self, state, legal_moves, player_id,
+                            admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed),
+                            _terminal_win=terminal_win)
+                    from ai.pending_effects import unanswered_action_wins
+                    from ai.damage_sequences import winning_damage_action
+                    win = ((terminal_win[0] if len(terminal_win) == 1
+                            else unanswered_action_wins(state, player_id, action)) if action is not None else None)
+                    if action is None or win is not True:
+                        finishing = winning_damage_action(self, state, legal_moves, player_id)
+                        if finishing is not None:
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, finishing)
+                            except ActionRejected:
+                                pass
+                            else:
+                                return AIDecision(action=finishing,
+                                    reasoning='Checked current-turn damage sequence if unanswered',
+                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                     if action is not None:
+                        if win is not True and (replacement := self._early_prowess_burn_action(state, action, player_id)):
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, replacement)
+                            except ActionRejected:
+                                pass
+                            else:
+                                return AIDecision(action=replacement,
+                                    reasoning='Develop a checked main-phase prowess sequence before nonlethal burn',
+                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                         return AIDecision(action=action,
-                            reasoning='Rank a checked heuristic subset using the explicitly bound Q/V model',
+                            reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
                             knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-                decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
-                if decision.action.get('type') == 'pass_priority':
-                    from ai.foretell_policy import idle_foretell_action
-                    action = idle_foretell_action(self, state, legal_moves, player_id)
-                    if action:
-                        decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
-                if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
-                    from ai.suspend_policy import idle_suspend
-                    action = idle_suspend(self, state, legal_moves, player_id)
-                    if action:
-                        decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
-                from ai.declaration_policy import finalize_declaration
-                return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
-                                  knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-        finally:
-            self._knowledge_usage = previous_usage
+                    decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
+                    if replacement := self._early_prowess_burn_action(state, decision.action, player_id):
+                        from rules_engine.action_validation import ActionRejected, checked_action
+                        try:
+                            checked_action(authoritative_state, self.engine, player_id, replacement)
+                        except ActionRejected:
+                            pass
+                        else:
+                            decision = AIDecision(action=replacement,
+                                reasoning='Develop a checked main-phase prowess sequence before nonlethal burn')
+                    if decision.action.get('type') == 'pass_priority':
+                        from ai.foretell_policy import idle_foretell_action
+                        action = idle_foretell_action(self, state, legal_moves, player_id)
+                        if action:
+                            decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
+                    if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+                        from ai.suspend_policy import idle_suspend
+                        action = idle_suspend(self, state, legal_moves, player_id)
+                        if action:
+                            decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
+                    from ai.declaration_policy import finalize_declaration
+                    return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
+                                      knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+            finally:
+                self._knowledge_usage = previous_usage
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         trigger_choice = getattr(state, 'pending_trigger_order', None) or {}
@@ -509,8 +571,8 @@ class AIAgent:
                 selected = candidates[0] if candidates else "__finish_opening__"
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]}, reasoning="Use supported free opening-hand permanent")
             if choice["kind"] in {"mulligan_bottom", "opening_hand_exile"}:
-                options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
-                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Select least useful cards for required pregame instruction")
+                selected = self._choose_opening_hand_removals(state, options, choice["count"], player_id)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Preserve a coherent retained opening hand")
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 if copied and choice.get('linked_target_index') is not None:
@@ -692,6 +754,18 @@ class AIAgent:
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning=f"Choose {kind} cards at resolution")
+            if choice["kind"] == "legend_keeper":
+                def keeper_value(cid):
+                    card = state.cards[cid]
+                    ready = not card.tapped and (
+                        "Creature" not in effective_types(state, card)
+                        or not card.summoning_sick or has_keyword(state, cid, "haste"))
+                    return (self._sacrifice_loss(state, cid, player_id), card.loyalty or 0,
+                            cid in state.attackers, ready, not card.tapped, cid)
+
+                selected = max(options, key=keeper_value)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]},
+                                  reasoning="Keep the most valuable legend; preserve combat readiness on comparable copies")
             if choice["kind"] == "sacrifice":
                 options.sort(key=lambda cid: (self._sacrifice_loss(state, cid, player_id), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Sacrifice least valuable permanents")
@@ -739,6 +813,7 @@ class AIAgent:
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
         from ai.mana_resource_policy import resource_change_plan
         legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)
+                       and not self._defer_landfall_burn(state, move, player_id)
                        and not ((plan := resource_change_plan(self, state, move, player_id))
                                 and move.get('type') == 'cast_spell' and plan['defer'])]
         self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
@@ -893,7 +968,41 @@ class AIAgent:
         value, negative_count = max(scored)
         return -negative_count, value
 
+    def _draw_cast_loses(self, state: MatchState, move: dict, player_id: int) -> bool | None:
+        """Reject only an immediate native loss before a new private frontier.
+
+        Draw tags only select proof attempts. Native programs decide outcomes;
+        new hands, private choices and unresolved replacements stay unknown.
+        """
+        if move.get('type') != 'cast_spell':
+            return False
+        card = _card_for_move(state, move)
+        if card is None:
+            return False
+        if 'draw' not in tactical_tags(card.oracle_text, card.type_line, card.types):
+            return None
+        from ai.action_contract import complete_action
+        from ai.information import decision_view
+        from ai.pending_effects import simulation_checked_action, settled_public_position
+        from rules_engine.action_validation import ActionRejected
+        view = state if getattr(state, 'ai_information_player', None) == player_id else decision_view(state, player_id, [move])[0]
+        action = self._materialize_action(view, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return False
+        try:
+            projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+            if (projected.winner is None and set(projected.players[player_id].hand)
+                    - set(view.players[player_id].hand)):
+                return None
+            settled = settled_public_position(projected, player_id, opaque_draw_counts=True,
+                                              stop_at_private_action_frontier=True)
+        except (ActionRejected, UncertainSimulation):
+            return None
+        return None if settled is None or settled.winner is None else settled.winner == 3-player_id
+
     def _bad_shared_draw_cast(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if self._draw_cast_loses(state, move, player_id):
+            return True
         if move.get("type") != "cast_spell":
             return False
         card = state.cards.get(move.get("card_id"))
@@ -1076,6 +1185,8 @@ class AIAgent:
     def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.difficulty not in {"master", "master_plus"}:
             return None
+        if not combat_expansion_available():
+            return None
         turn = int(getattr(state, "turn", 1) or 1)
         if not self._is_complex_board_state(state, player_id):
             return None
@@ -1096,7 +1207,11 @@ class AIAgent:
         shortlist = _shortlist_with_priority_pass(self._rank_moves(state, legal_moves, player_id),
                                                  legal_moves, beam_limit)
         for mv in shortlist:
+            if not combat_expansion_available():
+                break
             mat = self._materialize_action(state, mv, player_id)
+            if not combat_expansion_available():
+                break
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
             if self._is_action_obviously_illegal(state, mat, player_id):
@@ -1106,8 +1221,28 @@ class AIAgent:
             return None
         scored: list[tuple[float, dict]] = []
         for mv in candidates:
-            score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
+            if not combat_expansion_available():
+                break
+            try:
+                score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
+            except UncertainSimulation:
+                if not combat_expansion_available():
+                    break
+                raise
+            if not combat_expansion_available():
+                break
+            from ai.action_contract import complete_action
+            from rules_engine.action_validation import ActionRejected, checked_action
+            try:
+                action = complete_action(mv)
+                if action['type'] in {'attack', 'block'} and not combat_expansion_available(charge=True):
+                    break
+                checked_action(state, self.engine, player_id, action)
+            except (ActionRejected, KeyError, ValueError):
+                continue
             scored.append((score, mv))
+        if not scored:
+            return None
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         return scored[0][1]
 
@@ -1157,6 +1292,11 @@ class AIAgent:
         # from the real search state or guessing unresolved/hidden-zone choices.
         projected = settled_public_position(state, player_id, opaque_draw_counts=True)
         position = projected if projected is not None else state
+        # A priority-action horizon is not the end of an announced attack.
+        # Forecast its public combat while response search keeps the real prefix.
+        combat_position = self._forecast_strategic_combat(position)
+        if combat_position is not None:
+            position = combat_position
         with rule_query_scope(position):
             expectation = (topdeck_deployment_value(state, player_id) if projected is None else 0.0)
             expectation += (pending_selection_expectation(state, player_id) or 0.0) * 1.25 if projected is None else 0.0
@@ -1166,19 +1306,100 @@ class AIAgent:
                 expectation += (counts[player_id] - counts[3-player_id]) * 0.9
             return evaluate_board(position, player_id) + self._strategic_features(position, player_id) + expectation
 
+    def _forecast_strategic_combat(self, state: MatchState) -> MatchState | None:
+        """Conditional public combat, never a certificate of unanswered damage."""
+        if (not state.attackers_declared or not state.attackers
+                or state.step not in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE}
+                or state.stack or state.pending_mechanic_choice or state.pending_replacement_choice
+                or state.pending_trigger_order or state.winner is not None):
+            return None
+        from ai.information import decision_view
+        from ai.pending_effects import _settle_announced_stack, simulation_checked_action
+        from rules_engine.combat_constraints import combat_rule_view
+        if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
+               for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
+            return None
+        if not combat_expansion_available(charge=True):
+            return None
+        sim, _ = decision_view(state, state.active_player, [])
+        before = planning_copy(sim)
+        defender = 3 - sim.active_player
+        try:
+            if sim.step == Step.DECLARE_ATTACKERS:
+                self.engine.next_step(sim)
+            if sim.step == Step.DECLARE_BLOCKERS and not sim.blockers_declared:
+                blockers = [cid for cid in sim.players[defender].battlefield
+                            if 'Creature' in effective_types(sim, sim.cards[cid]) and not sim.cards[cid].tapped]
+                blocks = {}
+                heuristic_blocks = False
+                if blockers:
+                    attackers = [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers]
+                    defenders = [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers]
+                    blocks = self._search_block_assignments(sim,
+                        attackers, defenders,
+                        consider_next_combat=False)
+                    if (blocks is None and (len(attackers) > 4 or len(defenders) > 5)
+                            and len(attackers) <= STRATEGIC_COMBAT_ATTACKER_LIMIT
+                            and len(defenders) <= STRATEGIC_COMBAT_BLOCKER_LIMIT):
+                        # Conditional heuristic only, never an exhaustive win certificate.
+                        # Keep small-board search failures unknown; do not expand its tree.
+                        blocks = self._choose_blocks(sim, attackers, defenders)
+                        heuristic_blocks = True
+                    if blocks is None:
+                        return None
+                if not combat_expansion_available(charge=True):
+                    return None
+                if heuristic_blocks:
+                    sim = simulation_checked_action(sim, self.engine, defender,
+                        {'type': 'block', 'blocks': {
+                            aid: [bids] if isinstance(bids, str) else bids
+                            for aid, bids in blocks.items()}})
+                else:
+                    simulation_take_action(self.engine, sim, defender,
+                        {'type': 'block', 'blocks': blocks}, reject_invalid=True)
+                if not _settle_announced_stack(sim):
+                    return None
+                self.engine.next_step(sim)
+            if not self._finish_combat_projection(sim, before):
+                return None
+            if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                return None
+            return sim
+        except (ValueError, KeyError):
+            return None
+
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         try:
             sim = planning_copy(state)
             simulation_take_action(self.engine, sim, player_id, move, reject_invalid=True)
         except Exception:
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             return -9999.0
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if combat_outcome is not None:
-            return (self._strategic_position_score(combat_outcome, player_id)
-                    + self._instant_value_reservation(state, move, player_id))
+            score = self._strategic_position_score(combat_outcome, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
+            score += self._instant_value_reservation(state, move, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
+            return score
         score = self._strategic_position_score(sim, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         score += self._stack_two_ply_value(sim, player_id, score)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         score += self._instant_value_reservation(state, move, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         plan = selection_activation_plan(state, move, player_id)
         score -= 6 if plan is not None and plan["loses_known_interaction"] else 0
         return self._strategic_state_score(sim, player_id, depth, score)
@@ -1193,12 +1414,6 @@ class AIAgent:
         opponent = state.players[3 - player_id]
         if opponent.hand or opponent.exile:
             return None
-        if opponent.graveyard:
-            from ai.information import decision_view
-            from rules_engine.graveyard_inventory import public_graveyard_inventory
-            public, _ = decision_view(state, player_id, [])
-            if public_graveyard_inventory(public, player_id)['status'] != 'inert':
-                return None
 
         from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
         from rules_engine.mana_abilities import tap_only_outputs
@@ -1225,8 +1440,14 @@ class AIAgent:
                     or combat_rule_view(state, cid)['unsupported']
                     or re.search(r'\b(?:when|whenever)\b[^\n]*\b(?:attack\w*|block\w*|damage)\b', text)):
                 return None
+        if not combat_expansion_available(charge=True):
+            return None
         from ai.information import decision_view
         projected, _ = decision_view(state, player_id, [])
+        if opponent.graveyard:
+            from rules_engine.graveyard_inventory import public_graveyard_inventory
+            if public_graveyard_inventory(projected, player_id)['status'] != 'inert':
+                return None
         # Preserve every offered effectful response; do not silently pass it away.
         for pid in state.players:
             response = planning_copy(projected)
@@ -1242,29 +1463,52 @@ class AIAgent:
 
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
         """Continue the chosen, already executed prefix from its original perspective."""
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if depth <= 0 or sim.winner is not None:
             combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if combat_outcome is not None:
-                return (score - self._strategic_position_score(sim, player_id)
-                        + self._strategic_position_score(combat_outcome, player_id))
+                previous = self._strategic_position_score(sim, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
+                current = self._strategic_position_score(combat_outcome, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
+                return score - previous + current
             return score
         pid = sim.priority_player
         available = self.engine.legal_moves(sim, pid)
         legal = self._rank_moves(sim, available, pid, shallow=True)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if not legal:
             return score
         beam: list[tuple[float, MatchState]] = []
         for cand in _shortlist_with_priority_pass(legal, available, 6):
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             try:
                 materialized = self._materialize_action(sim, cand, pid)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 nxt = planning_copy(sim)
                 simulation_take_action(self.engine, nxt, pid, materialized, reject_invalid=True)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 val = self._strategic_position_score(nxt, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 val += self._stack_two_ply_value(nxt, player_id, val)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 beam.append((val, nxt))
             except Exception:
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 continue
         if not beam:
             return score
@@ -1276,6 +1520,8 @@ class AIAgent:
 
     def _stack_two_ply_value(self, state: MatchState, player_id: int, baseline_score: float | None = None) -> float:
         """Depth-limited stack planner for counter wars; only runs while stack is active."""
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         stack_items = list(getattr(state, "stack", []) or [])
         if not stack_items or getattr(state, "winner", None) is not None:
             return 0.0
@@ -1283,33 +1529,51 @@ class AIAgent:
         legal = self.engine.legal_moves(state, pid)
         if not legal:
             return 0.0
-        top_actions = self._strategic_top_actions(state, legal, pid, limit=3)
+        top_actions = self._strategic_top_actions(state, legal, pid, limit=3, _speculative=True)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if not top_actions:
             return 0.0
         maximizing = pid == player_id
         best = -9999.0 if maximizing else 9999.0
         for act in top_actions:
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             try:
                 sim = planning_copy(state)
                 simulation_take_action(self.engine, sim, pid, act, reject_invalid=True)
             except Exception:
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 continue
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
                 val = self._strategic_position_score(sim, player_id)
             else:
                 reply_pid = getattr(sim, "priority_player", pid)
                 reply_legal = self.engine.legal_moves(sim, reply_pid)
-                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2)
+                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2, _speculative=True)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 if not replies:
                     val = self._strategic_position_score(sim, player_id)
                 else:
                     reply_vals: list[float] = []
                     for rep in replies:
+                        if not combat_expansion_available():
+                            raise UncertainSimulation('Combat expansion allowance denied')
                         try:
                             nxt = planning_copy(sim)
                             simulation_take_action(self.engine, nxt, reply_pid, rep, reject_invalid=True)
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                             reply_vals.append(self._strategic_position_score(nxt, player_id))
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                         except Exception:
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                             continue
                     if not reply_vals:
                         val = self._strategic_position_score(sim, player_id)
@@ -1317,6 +1581,8 @@ class AIAgent:
                         val = max(reply_vals)
                     else:
                         val = min(reply_vals)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             best = max(best, val) if maximizing else min(best, val)
         if best in {-9999.0, 9999.0}:
             return 0.0
@@ -1324,13 +1590,25 @@ class AIAgent:
         # not a second absolute score that rewards stacks while ahead and punishes
         # them while behind.
         baseline = self._strategic_position_score(state, player_id) if baseline_score is None else baseline_score
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         return 0.2 * (best - baseline)
 
-    def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int) -> list[dict]:
+    def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int,
+                               *, _speculative: bool = False) -> list[dict]:
+        # The learned-policy caller needs this shortlist even after search denial.
+        if _speculative and not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         ranked = self._rank_moves(state, legal_moves, player_id)
+        if _speculative and not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         picked: list[dict] = []
         for mv in ranked[: max(1, limit * 2)]:
+            if _speculative and not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             mat = self._materialize_action(state, mv, player_id)
+            if _speculative and not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
             if self._is_action_obviously_illegal(state, mat, player_id):
@@ -1338,6 +1616,21 @@ class AIAgent:
             picked.append(mat)
             if len(picked) >= limit:
                 break
+        if (limit > 1 and isinstance(state, MatchState)
+                and state.step == Step.DECLARE_BLOCKERS
+                and state.priority_player == player_id != state.active_player
+                and not state.stack and not state.blockers_declared and not state.pregame_pending
+                and not (state.pending_mechanic_choice or state.pending_replacement_choice
+                         or state.pending_trigger_order)):
+            block_index = next((i for i, action in enumerate(picked)
+                                if action.get('type') == 'block' and action.get('blocks')), None)
+            if block_index is not None and not any(
+                    action.get('type') == 'block' and action.get('blocks') == {} for action in picked):
+                # Final native intent, not an empty descriptor to auto-materialize.
+                # Reserve a bounded slot without removing the heuristic declaration.
+                if len(picked) >= limit:
+                    picked.pop(next(i for i in range(len(picked) - 1, -1, -1) if i != block_index))
+                picked.append({'type': 'block', 'blocks': {}})
         return _shortlist_with_priority_pass(picked, legal_moves, limit)
 
     def _move_sort_key(self, move: dict) -> tuple:
@@ -1509,6 +1802,14 @@ class AIAgent:
                 best = (score, mat)
         return best[1] if best else None
 
+    def _endstep_draw_payment_preference(self, state, action, player_id, selected):
+        """Existing economic preference, priced on the final immutable payment."""
+        choice = action.get('cost_choice') or {}
+        loss = self._spell_payment_loss(state, player_id, selected, cost_choice=choice,
+                                       x_value=int((action.get('targets') or {}).get('x_value') or 0))
+        return loss, bool(loss and self._cast_bias(state, action, player_id) - loss
+                          <= self._pass_bias(state, player_id))
+
     def _forced_endstep_card_advantage(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
             return None
@@ -1520,7 +1821,7 @@ class AIAgent:
             return None
         if getattr(state, "stack", []) or []:
             return None
-        candidates: list[dict] = []
+        candidates: list[tuple[float, dict]] = []
         for move in legal_moves:
             if move.get("type") != "cast_spell":
                 continue
@@ -1536,8 +1837,19 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
-            candidates.append(mat)
-        return candidates[0] if candidates else None
+            choice = mat.get('cost_choice') or {}
+            selected = next((option for option in mat.get('cost_options', [])
+                             if option['id'] == choice.get('id')), {})
+            loss, prefer_pass = self._endstep_draw_payment_preference(state, mat, player_id, selected)
+            if prefer_pass:
+                from ai.pending_effects import unanswered_action_wins
+                choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
+                                       opponent_archetype=self.opponent_archetype)
+                if unanswered_action_wins(state, player_id, mat,
+                        own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action) is not True:
+                    continue
+            candidates.append((loss, mat))
+        return min(candidates, key=lambda item: item[0])[1] if candidates else None
 
     def _profile_cast_advice(self, state, move, player_id, *, resource_plan=None):
         """Pure bounded printed advice; unestablished live context stays legacy."""
@@ -1653,6 +1965,14 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
+            targets = mat.get("targets") or {}
+            selected = [targets.get("target_card_id"), *(targets.get("target_card_ids") or [])]
+            if ("burn" in tags and "sweeper" not in tags
+                    and {"Instant", "Sorcery"}.intersection(effective_types(state, card))
+                    and not targets.get("mode_targets") and not targets.get("target_distribution")
+                    and not any(target in opp_creatures for target in selected)):
+                # Face damage is not removal of the creature pressuring us.
+                continue
             selected_card = _card_for_move(state, mat)
             if (selected_card is not None and "{X}" in (getattr(selected_card, "mana_cost", "") or "").upper()
                     and ALL_CREATURES_X_DEBUFF_RE.search(getattr(selected_card, "oracle_text", "") or "")):
@@ -1741,6 +2061,28 @@ class AIAgent:
         if mulligans < 2 and self._is_burn_matchup() and (lands < 2 or cheap_interaction == 0):
             return AIDecision(action={"type": "mulligan"}, reasoning="Burn matchup requires stable mana and early interaction")
         return AIDecision(action={"type": "keep_hand", "bottom_card_ids": []}, reasoning="Keep acceptable hand")
+
+    def _choose_opening_hand_removals(self, state, options, count, player_id):
+        hand = list(state.players[player_id].hand)
+        values = {cid: self._hand_retention_value(state, cid, player_id) for cid in hand}
+        ranked = sorted(dict.fromkeys(options), key=lambda cid: (values[cid], cid))
+        if len(hand) > 7 or not 0 <= count <= len(ranked):
+            return ranked[:count]
+        # A free opening entry is already on the battlefield when exile is chosen.
+        lands_in_play = [state.cards[cid] for cid in state.players[player_id].battlefield
+                         if 'Land' in effective_types(state, state.cards[cid])]
+        low, high = self._preferred_land_window()
+
+        def retained_key(removed):
+            retained = [cid for cid in hand if cid not in removed]
+            profile = self._opening_hand_profile([state.cards[cid] for cid in retained] + lands_in_play)
+            lands = profile['lands']
+            return (not profile['critical_miss'], not profile['missing_primary_color'],
+                    -max(low - lands, lands - high, 0), profile['quality'],
+                    sum(values[cid] for cid in retained))
+
+        # At most35 subsets. First exact tie preserves the legacy value/ID order.
+        return list(max(combinations(ranked, count), key=retained_key))
 
     def _opening_hand_profile(self, hand: list) -> dict[str, object]:
         lands = 0
@@ -1891,6 +2233,7 @@ class AIAgent:
             return self._rank_moves_query(state, moves, player_id, shallow=shallow)
 
     def _rank_moves_query(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
+        moves = [dict(move) if move.get('type') == 'block' else move for move in moves]
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main
@@ -1965,6 +2308,12 @@ class AIAgent:
             elif mtype == "attack":
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "block":
+                # Keep the chosen allocation with this ranked intent: later
+                # forecasts can exhaust the shared search allowance.
+                action = self._materialize_action_without_resources(state, move, player_id)
+                if isinstance(action.get('blocks'), dict):
+                    move['blocks'] = action['blocks']
+                    move['_ai_retained_blocks'] = True
                 base += self._block_bias(state, move, player_id)
             elif mtype == "activate_ability":
                 base += 2.5
@@ -2019,7 +2368,12 @@ class AIAgent:
                 base += self._rollout_delta(state, move, player_id)
             return base
 
-        ranked = sorted(moves, key=lambda mv: (score(mv), self._move_sort_key(mv)), reverse=True)
+        # Save mana for another proactive play; keep response-window ordering.
+        ranked = sorted(moves, key=lambda mv: (
+            score(mv), str(mv.get("type") or ""),
+            -mana_value(str(mv.get("mana_cost") or ""))
+            if own_main_sorcery_window and mv.get("type") == "cast_spell" else 0,
+            self._move_sort_key(mv)), reverse=True)
         normalized = []
         for move in ranked:
             if move.get("type") == "attack" and "attackers" not in move:
@@ -2040,7 +2394,11 @@ class AIAgent:
             self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
             self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
-            after = evaluate_board(sim_state, player_id)
+            from ai.pending_effects import settled_public_position
+            # Value known effects without discarding the pending response frame.
+            forecast = (settled_public_position(sim_state, player_id)
+                        if isinstance(state, MatchState) and state.stack else None)
+            after = evaluate_board(forecast if forecast is not None else sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = self.engine.legal_moves(sim_state, sim_state.priority_player)
             if sim_state.priority_player == opp_id and opp_moves:
@@ -2580,6 +2938,157 @@ class AIAgent:
         power = max(0, effective_power(state, cid)) if 'Creature' in effective_types(state, card) else 0
         return major or power >= 4 or power >= state.players[player_id].life
 
+    def _early_prowess_burn_action(self, state: MatchState, action: dict, player_id: int) -> dict | None:
+        """Return the next checked setup action, or None when no sequence is proved."""
+        if (action.get('type') != 'cast_spell' or state.active_player != player_id
+                or state.priority_player != player_id
+                or state.step not in {Step.UPKEEP, Step.DRAW, Step.PRECOMBAT_MAIN}
+                or (action.get('targets') or {}).get('target_player') != 3-player_id
+                or set(action.get('targets') or {}) - {'target_player', 'replacement_source_id'}
+                or state.pending_mechanic_choice or state.pending_replacement_choice
+                or state.pending_trigger_order):
+            return None
+        pending_creature = None
+        if state.stack:
+            if (state.step != Step.PRECOMBAT_MAIN or len(state.stack) != 1
+                    or state.stack[0].controller != player_id
+                    or stack_object_kind(state, state.stack[0]) != 'spell'):
+                return None
+            pending_creature = state.stack[0].source_card_id
+        candidates = {cid for cid in [*state.players[player_id].hand,
+                                     *([pending_creature] if pending_creature else [])]
+                      if 'Creature' in effective_types(state, state.cards[cid])
+                      and re.search(r'\bprowess\b', _oracle_text(state.cards[cid]))
+                      and has_keyword(state, cid, 'haste')}
+        if not candidates or (pending_creature and pending_creature not in candidates):
+            return None
+        from ai.action_contract import complete_action
+        from ai.pending_effects import (_projection_copy, _settle_announced_stack, _unanswered_action_outcome,
+                                        simulation_checked_action)
+        from rules_engine.action_validation import ActionRejected
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        card = _card_for_move(state, action)
+        effect, _ = infer_effect_from_oracle(state, card, player_id,
+                                            action.get('targets') or {}, report_unsupported=False)
+        def own_choice(projected, legal, actor):
+            return self._choose_action(projected, legal, actor).action
+
+        if (effect != 'deal_damage' or _unanswered_action_outcome(state, player_id, action,
+                own_choice_action=own_choice) != 'neutral'):
+            return None
+        main = _projection_copy(state)
+        before_main = state.step in {Step.UPKEEP, Step.DRAW}
+        if before_main:
+            main.step = Step.PRECOMBAT_MAIN
+            main.priority_player = player_id
+            main.passed_priority.clear()
+            main.players[player_id].mana_pool.clear()
+            main.players[player_id].snow_mana_pool.clear()
+        libraries = {pid: tuple(player.library) for pid, player in main.players.items()}
+        opposing_hand = tuple(main.players[3-player_id].hand)
+
+        def known_branch(projected):
+            return (projected.winner is None
+                    and all(tuple(player.library) == libraries[pid] for pid, player in projected.players.items())
+                    and tuple(projected.players[3-player_id].hand) == opposing_hand)
+
+        def gains_after_burn(developed, cid):
+            if (cid not in developed.players[player_id].battlefield
+                    or not has_keyword(developed, cid, 'haste')):
+                return False
+            burn = next((m for m in self.engine.legal_moves(developed, player_id)
+                if m['type'] == 'cast_spell' and m.get('card_id') == action.get('card_id')
+                and m.get('selected_face_index', 0) == action.get('selected_face_index', 0)
+                and m.get('cast_variant') == action.get('cast_variant')), None)
+            if burn is None:
+                return False
+            power = effective_power(developed, cid)
+            # Never replace a chosen cost/mode/resource announcement with fresh defaults.
+            future = complete_action(copy.deepcopy(action))
+            result = simulation_checked_action(developed, self.engine, player_id, future)
+            return (_settle_announced_stack(result, player_id=player_id,
+                        own_choice_action=own_choice) and known_branch(result)
+                    and cid in result.players[player_id].battlefield
+                    and effective_power(result, cid) > power
+                    and result.players[3-player_id].life < developed.players[3-player_id].life)
+
+        if pending_creature:
+            # Only our single setup spell: opposing responses retain their native route.
+            try:
+                if (_settle_announced_stack(main, player_id=player_id,
+                        own_choice_action=own_choice) and known_branch(main)
+                        and gains_after_burn(main, pending_creature)):
+                    return {'type': 'pass_priority'}
+            except (ActionRejected, UncertainSimulation):
+                pass
+            return None
+
+        branches = [(main, None)]
+        # Bounded, unanswered timing comparison; never assume a future draw or reply.
+        land_moves = [m for m in self.engine.legal_moves(main, player_id) if m['type'] == 'play_land']
+        for move in land_moves[:2]:
+            try:
+                land_action = complete_action(self._materialize_action(main, move, player_id))
+                played = simulation_checked_action(main, self.engine, player_id,
+                    land_action)
+                if (not played.stack and not played.pending_mechanic_choice
+                        and not played.pending_replacement_choice and not played.pending_trigger_order
+                        and known_branch(played)):
+                    branches.append((played, land_action))
+            except (ActionRejected, UncertainSimulation):
+                continue
+        for branch, first_action in branches:
+            moves = [m for m in self.engine.legal_moves(branch, player_id)
+                     if m['type'] == 'cast_spell' and m.get('card_id') in candidates]
+            for move in moves[:4]:
+                try:
+                    creature_action = complete_action(self._materialize_action(branch, move, player_id))
+                    developed = simulation_checked_action(branch, self.engine, player_id,
+                        creature_action)
+                    if (not _settle_announced_stack(developed, player_id=player_id,
+                            own_choice_action=own_choice) or not known_branch(developed)):
+                        continue
+                    if gains_after_burn(developed, move['card_id']):
+                        return ({'type': 'pass_priority'} if before_main
+                                else copy.deepcopy(first_action or creature_action))
+                except (ActionRejected, UncertainSimulation):
+                    continue
+        return None
+
+    def _defer_landfall_burn(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if (move.get('type') != 'cast_spell' or state.active_player != player_id
+                or state.step not in {Step.UPKEEP, Step.DRAW} or state.stack):
+            return False
+        from rules_engine.land_history import landfall_status
+        from rules_engine.linked_targets import linked_damage_instruction
+        card = _card_for_move(state, move)
+        instruction = linked_damage_instruction(card.oracle_text, card.name) if card else None
+        if (not instruction or instruction['landfall_amount'] <= instruction['ordinary_amount']
+                or landfall_status(state, player_id) is not False
+                or self._remaining_land_plays(state, player_id) <= 0):
+            return False
+        known_lands = {cid for cid in state.players[player_id].hand
+                       if 'Land' in effective_types(state, state.cards[cid])}
+        if not known_lands:
+            return False
+        # Test only today's known cards/resources, not the next draw or replies.
+        main = planning_copy(state)
+        main.step = Step.PRECOMBAT_MAIN
+        main.players[player_id].mana_pool.clear()
+        main.players[player_id].snow_mana_pool.clear()
+        main_moves = self.engine.legal_moves(main, player_id)
+        if (not any(action['type'] == 'play_land' and action.get('card_id') in known_lands
+                    for action in main_moves)
+                or not any(action['type'] == 'cast_spell' and action.get('card_id') == card.id
+                           for action in main_moves)):
+            return False
+        from ai.pending_effects import _unanswered_action_outcome
+        action = self._materialize_action(state, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return False
+        # Preserve terminal lines and unknown forecasts rather than guessing.
+        return _unanswered_action_outcome(state, player_id, action) == 'neutral'
+
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -2649,7 +3158,7 @@ class AIAgent:
         if is_creature:
             engine_bonus = (recurring_engine_value(state, cid, surface_card=card)
                             + repeatable_mana_value(state, cid, surface_card=card))
-            if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
+            if arche in {"Aggro", "Burn", "Tribal", "Tokens", "Tempo"}:
                 bonus = 4.0
                 if in_main:
                     bonus += 1.2
@@ -3212,7 +3721,7 @@ class AIAgent:
             options = inspect_target_hints(state, card, player_id, {"mode_text": mode_text}).get("stack_targets") or []
             if self._choose_best_stack_target_id(state, player_id, options, allow_protected=False) is None:
                 return -8.0
-        tags = self._spell_tags(card)
+        tags = tactical_tags(mode_text, getattr(card, 'type_line', '') or '')
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
             1
@@ -3307,11 +3816,54 @@ class AIAgent:
             score -= 1.0
         if turn >= 6 and ("draw" in text or "counter" in text or "destroy" in text or "exile" in text):
             score += 0.4
+        if isinstance(state, MatchState) and state.stack and 'indestructible' in text:
+            from ai.pending_effects import settled_public_position, simulation_checked_action
+            baseline = settled_public_position(state, player_id)
+            if baseline is not None:
+                projected = planning_copy(state)
+                try:
+                    action = self._materialize_action(projected, {
+                        'type': 'cast_spell', 'card_id': card.id,
+                        'targets': {'mode_text': mode_text}}, player_id)
+                    if not action.get('_invalid_ai_choice'):
+                        projected = simulation_checked_action(projected, self.engine, player_id, action)
+                        protected = settled_public_position(projected, player_id)
+                        if protected is not None:
+                            # Reward an actual public save, not the keyword alone.
+                            score += max(0.0, evaluate_board(protected, player_id)
+                                         - evaluate_board(baseline, player_id))
+                except (ValueError, KeyError):
+                    pass
         return score
 
-    def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int) -> str:
+    def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int, *, move: dict | None = None) -> str:
         if not modes:
             return ""
+        if len(modes) == 1:
+            return modes[0]
+        base = move or {'type': 'cast_spell', 'card_id': card.id}
+        for mode in modes:
+            if (not isinstance(state, MatchState)
+                    or not TARGETED_DRAW_RE.fullmatch(without_reminder_text(mode).strip())):
+                continue
+            from ai.action_contract import complete_action
+            from ai.information import decision_view
+            from ai.pending_effects import simulation_checked_action, settled_public_position
+            from rules_engine.action_validation import ActionRejected
+            candidate = {**base, 'targets': {**(base.get('targets') or {}), 'mode_text': mode}}
+            view = (state if getattr(state, 'ai_information_player', None) == player_id
+                    else decision_view(state, player_id, [candidate])[0])
+            try:
+                action = self._materialize_action(view, candidate, player_id)
+                if action.get('_invalid_ai_choice'):
+                    continue
+                projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+                settled = settled_public_position(projected, player_id, opaque_draw_counts=True)
+            except (ActionRejected, UncertainSimulation):
+                continue
+            # Only a proved win outranks mode heuristics; preserve announced targets and costs.
+            if settled is not None and settled.winner == player_id:
+                return mode
         scored = [(self._score_mode_text(state, card, mode, player_id), idx, mode) for idx, mode in enumerate(modes)]
         scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)
         best_score, _, best_mode = scored[0]
@@ -3352,13 +3904,21 @@ class AIAgent:
         )
 
     def _without_losing_mass_destruction(self, state, moves, player_id):
-        """Do not wipe into a proven public death-trigger loss; unknowns stay."""
-        if not isinstance(state, MatchState) or not any(
+        """Reject proven death losses or unprofitable own-only wipes; unknowns stay."""
+        if not isinstance(state, MatchState):
+            return moves
+        death_loss = any(
             re.search(r"\bdies\b[^.\n]*\bloses?\s+\d+\s+life", _oracle_text(state.cards[cid]))
             for cid in state.players[3 - player_id].battlefield
-        ):
+        )
+        own_only = (not state.stack
+            and any("Creature" in effective_types(state, state.cards[cid])
+                    for cid in state.players[player_id].battlefield)
+            and not any("Creature" in effective_types(state, state.cards[cid])
+                        for cid in state.players[3 - player_id].battlefield))
+        if not death_loss and not own_only:
             return moves
-        from ai.pending_effects import unanswered_action_loses
+        from ai.pending_effects import friendly_destruction_profit, unanswered_action_loses
         kept = []
         for move in moves:
             card = _card_for_move(state, move)
@@ -3366,8 +3926,12 @@ class AIAgent:
                     and "{X}" not in card.mana_cost.upper()
                     and re.search(r"\bdestroy all (?:creatures|nonland permanents|permanents)\b", _oracle_text(card))):
                 action = self._materialize_action(state, move, player_id)
-                if not action.get("_invalid_ai_choice") and unanswered_action_loses(state, player_id, action) is True:
-                    continue
+                if not action.get("_invalid_ai_choice"):
+                    if death_loss and unanswered_action_loses(state, player_id, action) is True:
+                        continue
+                    if (own_only and re.search(r"\bdestroy all creatures\b", _oracle_text(card))
+                            and friendly_destruction_profit(state, player_id, action) is False):
+                        continue
             kept.append(move)
         return kept
 
@@ -3422,6 +3986,109 @@ class AIAgent:
                     return action
         return None
 
+    def _empty_entry_only_removal_aura(self, before, after, action, player_id):
+        """Defer only a checked empty entry with no known compensating context."""
+        from ai.information import is_unknown
+        from ai.pending_effects import _public_destruction_material
+        from rules_engine.oracle_effects import (
+            _infer_immediate_return_effect, infer_effect_from_oracle, inspect_target_hints,
+        )
+        from rules_engine.targeting import validate_cast_targets
+        card = _card_for_move(before, action)
+        instruction = _entry_only_removal_aura_instruction(card)
+        if (instruction is None or action.get('type') != 'cast_spell'
+                or action.get('cast_variant') is not None
+                or card.id not in before.players[player_id].hand):
+            return False
+        for state in (before, after):
+            if (state.stack or state.winner is not None or state.pending_mechanic_choice
+                    or state.pending_trigger_order or state.pending_replacement_choice
+                    or state.delayed_triggers or state.staged_triggers or state.emblems):
+                return False
+        proxy = copy.copy(card)
+        proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+        key, _ = infer_effect_from_oracle(before, proxy, player_id, report_unsupported=False)
+        if key != 'exile_until_source_leaves':
+            return False
+        for pid, player in before.players.items():
+            for cid in player.battlefield:
+                public = before.cards.get(cid)
+                if public is None or is_unknown(public):
+                    return False
+                if (pid != player_id
+                        and {'Creature', 'Planeswalker'} & set(effective_types(before, public))):
+                    return False
+        host = before.cards.get((action.get('targets') or {}).get('target_card_id'))
+        if (host is None or is_unknown(host) or 'Basic' not in (host.type_line or '').split()
+                or set(effective_types(before, host)) != {'Land'}
+                or _oracle_text(host) and not re.fullmatch(r'\{t\}: add \{[wubrgc]\}\.?', _oracle_text(host))
+                or any(before.cards[cid].attached_to == host.id
+                       and (_entry_only_removal_aura_instruction(before.cards[cid]) is None
+                            or before.cards[cid].counters != {'__attached_to': 0})
+                       for player in before.players.values() for cid in player.battlefield)):
+            return False
+        for pid, player in before.players.items():
+            known = list(player.battlefield) + (list(player.hand) if pid == player_id else [])
+            for cid in known:
+                if cid == card.id:
+                    continue
+                other = before.cards.get(cid)
+                if other is None or is_unknown(other):
+                    return False
+                # Another complete self-only entry is not a cross-card synergy.
+                if _entry_only_removal_aura_instruction(other) is not None:
+                    continue
+                text = _oracle_text(other)
+                immediate = _infer_immediate_return_effect(before, text, {})
+                if immediate is not None and immediate[0] == 'exile_return_immediate':
+                    hints = inspect_target_hints(after, after.cards[cid], pid)
+                    if validate_cast_targets(hints, {'target_card_id': card.id})[0]:
+                        return False
+                    continue
+                if (re.search(r'\b(?:auras?|enchantments?|devotion|affinity|instead)\b', text)
+                        or (cid in player.battlefield
+                            and re.search(r'\b(?:when|whenever|at the beginning)\b', text))
+                        or any(word.split()[0] in (
+                                   {'prowess', 'affinity', 'cascade', 'storm', 'extort'}
+                                   if cid in player.battlefield else {'affinity', 'storm'})
+                               for word in effective_keywords(before, cid) if word.split())):
+                    return False
+        old = _public_destruction_material(before, player_id)
+        new = _public_destruction_material(after, player_id)
+        if old is None or new is None or old['life'] != new['life'] or old['resources'] != new['resources']:
+            return False
+        entered = after.cards.get(card.id)
+        if (entered is None or entered.zone != Zone.BATTLEFIELD
+                or entered.controller != player_id or entered.attached_to != host.id
+                or entered.counters != {'__attached_to': 0} or entered.tapped):
+            return False
+        new['boards'][player_id] = {k: v for k, v in new['boards'][player_id].items() if k[0] != card.id}
+        for pid in before.players:
+            original, projected = before.players[pid], after.players[pid]
+            if (len(original.library) != len(projected.library)
+                    or len(original.exile) != len(projected.exile)
+                    or original.graveyard != projected.graveyard
+                    or (pid != player_id and len(original.hand) != len(projected.hand))):
+                return False
+            old_board, new_board = old['boards'][pid], new['boards'][pid]
+            if old_board.keys() != new_board.keys():
+                return False
+            for ref, (traits, tapped) in old_board.items():
+                other_traits, other_tapped = new_board[ref]
+                if traits != other_traits:
+                    return False
+                if (tapped != other_tapped
+                        and not (pid == player_id and not tapped and other_tapped and traits[0] == ('Land',))):
+                    return False
+            if pid != player_id and old['mana'][pid] != new['mana'][pid]:
+                return False
+        if (new['hand'] != old['hand'] - {card.id}
+                or before.linked_exiles != after.linked_exiles
+                or any(amount > old['mana'][player_id].get(color, 0)
+                       for color, amount in new['mana'][player_id].items())):
+            return False
+        return True
+
     def _attachment_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
         from ai.pending_effects import granted_acquisition_forecast
         from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
@@ -3431,18 +4098,19 @@ class AIAgent:
             return None, 0.0
         casting = move.get("type") == "cast_spell"
         targets = (move.get("target_hints") or {}).get("aura_targets", []) if casting else move.get("targets", [])
+        chosen_target = (move.get("targets") or {}).get("target_card_id") if casting else None
+        if chosen_target is not None:
+            targets = [target for target in targets if target["id"] == chosen_target]
         before = evaluate_board(state, player_id)
         best = None
         for target in targets:
             action = {"type": "equip", "card_id": source.id, "target_card_id": target["id"]}
             if casting:
                 compatible = move["target_hints"].get("aura_cost_options", {}).get(target["id"], [])
-                action = {"type": "cast_spell", "card_id": source.id, "targets": {"target_card_id": target["id"]}}
-                action.update({flag: True for flag in ("from_exile", "from_graveyard", "from_library") if move.get(flag)})
-                if compatible:
+                action = copy.deepcopy(move)
+                action["targets"] = {**(action.get("targets") or {}), "target_card_id": target["id"]}
+                if compatible and not (action.get("cost_choice") or {}).get("id"):
                     action["cost_choice"] = {"id": compatible[0]}
-                if move.get("selected_face_index") is not None:
-                    action["selected_face_index"] = move["selected_face_index"]
             projected = planning_copy(state)
             acquisitions = {pid: 0 for pid in state.players}
             try:
@@ -3477,6 +4145,8 @@ class AIAgent:
                 apply_state_based_actions(projected)
             except (ValueError, KeyError):
                 continue
+            if casting and self._empty_entry_only_removal_aura(state, projected, action, player_id):
+                continue
             from ai.mana_resource_policy import resource_delta
             from rules_engine.land_types import land_type_instructions
             gain = (evaluate_board(projected, player_id) - before
@@ -3491,7 +4161,18 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
-    def _spell_payment_loss(self, state, player_id, option, life_value=1):
+    def _spell_payment_loss(self, state, player_id, option, life_value=1, *, cost_choice=None, x_value=0):
+        if cost_choice is not None:
+            option = dict(option)
+            # Price the final native selection, not the cheaper offered subset
+            # that joint mana feasibility may have replaced during completion.
+            for key in ('discard_card_ids', 'sacrifice_card_ids'):
+                if cost_choice.get(key) is not None:
+                    option['fixed_' + key] = cost_choice[key]
+            if option.get('discard_x'):
+                option['discard_cards'] = option.get('discard_cards', 0) + x_value
+            if option.get('pay_life_x'):
+                option['pay_life'] = option.get('pay_life', 0) + x_value
         life = option.get('pay_life', 0)
         remaining = state.players[player_id].life - life
         loss = float('inf') if life and remaining <= 0 else life * (2 if remaining <= 5 else life_value)
@@ -3650,11 +4331,14 @@ class AIAgent:
         return score
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
-        from ai.casting_resources import choose_resource_payment
+        from ai.casting_resources import choose_resource_payment, complete_cast_hybrid_choices
         action = self._materialize_action_without_resources(state, move, player_id,
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         action = choose_resource_payment(self, state, action, player_id)
-        if not self._harmful_friendly_damage(state, action, player_id):
+        action = complete_cast_hybrid_choices(self, state, action, player_id)
+        if self._empty_duplicate_legend_cast(state, action, player_id):
+            return {**action, '_invalid_ai_choice': True}
+        if not self._harmful_friendly_removal(state, action, player_id):
             return action
         from rules_engine.cast_choice import build_cast_hints
         card = _card_for_move(state, action)
@@ -3680,7 +4364,107 @@ class AIAgent:
                 return redirected
         return {**action, '_invalid_ai_choice': True}
 
-    def _harmful_friendly_damage(self, state, action, player_id):
+    def _empty_duplicate_legend_cast(self, state, action, player_id):
+        """Local no-progress preference; unknown continuations keep the option."""
+        card = _card_for_move(state, action)
+        if (action.get('type') != 'cast_spell' or action.get('_invalid_ai_choice')
+                or card is None or card.id not in state.players[player_id].hand
+                or action.get('selected_face_index') is not None or action.get('cast_variant') is not None
+                or 'legendary' not in (card.type_line or '').lower()
+                or state.stack or state.pending_mechanic_choice or state.pending_trigger_order
+                or state.pending_replacement_choice):
+            return False
+        if not any(state.cards[cid].name.casefold() == card.name.casefold()
+                   and 'legendary' in (state.cards[cid].type_line or '').lower()
+                   for cid in state.players[player_id].battlefield):
+            return False
+        from ai.pending_effects import (_projection_copy, _settle_announced_stack,
+                                        _public_destruction_material, simulation_checked_action)
+        from rules_engine.action_validation import ActionRejected
+        before = _public_destruction_material(state, player_id)
+        if before is None:
+            return False
+        chooser = AIAgent(self.difficulty, self.archetype, self.opponent_archetype)
+        try:
+            projected = simulation_checked_action(_projection_copy(state), RulesEngine(), player_id, action)
+            # A permanent's legitimate cast body can be noop; entry still happens natively.
+            if any(any(key.startswith('__unsupported') for key in item.payload)
+                   for item in projected.stack):
+                return False
+            if not _settle_announced_stack(projected, player_id=player_id,
+                    own_choice_action=lambda s, m, p: chooser.choose_action(s, m, p).action):
+                return False
+        except (ActionRejected, UncertainSimulation):
+            return False
+        after = _public_destruction_material(projected, player_id)
+        if (after is None or projected.winner is not None
+                or any('unsupported' in line.lower() or 'Oracle effect not inferred' in line
+                       or 'Missing effect handler' in line for line in projected.log)
+                or projected.cards[card.id].zone != Zone.GRAVEYARD
+                or before['life'] != after['life'] or before['resources'] != after['resources']
+                or after['hand'] != before['hand'] - {card.id}
+                or after['graveyard'] != before['graveyard'] | {card.id}):
+            return False
+        for field in ('extra_turns', 'phase_plan', 'normal_turn_successor', 'turn_spell_protection',
+                      'turn_player_hexproof', 'turn_cant_gain_life', 'turn_damage_cant_be_prevented',
+                      'pending_entry_counters', 'combat_cost_effects', 'loyalty_permissions',
+                      'adventure_permissions', 'graveyard_permission_uses', 'linked_exiles',
+                      'retained_counter_prohibitions'):
+            if getattr(state, field) != getattr(projected, field):
+                return False
+        for pid, player in state.players.items():
+            final = projected.players[pid]
+            if (player.library != final.library or player.exile != final.exile
+                    or pid != player_id and (player.hand != final.hand or player.graveyard != final.graveyard)
+                    or pid != player_id and before['boards'][pid] != after['boards'][pid]
+                    or set(before['boards'][pid]) != set(after['boards'][pid])):
+                return False
+            for key, (traits, tapped) in before['boards'][pid].items():
+                new_traits, new_tapped = after['boards'][pid][key]
+                old, new = state.cards[key[0]], projected.cards[key[0]]
+                if (traits != new_traits or tapped and not new_tapped
+                        or old.summoning_sick != new.summoning_sick or old.loyalty != new.loyalty
+                        or any(getattr(old, field) != getattr(new, field) for field in
+                               ('keyword_effects', 'activated_ability_effects', 'base_stat_effects',
+                                'type_effects', 'control_effects', 'selected_face_index'))):
+                    return False
+            if (pid != player_id and before['mana'][pid] != after['mana'][pid]
+                    or any(n > before['mana'][pid].get(color, 0) for color, n in after['mana'][pid].items())):
+                return False
+        return True
+
+    def _friendly_removal_instruction(self, effect, payload, target_id):
+        """Classify complete native wrappers; unknown children never justify a veto."""
+        budget = [16]
+
+        def visit(key, data, depth):
+            budget[0] -= 1
+            if depth >= 8 or budget[0] < 0 or not isinstance(data, dict):
+                return None
+            if key == 'effect_sequence':
+                children = data.get('effects')
+                if not isinstance(children, list) or not children or len(children) > budget[0]:
+                    return None
+                found = False
+                for child in children:
+                    answer = (visit(child.get('effect_key'), child.get('payload'), depth + 1)
+                              if isinstance(child, dict) else None)
+                    if answer is None:
+                        return None
+                    found |= answer
+                return found
+            if key == 'conditional_instruction':
+                if (data.get('condition') not in {'permanent_departure', 'graveyard_types'}
+                        or data.get('effect_key') not in {'destroy_permanent', 'deal_damage'}):
+                    return None
+                return visit(data['effect_key'], data, depth + 1)
+            if key in {'deal_damage', 'destroy_permanent', 'exile'}:
+                return data.get('target_card_id') == target_id
+            return False if key == 'gain_life' else None
+
+        return visit(effect, payload, 0)
+
+    def _harmful_friendly_removal(self, state, action, player_id):
         if (not isinstance(state, MatchState) or action.get('_invalid_ai_choice')
                 or action.get('type') != 'cast_spell'):
             return False
@@ -3690,15 +4474,43 @@ class AIAgent:
         from rules_engine.oracle_effects import infer_effect_from_oracle
         effect, payload = infer_effect_from_oracle(state, _card_for_move(state, action), player_id,
             action.get('targets') or {}, report_unsupported=False)
-        if (payload.get('effect_key') if effect == 'conditional_instruction' else effect) != 'deal_damage':
+        if self._friendly_removal_instruction(effect, payload, target.id) is not True:
             return False
-        from ai.pending_effects import friendly_destruction_profit, _projection_copy
+        from ai.pending_effects import (friendly_destruction_profit, _projection_copy,
+                                        _settle_announced_stack, _public_destruction_material)
         choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
                               opponent_archetype=self.opponent_archetype)
         profitable = friendly_destruction_profit(state, player_id, action,
             own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action)
-        if profitable is not None:
-            return not profitable
+        if profitable is True:
+            return False
+        if profitable is False:
+            return True
+        effect_key = payload.get('effect_key') if effect == 'conditional_instruction' else effect
+        if effect_key not in {'deal_damage', 'destroy_permanent', 'exile'}:
+            return False
+        # An older public frame can make losing this object useful (for example, pending theft).
+        if len(state.stack) > 128 or any(item.source_card_id == target.id for item in state.stack):
+            return False
+        references = [(item.payload, 0) for item in state.stack]
+        budget = 128
+        while references:
+            if budget <= 0:
+                return False
+            budget -= 1
+            value, depth = references.pop()
+            if depth > 8 or isinstance(value, str) and value == target.id:
+                return False
+            if isinstance(value, dict):
+                if len(value) * 2 > budget:
+                    return False
+                references.extend((child, depth + 1) for pair in value.items() for child in pair)
+            elif isinstance(value, (list, tuple)):
+                if len(value) > budget:
+                    return False
+                references.extend((child, depth + 1) for child in value)
+            elif value is not None and type(value) not in (str, int, float, bool):
+                return False
         from rules_engine.action_validation import ActionRejected, checked_action
         rules = RulesEngine()
         try:
@@ -3710,6 +4522,7 @@ class AIAgent:
                 or len(projected.stack) != len(original_stack) + 1):
             return False
         announced = projected.stack[-1].id
+        extended_prefix = effect_key != 'deal_damage'
         # Stop before older effects or any unresolved choice/payoff; never guess a library continuation.
         while projected.stack and projected.stack[-1].id == announced:
             if projected.pending_mechanic_choice or projected.pending_trigger_order or projected.pending_replacement_choice:
@@ -3718,6 +4531,10 @@ class AIAgent:
                 rules.take_action(projected, projected.priority_player, {'type': 'pass_priority'}, reject_invalid=True)
             except ActionRejected:
                 return False
+        if tuple(item.id for item in projected.stack) != original_stack and projected.winner is None:
+            if not _settle_announced_stack(projected, retained_stack=original_stack):
+                return False
+            extended_prefix = True
         if projected.winner is not None:
             return projected.winner != player_id
         if (tuple(item.id for item in projected.stack) != original_stack
@@ -3729,6 +4546,27 @@ class AIAgent:
                 or projected.players[3-player_id].hand != state.players[3-player_id].hand
                 or projected.players[player_id].hand != expected_hand):
             return False
+        if extended_prefix:
+            if target.id in state.temporary_control_changes:
+                return False
+            before = _public_destruction_material(state, player_id)
+            after = _public_destruction_material(projected, player_id)
+            if before is None or after is None:
+                return False
+            opponent = 3-player_id
+            old, new = before['boards'][player_id], after['boards'][player_id]
+            if (set(new) - set(old) or before['boards'][opponent] != after['boards'][opponent]
+                    or before['resources'] != after['resources']
+                    or after['life'][player_id] > before['life'][player_id]
+                    or after['life'][opponent] < before['life'][opponent]
+                    or after['graveyard'] - before['graveyard'] - {action['card_id'], target.id}
+                    or after['mana'][opponent] != before['mana'][opponent]
+                    or any(n > before['mana'][player_id].get(color, 0)
+                           for color, n in after['mana'][player_id].items())):
+                return False
+            for key in set(old) & set(new):
+                if old[key][0] != new[key][0] or (old[key][1] and not new[key][1]):
+                    return False
         return (projected.cards[target.id].zone != Zone.BATTLEFIELD
                 and evaluate_board(projected, player_id) < evaluate_board(state, player_id))
 
@@ -3756,9 +4594,10 @@ class AIAgent:
             return out
         if mtype == "block":
             out = dict(move)
+            retained = out.pop('_ai_retained_blocks', False) is True
             attackers = list(move.get("attackers") or [])
             blockers = list(move.get("blockers") or [])
-            if attackers and blockers and not out.get("blocks"):
+            if attackers and blockers and not out.get('blocks') and not retained:
                 out["blocks"] = self._choose_blocks(state, attackers, blockers)
             return out
         if mtype == "crew":
@@ -3786,6 +4625,20 @@ class AIAgent:
         cost_options = move.get("cost_options") or []
         if cost_options and not (move.get("cost_choice") or {}).get("id"):
             selected_cost = cost_options[0]
+            if selected_cost['id'] == 'base':
+                from rules_engine.mana import parse_mana_cost
+                for alternative in cost_options:
+                    fields = (set(selected_cost) | set(alternative)) - {'id', 'label', 'mana_cost'}
+                    prices = [selected_cost.get('mana_cost', ''), alternative.get('mana_cost', '')]
+                    if (alternative['id'] != 'spectacle'
+                            or any(selected_cost.get(key) != alternative.get(key) for key in fields)
+                            or not all(re.fullmatch(r'(?:\{(?:[0-9]+|[WUBRGCS])\})+', price) for price in prices)):
+                        continue
+                    base_price, discount = map(parse_mana_cost, prices)
+                    if (all(discount[key] <= base_price[key] for key in base_price)
+                            and any(discount[key] < base_price[key] for key in base_price)):
+                        selected_cost = alternative
+                        break
             if selected_cost.get('graveyard_permission_key'):
                 from ai.casting_resources import graveyard_permission_opportunity
                 from rules_engine.costs import casting_method
@@ -3849,7 +4702,8 @@ class AIAgent:
             if hints.get("choose_two_modes"):
                 targets["mode_texts"] = self._select_mode_texts(state, card, available_modes, player_id)
             else:
-                targets["mode_text"] = self._select_mode_text(state, card, available_modes, player_id)
+                targets["mode_text"] = self._select_mode_text(
+                    state, card, available_modes, player_id, move={**out, 'targets': targets})
         if targets.get("mode_text") or targets.get("mode_texts"):
             from rules_engine.cast_choice import build_cast_hints
 
@@ -3859,13 +4713,30 @@ class AIAgent:
             from rules_engine.kicker import spell_kicker_view
             card = spell_kicker_view(card, bool(selected_cost and selected_cost.get('kicked')))
             tags = self._spell_tags(card)
+        if (mtype == 'cast_spell' and hints.get('action_has_target_text') is False
+                and not any(key.startswith('target_') for key in hints.get('choice_schema', {}))):
+            from rules_engine.cast_choice import TARGET_KEYS
+            # Resource candidates are not spell targets. Keep already chosen fields.
+            hints = {key: value for key, value in hints.items() if key not in TARGET_KEYS}
         if isinstance(state, MatchState) and card is not None:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
+            destruction_candidates = {target.get('id') for key, group in hints.items()
+                if key.endswith('_targets') and isinstance(group, list)
+                for target in group if isinstance(target, dict)} | {targets.get('target_card_id')}
+            if (set(targets) == {'target_card_id'} and targets['target_card_id']
+                    and not any(key in hints for key in ('linked_target_pairs', 'required_target_instance_count',
+                                                        'required_distinct_target_count', 'supports_divide'))):
+                # Later materialization retains this single, already selected target.
+                destruction_candidates = {targets['target_card_id']}
+            native_planner = _native_planner_snapshot(self)
+            own_choice = ((lambda projected, legal, pid: native_planner().choose_action(projected, legal, pid).action)
+                          if native_planner is not None else
+                          (lambda projected, legal, pid: self.choose_action(projected, legal, pid).action))
             excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text,
-                action=out, own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action,
-                candidates={target.get('id') for key, group in hints.items() if key.endswith('_targets') and isinstance(group, list)
-                            for target in group if isinstance(target, dict)} | {targets.get('target_card_id')})
+                action=out, own_choice_action=own_choice,
+                candidates=destruction_candidates,
+                _native_shared_baseline=native_planner is not None)
             friendly_target = targets.get("target_card_id")
             if allow_friendly_target and friendly_target in state.players[player_id].battlefield:
                 excluded.discard(friendly_target)
@@ -3932,6 +4803,35 @@ class AIAgent:
                     if all(score is not None for score in scores.values()):
                         preferred = max(sorted(allowed_players),
                                         key=lambda target: (scores[target], target == player_id))
+            elif TARGETED_DRAW_RE.fullmatch(without_reminder_text(target_text).strip()):
+                from ai.action_contract import complete_action
+                from ai.information import decision_view
+                from ai.pending_effects import simulation_checked_action, settled_public_position
+                from rules_engine.action_validation import ActionRejected
+                view = (state if getattr(state, 'ai_information_player', None) == player_id
+                        else decision_view(state, player_id, [move])[0])
+                scores = {}
+                wins = set()
+                unknown = False
+                for target in sorted(allowed_players):
+                    action = {**out, 'targets': {**targets, 'target_player': target}}
+                    try:
+                        projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+                        settled = settled_public_position(projected, player_id, opaque_draw_counts=True)
+                    except (ActionRejected, UncertainSimulation):
+                        unknown = True
+                        continue
+                    if settled is not None:
+                        terminal = _terminal_utility(settled.winner, player_id, 100000)
+                        scores[target] = terminal if terminal is not None else evaluate_board(settled, player_id)
+                        if settled.winner == player_id:
+                            wins.add(target)
+                    else:
+                        unknown = True
+                # An unresolved private/replacement choice is not a safe draw forecast.
+                if not scores or (unknown and not wins):
+                    return {**out, '_invalid_ai_choice': True}
+                preferred = max(sorted(wins or scores), key=lambda target: (scores[target], target == player_id))
             else:
                 preferred = opponent
             targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)
@@ -4320,6 +5220,10 @@ class AIAgent:
                     if count and key not in choice and key in selected:
                         choice[key] = sorted(selected[key], key=lambda cid: (rank(state, cid, player_id), cid))[:count]
                 out['cost_choice'] = choice
+                from ai.casting_resources import complete_fixed_cost_choice
+                out = complete_fixed_cost_choice(self, state, out, player_id, selected, move.get('cost_choice'))
+                if out.get('_invalid_ai_choice'):
+                    return out
                 if (selected.get('sacrifice_all') and selected.get('sacrifice_card_ids')
                         and isinstance(state, MatchState) and not out.get('_invalid_ai_choice')):
                     from ai.pending_effects import unanswered_action_wins
@@ -4481,6 +5385,92 @@ class AIAgent:
                 # If we have prevented enough to avoid lethal and remaining trades are poor, stop.
                 if lethal_pressure and incoming_total - prevented < life:
                     lethal_pressure = False
+        if (self.difficulty == 'strong' and isinstance(state, MatchState)
+                and state.step == Step.DECLARE_BLOCKERS
+                and len(attackers) <= 4 and len(blockers) <= 5
+                and assignments and not (state.stack or state.pending_trigger_order
+                    or state.pending_mechanic_choice or state.pending_replacement_choice)):
+            from ai.pending_effects import _settle_announced_stack
+
+            def project(groups):
+                try:
+                    sim = planning_copy(state)
+                    normalized = {aid: [bids] if isinstance(bids, str) else list(bids)
+                                  for aid, bids in groups.items()}
+                    simulation_take_action(self.engine, sim, player_id,
+                        {'type': 'block', 'blocks': normalized}, reject_invalid=True)
+                    if _settle_announced_stack(sim) and self._finish_combat_projection(sim, state):
+                        return sim
+                except (KeyError, ValueError, UncertainSimulation):
+                    pass
+                return None
+
+            incumbent = project(assignments)
+            if incumbent is None or incumbent.winner is not None:
+                return assignments
+            selected = sorted({bid for bids in assignments.values()
+                               for bid in ([bids] if isinstance(bids, str) else bids)})
+            from ai.heuristics import _creature_value
+
+            premiums = {
+                (pid, cid): max(0.0, self._sacrifice_loss(state, cid, pid)
+                                    - 0.95 * _creature_value(state, cid))
+                for pid, ids in ((player_id, selected), (3-player_id, set(state.attackers)))
+                for cid in ids
+            }
+
+            def material_score(sim):
+                value = evaluate_board(sim, player_id)
+                for (pid, cid), premium in premiums.items():
+                    if sim.cards[cid].zone not in {Zone.BATTLEFIELD, Zone.HAND}:
+                        # Board score already prices the body. Retain only the missing
+                        # material premium, symmetrically for both sides of a trade.
+                        value += premium if pid != player_id else -premium
+                return value
+
+            score = material_score(incumbent)
+            # At most five checked deletions, not an exhaustive Strong search.
+            # Resolve marked damage, hit/death triggers and payments before valuing retention.
+            for bid in selected:
+                if incumbent.cards[bid].zone == Zone.BATTLEFIELD:
+                    continue
+                candidate = {}
+                for aid, bids in assignments.items():
+                    retained = [other for other in ([bids] if isinstance(bids, str) else bids)
+                                if other != bid]
+                    if retained:
+                        candidate[aid] = retained
+                alternative = project(candidate)
+                if alternative is None or alternative.winner not in {None, player_id}:
+                    continue
+                value = material_score(alternative)
+                if alternative.winner == player_id or value > score:
+                    assignments, incumbent, score = candidate, alternative, value
+                    if alternative.winner == player_id:
+                        break
+            # Refill only retained blockers: at most 5 * 4 checked augmentations.
+            for bid in selected:
+                if incumbent.winner is not None:
+                    break
+                used = {cid for bids in assignments.values()
+                        for cid in ([bids] if isinstance(bids, str) else bids)}
+                if bid in used or incumbent.cards[bid].zone != Zone.BATTLEFIELD:
+                    continue
+                best_groups, best_result = assignments, incumbent
+                for attacker in attackers:
+                    aid = attacker['id']
+                    if aid in assignments:
+                        continue
+                    candidate = {**assignments, aid: bid}
+                    alternative = project(candidate)
+                    if alternative is None or alternative.winner not in {None, player_id}:
+                        continue
+                    value = material_score(alternative)
+                    if alternative.winner == player_id or value > score:
+                        best_groups, best_result, score = candidate, alternative, value
+                        if alternative.winner == player_id:
+                            break
+                assignments, incumbent = best_groups, best_result
         return assignments
 
     def _search_block_assignments(
@@ -4488,9 +5478,11 @@ class AIAgent:
         state: MatchState,
         attackers: list[dict],
         blockers: list[dict],
-        *, consider_next_combat=True,
+        *, consider_next_combat=True, require_complete=False,
     ) -> dict[str, str | list[str]] | None:
-        """Evaluate small-board blocker assignments by resolving cloned combat."""
+        """Resolve a bounded choice set; exact-response callers keep unknowns."""
+        if not combat_expansion_available():
+            return None
         if self.difficulty not in {"master", "master_plus"} and (
                 self.difficulty != 'strong' or not isinstance(state, MatchState)):
             return None
@@ -4517,10 +5509,16 @@ class AIAgent:
                 return None
             # Reuse checked outcomes for survival or retained recurring material.
             consider_next_combat = False
-        from ai.block_search import block_intents
+        from ai.block_search import block_intents, block_projection_intents, EXACT_BLOCK_INTENT_LIMIT
         assignments = block_intents(state, attacker_ids, blocker_ids)
         if not assignments:
             return None
+        if require_complete and len(assignments) > EXACT_BLOCK_INTENT_LIMIT:
+            return None
+        if not require_complete:
+            assignments = block_projection_intents(state, assignments)
+            if assignments is None:
+                return None
         best: tuple[int, float, tuple[tuple[str, tuple[str, ...]], ...], dict[str, str | list[str]]] | None = None
         initial_life = state.players[defender].life
         opponent = 1 if defender == 2 else 2
@@ -4532,6 +5530,8 @@ class AIAgent:
         face_only = all(state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}' for aid in attacker_ids)
 
         def project(assignment):
+            if not combat_expansion_available(charge=True):
+                return None
             try:
                 sim = planning_copy(state)
                 normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
@@ -4555,7 +5555,11 @@ class AIAgent:
 
         followups = []
         for assignment in assignments:
-            if face_only and initial_life > incoming_power and assignment and not keyword_combat:
+            if not combat_expansion_available():
+                if require_complete:
+                    return None
+                break
+            if not require_complete and face_only and initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
                 for aid, bids in assignment.items():
                     attacker = state.cards[aid]
@@ -4574,6 +5578,8 @@ class AIAgent:
                     continue
             sim = project(assignment)
             if sim is None:
+                if require_complete:
+                    return None
                 continue
             score = evaluate_board(sim, defender)
             score += (sim.players[defender].life - initial_life) * 4.0
@@ -4587,7 +5593,7 @@ class AIAgent:
             # the proposed assignment only chumps. This is a general combat
             # value rule, not an archetype/card exception; lethal prevention
             # and profitable trades remain preferred.
-            if face_only and initial_life > incoming_power and sim.winner != defender and blockers_lost > attackers_lost:
+            if not require_complete and face_only and initial_life > incoming_power and sim.winner != defender and blockers_lost > attackers_lost:
                 if attackers_lost == 0:
                     continue
                 score -= (blockers_lost - attackers_lost) * (12.0 + incoming_power)
@@ -4595,7 +5601,7 @@ class AIAgent:
             if sim.winner == defender:
                 outcome_rank = 2
                 score += 1000.0
-            elif sim.winner is not None:
+            elif sim.winner == opponent:
                 outcome_rank = -1
                 score -= 1000.0
             normalized = {aid: sorted(bids) if len(bids) > 1 else bids[0] for aid, bids in assignment.items()}
@@ -4619,6 +5625,12 @@ class AIAgent:
                 sim = project(dict(candidate[2]))
                 if sim is not None and self._next_board_attack_wins(sim, defender):
                     return candidate[3]
+        if require_complete and not combat_expansion_available():
+            return None
+        if best is not None and best[0] < 0 and not combat_expansion_available():
+            # A losing partial incumbent must not displace a legal fallback
+            # that may still block lethal damage without another projection.
+            return None
         return best[3] if best is not None else None
 
     def _requires_two_or_more_blockers(self, state, attacker) -> bool:
@@ -4847,6 +5859,8 @@ class AIAgent:
 
     def _next_board_attack_wins(self, state, player_id):
         """Bounded next-combat race forecast; unseen draws stay opaque."""
+        if not combat_expansion_available(charge=True):
+            return None
         from ai.information import decision_view
         from ai.pending_effects import _settle_announced_stack
         sim, _ = decision_view(state, player_id, [])
@@ -4868,6 +5882,8 @@ class AIAgent:
                 if not candidates or len(candidates) > 3 or len(blockers) > 2:
                     return False
                 outcome = self._project_attack_line(sim, player_id, candidates, consider_next_combat=False)
+                if not combat_expansion_available():
+                    return None
                 return outcome is not None and outcome[0].winner == player_id
             self.engine.next_step(sim)
         return False
@@ -4880,6 +5896,8 @@ class AIAgent:
                for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
             return None
         from ai.pending_effects import _settle_announced_stack
+        if not combat_expansion_available(charge=True):
+            return None
         sim = planning_copy(state)
         opponent = 3 - player_id
         try:
@@ -4897,9 +5915,12 @@ class AIAgent:
                 blocks = self._search_block_assignments(sim,
                     [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
                     [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers],
+                    require_complete=True,
                     **({} if consider_next_combat else {'consider_next_combat': False}))
                 if blocks is None:
                     return None
+            if not combat_expansion_available(charge=True):
+                return None
             simulation_take_action(self.engine, sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)
             if not _settle_announced_stack(sim):
                 return None
@@ -4984,6 +6005,8 @@ class AIAgent:
             if sim.winner is not None:
                 return sim.winner == player_id
             if sim.step == Step.DECLARE_BLOCKERS and sim.blockers_declared:
+                if not combat_expansion_available(charge=True):
+                    return None
                 original = planning_copy(sim)
                 if not self._finish_combat_projection(sim, original):
                     return None
@@ -5002,6 +6025,8 @@ class AIAgent:
 
     def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int, *, force=False) -> list[str] | None:
         """Search small-board attack subsets through the defender's best legal blocks."""
+        if not combat_expansion_available():
+            return None
         if self.difficulty not in {"master", "master_plus"}:
             return None
         if not force and int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
@@ -5029,6 +6054,8 @@ class AIAgent:
         for subset in subsets:
             outcome = self._project_attack_line(state, player_id, subset)
             if outcome is None:
+                if not combat_expansion_available():
+                    break
                 continue
             sim, actual_attackers = outcome
 
@@ -5730,6 +6757,8 @@ class AIAgent:
             return None
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top = scored[0][1]
+        if scored[0][0] <= 0 and any(move.get('type') == 'pass_priority' for move in legal_moves):
+            return None
         if top.get("type") == "attack" and not (top.get("attackers") or []):
             return None
         return top
@@ -5781,15 +6810,19 @@ class AIAgent:
                         and selection_activation_score(plan, hand_value=1.25, interaction_reservation=6) > 0)]
         if not non_pass:
             return None
-        burn_convert = self._best_burn_conversion_cast(non_pass, state, player_id)
-        if burn_convert is not None:
-            return burn_convert
-        tempo_convert = self._best_tempo_threat_first_cast(non_pass, state, player_id)
-        if tempo_convert is not None:
-            return tempo_convert
-        cheap = self._best_cheap_proactive_cast(non_pass, state, player_id)
-        if cheap is not None:
-            return cheap
+        if isinstance(state, MatchState) and player_id in {1, 2}:
+            from ai.pending_effects import unanswered_action_wins
+            for move in non_pass:
+                card = _card_for_move(state, move) if move.get('type') == 'cast_spell' else None
+                if card is None or self._burn_damage_estimate(_oracle_text(card)) < state.players[3 - player_id].life:
+                    continue
+                action = self._materialize_action(state, move, player_id)
+                # Printed damage is only a prefilter: payment, targets and
+                # prevention must produce a real checked, unanswered win.
+                if not action.get('_invalid_ai_choice') and unanswered_action_wins(state, player_id, action) is True:
+                    return move
+        # Anti-stall conversion must preserve the strategic ranking, not replace
+        # it with an unrelated cheap-spell or direct-damage preference.
         if getattr(state, "stack", []) or []:
             for move in non_pass:
                 if move.get("type") == "cast_spell":
@@ -5849,19 +6882,6 @@ class AIAgent:
                     return proactive
 
         ranked = self._rank_moves(state, legal_moves, player_id)
-        early_cheap = self._best_cheap_proactive_cast(
-            [m for m in ranked if m.get("type") not in {"pass_priority", "tap_land_for_mana", "tap_lands_bulk"}],
-            state,
-            player_id,
-        )
-        if early_cheap is not None:
-            early_cheap = self._materialize_action(state, early_cheap, player_id)
-            if (
-                not early_cheap.get("_invalid_ai_choice")
-                and eligible_conversion(early_cheap)
-                and not self._is_action_obviously_illegal(state, early_cheap, player_id)
-            ):
-                return early_cheap
         if ranked and ranked[0].get("type") == "pass_priority":
             return chosen
         proactive = self._best_proactive_non_pass(ranked, state, player_id)
@@ -6314,3 +7334,104 @@ def _step_key(step) -> str:
     if s.startswith("Step."):
         s = s.split(".", 1)[1]
     return s.lower()
+
+
+def _native_class_attributes(cls):
+    expected = next((names for native, names in _NATIVE_SLOT_CACHE_NAMES if cls is native), None)
+    if expected is None:
+        return None
+    attributes = dict(vars(cls))
+    if '__slotnames__' in attributes:
+        cached = attributes.pop('__slotnames__')
+        if (type(cached) is not list or any(type(name) is not str for name in cached)
+                or tuple(cached) != expected):
+            return None
+    return attributes
+
+
+def _native_planner_snapshot(owner):
+    """Batch-frozen native configuration; fresh private history for each continuation."""
+    from ai.pending_effects import friendly_destruction_profit, _NATIVE_FRIENDLY_DESTRUCTION_PROFIT
+    if friendly_destruction_profit is not _NATIVE_FRIENDLY_DESTRUCTION_PROFIT:
+        return None
+    agent_attributes = _native_class_attributes(AIAgent)
+    engine_attributes = _native_class_attributes(RulesEngine)
+    if (type(owner) is not AIAgent
+            or agent_attributes is None or engine_attributes is None
+            or frozenset(agent_attributes) != _NATIVE_PLANNER_ATTRIBUTES
+            or any(agent_attributes.get(name) is not method for name, method in _NATIVE_PLANNER_METHODS.items())
+            or set(vars(owner)) != {'learned_binding', 'difficulty', 'archetype', 'opponent_archetype',
+                                   'matchup_profile', 'engine', '_main_pass_signature_counts', '_knowledge_usage'}):
+        return None
+    attrs = dict(vars(owner))
+    if (type(owner.engine) is not RulesEngine or vars(owner.engine)
+            or frozenset(engine_attributes) != _NATIVE_ENGINE_ATTRIBUTES
+            or any(engine_attributes.get(name) is not method for name, method in _NATIVE_ENGINE_METHODS.items())
+            or any(type(attrs[key]) is not str for key in ('difficulty', 'archetype'))
+            or type(owner.opponent_archetype) not in (str, type(None))
+            or type(owner.matchup_profile) is not dict
+            or any(type(v) not in (int, float) for v in owner.matchup_profile.values())
+            or type(owner._main_pass_signature_counts) is not dict):
+        return None
+    if any(type(key) is not tuple or len(key) != 5
+           or any(type(key[i]) is not int for i in (0, 1, 3, 4))
+           or type(key[2]) is not tuple or any(type(name) is not str for name in key[2])
+           or type(value) is not int for key, value in owner._main_pass_signature_counts.items()):
+        return None
+    if owner.learned_binding is not None and not _native_learned_provider(owner.learned_binding):
+        return None
+    counts = dict(owner._main_pass_signature_counts)
+    attrs['matchup_profile'] = dict(owner.matchup_profile)
+    policy = attrs['learned_binding']._policy if attrs['learned_binding'] is not None else None
+    encoder_scope = _native_qv._capture_encoder_scope(owner, policy)
+    def spawn():
+        planner = object.__new__(AIAgent)
+        planner.__dict__ = dict(attrs)
+        planner._main_pass_signature_counts = dict(counts)
+        _native_qv._register_encoder_child(encoder_scope, planner, policy)
+        return planner
+    return spawn
+
+
+def _native_learned_provider(binding):
+    binding_class, policy_class, decision_class = _NATIVE_PROVIDER_CLASSES
+    if type(binding) is not binding_class:
+        return False
+    for cls, attributes, getattribute in _NATIVE_PROVIDER_LAYOUTS:
+        current = _native_class_attributes(cls)
+        if (current is None or current.keys() != attributes.keys()
+                or any(current[name] is not value for name, value in attributes.items())):
+            return False
+        if cls.__getattribute__ is not getattribute:
+            return False
+    if (any(vars(module).get(name) is not cls for module, name, cls in _NATIVE_PROVIDER_ALIASES)
+            or policy_class.prepare.__globals__.get('QVDecision') is not decision_class):
+        return False
+    try:
+        policy = object.__getattribute__(binding, '_policy')
+        checkpoint = object.__getattribute__(binding, 'checkpoint_sha256')
+        contract = object.__getattribute__(binding, '_contract')
+    except AttributeError:
+        return False
+    if type(policy) is not policy_class or type(checkpoint) is not str or type(contract) is not tuple:
+        return False
+    attributes = object.__getattribute__(policy, '__dict__')
+    return set(attributes) == {'_payload'} and type(attributes['_payload']) is dict
+
+
+_NATIVE_CHOOSE_ACTION = AIAgent.choose_action
+from ai import learned_policy as _native_lp, learned_qv as _native_qv
+_NATIVE_PROVIDER_CLASSES = (_native_lp.LivePolicyBinding, _native_qv.QVPolicy, _native_qv.QVDecision)
+# copyreg may add this canonical cache during ordinary snapshot serialization.
+_NATIVE_SLOT_CACHE_NAMES = tuple((cls, tuple(vars(cls).get('__slots__', ())))
+                               for cls in (AIAgent, RulesEngine, *_NATIVE_PROVIDER_CLASSES))
+_NATIVE_PLANNER_ATTRIBUTES = frozenset(_native_class_attributes(AIAgent))
+_NATIVE_ENGINE_ATTRIBUTES = frozenset(_native_class_attributes(RulesEngine))
+_NATIVE_PLANNER_METHODS = {name: method for name, method in _native_class_attributes(AIAgent).items() if callable(method)}
+_NATIVE_ENGINE_METHODS = {name: method for name, method in _native_class_attributes(RulesEngine).items() if callable(method)}
+_NATIVE_PROVIDER_LAYOUTS = tuple((cls, _native_class_attributes(cls), cls.__getattribute__)
+                               for cls in _NATIVE_PROVIDER_CLASSES)
+_NATIVE_PROVIDER_ALIASES = ((_native_lp, 'LivePolicyBinding', _NATIVE_PROVIDER_CLASSES[0]),
+                          (_native_lp, 'QVPolicy', _NATIVE_PROVIDER_CLASSES[1]),
+                          (_native_qv, 'QVPolicy', _NATIVE_PROVIDER_CLASSES[1]),
+                          (_native_qv, 'QVDecision', _NATIVE_PROVIDER_CLASSES[2]))

@@ -27,7 +27,7 @@ export function groupBattlefield(cards: CardView[]): { nonLands: CardView[]; lan
 export function cardStates(card: CardView, match: Pick<MatchState, "attackers" | "blocks">, targetable = false, selected = false): string[] {
   return [card.tapped && "Tapped", match.attackers?.includes(card.id) && "Attacking",
     Object.values(match.blocks ?? {}).some(ids => ids.includes(card.id)) && "Blocking",
-    card.types.includes("Creature") && card.summoning_sick && "Summoning sick", targetable && "Targetable", selected && "Selected"].filter(Boolean) as string[];
+    card.types.includes("Creature") && card.summoning_sick && !card.keywords?.includes("haste") && "Summoning sick", targetable && "Targetable", selected && "Selected"].filter(Boolean) as string[];
 }
 export const phases = ["Beginning", "Main I", "Combat", "Main II", "Ending"];
 export function landPlayHint(match: MatchState, seat: number): string {

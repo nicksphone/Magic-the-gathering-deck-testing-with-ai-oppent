@@ -3,9 +3,11 @@ from copy import deepcopy
 import importlib
 import importlib.util
 import json
+import math
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ABI = '0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5'
@@ -70,6 +72,41 @@ class CheckpointTests(unittest.TestCase):
         empty, length = m.text_moments('')
         self.assertEqual(empty, [[0.0] * 256 for _ in range(3)])
         self.assertEqual(length, 0.0)
+
+    def test_text_pool_scans_each_moment_once_without_changing_arithmetic(self):
+        m = subject(self)
+        payload = blank_checkpoint(m)
+        payload['weights']['byte.weight'] = [
+            [((byte * 13 + index * 7) % 31 - 15) / 16 *
+             (math.ulp(0.0) if index % 4 == 0 else 1.0) for index in range(m.WIDTH)]
+            for byte in range(256)]
+        policy = m.QVPolicy(payload, expected=contract())
+
+        class CountedRow(list):
+            scans = 0
+
+            def __iter__(self):
+                self.scans += 1
+                return super().__iter__()
+
+        for text in ('', 'Boros Charm', '\u00e9\u0301\U0001f525', 'burn' * 256):
+            with self.subTest(text_bytes=len(text.encode('utf-8'))):
+                moments, length = m.text_moments(text)
+                expected = [math.fsum(coefficient * payload['weights']['byte.weight'][byte][index]
+                                      for byte, coefficient in enumerate(row) if coefficient)
+                            for row in moments for index in range(m.WIDTH)] + [length]
+                rows = [CountedRow(row) for row in moments]
+                cache = {}
+                with patch.object(m, 'text_moments', return_value=(rows, length)), \
+                        patch.object(policy, '_linear', wraps=policy._linear) as linear:
+                    pack = tree({'kind': 'text', 'value': text})
+                    encoded = policy._encode(pack, cache)
+                    self.assertEqual(linear.call_args.args, ('text', expected))
+                    self.assertEqual([value.hex() for value in linear.call_args.args[1]],
+                                     [value.hex() for value in expected])
+                    self.assertEqual([row.scans for row in rows], [1, 1, 1])
+                    self.assertEqual(policy._encode(pack, cache), encoded)
+                    self.assertEqual(linear.call_count, 1)
 
     def test_json_roundtrip_is_detached_and_inference_is_finite(self):
         m = subject(self)

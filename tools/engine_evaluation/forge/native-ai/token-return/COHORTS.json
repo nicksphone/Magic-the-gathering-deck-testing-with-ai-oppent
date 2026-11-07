@@ -1,0 +1,181 @@
+{
+  "cohort_count": 7,
+  "cohorts": [
+    {
+      "args": [
+        "{report_dir}"
+      ],
+      "classes_renamed": false,
+      "historical_final2_terminal": {
+        "harness_errors": 0,
+        "pass": 2,
+        "policy_red": 0,
+        "scope": "Aggregate original-run counters only; public package not executed",
+        "total": 2
+      },
+      "id": "oven-cat-2",
+      "main": "forge.evaluation.NativeDrainTactics8",
+      "pass_field": "pass",
+      "red_fields": [
+        "policy_red",
+        "harness_errors"
+      ],
+      "row_count": 2,
+      "scope": "INTERNAL-PROTOCOL; not natural/expert games",
+      "source": "NativeDrainTactics8.java",
+      "source_sha256": "b2be45824befaaafbe2c711d9abb10abc61ed71b539cd905d50005a22e4eb8a8"
+    },
+    {
+      "args": [
+        "{report_dir}"
+      ],
+      "classes_renamed": false,
+      "historical_final2_terminal": {
+        "harness_errors": 0,
+        "pass": 2,
+        "policy_red": 0,
+        "scope": "Aggregate original-run counters only; public package not executed",
+        "total": 2
+      },
+      "id": "goose-cat-2",
+      "main": "forge.evaluation.NativeGooseCatTwoStep2",
+      "pass_field": "pass",
+      "red_fields": [
+        "policy_red",
+        "harness_errors"
+      ],
+      "row_count": 2,
+      "scope": "INTERNAL-PROTOCOL; not natural/expert games",
+      "source": "NativeGooseCatTwoStep2.java",
+      "source_sha256": "8435a9ebace5ff420f6ec314edf0898f6192e4ea1ef67c5e283f1b677e5937f5"
+    },
+    {
+      "args": [
+        "{report_dir}",
+        "require-helper"
+      ],
+      "classes_renamed": false,
+      "historical_final2_terminal": {
+        "harness_errors": 0,
+        "negative_red": 0,
+        "qualified_pass": 14,
+        "scope": "Aggregate original-run counters only; public package not executed",
+        "total": 14
+      },
+      "id": "token-return-negative-14",
+      "main": "forge.evaluation.NativeTokenReturnNegative14",
+      "pass_field": "qualified_pass",
+      "red_fields": [
+        "negative_red",
+        "harness_errors"
+      ],
+      "row_count": 14,
+      "scope": "INTERNAL-PROTOCOL; not natural/expert games",
+      "source": "NativeTokenReturnNegative14.java",
+      "source_sha256": "3b3b822365749b37db25846c84fb57129cb9b3f37334a1fbd87496bca3cac0e7"
+    },
+    {
+      "args": [
+        "{report_dir}",
+        "require-helper"
+      ],
+      "classes_renamed": false,
+      "historical_final2_terminal": {
+        "harness_errors": 0,
+        "helper_ABI_red_not_game_failure": 0,
+        "pass": 4,
+        "red": 0,
+        "scope": "Aggregate original-run counters only; public package not executed",
+        "total": 4
+      },
+      "id": "preference-danger-4",
+      "main": "forge.evaluation.NativeTokenReturnPreferenceDanger4",
+      "pass_field": "pass",
+      "red_fields": [
+        "red",
+        "harness_errors",
+        "helper_ABI_red_not_game_failure"
+      ],
+      "row_count": 4,
+      "scope": "INTERNAL-PROTOCOL; not natural/expert games",
+      "source": "NativeTokenReturnPreferenceDanger4.java",
+      "source_sha256": "e9ffc338a3006df17e4021094de25f99e96cef451f335288cfae865d38f8ee79"
+    },
+    {
+      "args": [
+        "{report_dir}"
+      ],
+      "classes_renamed": false,
+      "historical_final2_terminal": {
+        "harness_errors": 0,
+        "pass": 10,
+        "protocol_red": 0,
+        "scope": "Aggregate original-run counters only; public package not executed",
+        "total": 10
+      },
+      "id": "observer-delayed-10",
+      "main": "forge.evaluation.NativeObserverDelayed10",
+      "pass_field": "pass",
+      "red_fields": [
+        "protocol_red",
+        "harness_errors"
+      ],
+      "row_count": 10,
+      "scope": "INTERNAL-PROTOCOL; not natural/expert games",
+      "source": "NativeObserverDelayed10.java",
+      "source_sha256": "3132a808013fdf2d79a69de0210f31076208a7ae6644c52da60bba3d47909487"
+    },
+    {
+      "args": [
+        "{report_dir}"
+      ],
+      "classes_renamed": false,
+      "id": "forecast-protocol-10",
+      "main": "forge.evaluation.NativeTokenReturnProtocol10",
+      "pass_field": "pass",
+      "red_fields": [
+        "protocol_red",
+        "harness_errors"
+      ],
+      "row_count": 10,
+      "scope": "INTERNAL-PROTOCOL-NOT-CANONICAL-GAMEPLAY",
+      "source": "NativeTokenReturnProtocol10.java",
+      "source_sha256": "069f85040cd8a591b79aaf76b41a4b6760d231e8112952707fd86a7eaee6fe76"
+    },
+    {
+      "args": [
+        "{report_dir}"
+      ],
+      "classes_renamed": false,
+      "id": "paid-copy-token-4",
+      "main": "forge.evaluation.NativeRiteTokenReturn4",
+      "pass_field": "pass",
+      "red_fields": [
+        "regression_red",
+        "harness_errors"
+      ],
+      "row_count": 4,
+      "scope": "Constructed native paid-copy fixtures, not natural/expert games",
+      "source": "NativeRiteTokenReturn4.java",
+      "source_sha256": "ae4a6f47e9263a24cc6ec88fb5df116c4e33f78d2fd0cc170909d1651fce4799"
+    }
+  ],
+  "declared_rows": 46,
+  "execution_of_this_package_claimed": false,
+  "label": "FINITE-PUBLIC-NATIVE-TOKEN-RETURN-FIXTURES",
+  "notes": [
+    "NativeDrainTactics8 is the unchanged TWO-row Oven source; no old eight-row Drain fixture is included.",
+    "Observer10 is an internal delayed-observer metadata protocol with zero ordinary AI callbacks, not a gameplay episode.",
+    "Sources retain their runtime output schemas, including private-named output files; no runtime outputs or private traces are bundled.",
+    "No runner, compiled classes, production source copies, graph, archive or credentials are bundled."
+  ],
+  "pending_excluded": "New Raman protocol10 is separate, pending, and not bundled or qualified here",
+  "private_evidence_included": false,
+  "query_or_RNG_purity_qualification_claimed": false,
+  "required_prefix_content_id": "3973f642ee21856e748c23513dad120421e6a26c9ecde7acd6f0579bfee83f48",
+  "schema": 1,
+  "upstream": {
+    "commit": "61e9442c433711a82258daca3236f936a1d6f70e",
+    "repository": "https://github.com/Card-Forge/forge"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "card": {
+    "file": "inspiration.json",
+    "full_row_fields": 65,
+    "id": "95233b5e-9401-4d6d-8ec4-959ca22270ff",
+    "mana_cost": "{3}{U}",
+    "oracle_id": "8f32ceb2-92c2-4dde-bf73-40bb79c3fcef",
+    "semantic_fixture_equal": null,
+    "sha256": "4f1668e60a9f2d89384e10bf035e8fa8afd21a2ef37623c32a918c4f9fed84e7",
+    "source_gzip_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "source_kind": "hash_verified_frozen_official_oracle_bulk"
+  },
+  "full_printed_text_unmodified": true,
+  "origin": "Frozen official Scryfall Oracle bulk; extracted before the first failing native cost control"
+}

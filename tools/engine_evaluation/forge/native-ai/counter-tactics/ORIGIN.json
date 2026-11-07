@@ -1,0 +1,38 @@
+{
+  "E5_content_id": "a7d94a7e8998cdc81fb6f6cc762a551e1e03f1c918f0e9fbbea56155b6ef32c1",
+  "audits": {
+    "NativeCounterTargetLegality2.java": {
+      "producer_label": "native-counter-target-legality-20261106-rMJkjEYB",
+      "sha256": "de1b753591263c217d1a978740f0fee69e4049659972b6be16b4afec524d5e33",
+      "unchanged": true
+    },
+    "NativeCounterWorship2.java": {
+      "producer_label": "native-counter-worship-protocol-20261106-X9IqXsxA",
+      "sha256": "a1dda0bba527460703886480cc7a4e24414bf34046a779586003a18c938dd22e",
+      "unchanged": true
+    },
+    "NativeCountertactics16.java": {
+      "producer_label": "native-countertactics16-baseline-20261106-jj6YvN0G",
+      "sha256": "d0397d11eb4a718c2c88f941a607ca19a17c328431660eefae5f195e59d52774",
+      "unchanged": true
+    }
+  },
+  "base_identity_sha256": "cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0",
+  "base_runtime_content_sha256": "acc7567174ff29e05a392d246b6c54e9b65a14d3e145dd661e60ec34739c624a",
+  "candidate3_CounterAi_class_sha256": "baf7d165ef2115d475a29438e9280fcec27b5007228548a4b20dea5852a2b823",
+  "candidate3_content_id": "db05b7032887ce9d5b9f769b915f25e9ebdbc04a03f4f8dd4040537d6216f242",
+  "canonical_program_count": 12,
+  "canonical_programs_copied_before_new_audit": true,
+  "final_qualification_status": "PENDING_PARENT_ACTUAL_RESULTS",
+  "forge_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "license": "GPL-3.0-or-later",
+  "packager_native_execution": false,
+  "parent_reported_candidate3_build_id": "663dbc5e6f06171253658671c403dc33b83cf46ded127e3aa4e9c03412540973",
+  "patch_sha256": "bd6acebd4d7d5a1cc1be4dff7367fc217986126f8aa97de9a066c7d41109e0bf",
+  "preimage_sha256": "3356ef3e411547b2bab56a19a2405ace757d08d65c58410d4b80dd01dcb044fd",
+  "private_runtime_evidence_included": false,
+  "schema": 1,
+  "source_origin_path": "forge-ai/src/main/java/forge/ai/ability/CounterAi.java",
+  "source_sha256": "fa781549b9272dd3b8fc05e80febc9baf470722cb5edce67a2ae4c9e3e423659",
+  "upstream": "Forge Team / Card-Forge"
+}

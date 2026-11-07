@@ -1,0 +1,165 @@
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputQueue.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputQueue.java
+@@ -17,6 +17,10 @@
+  */
+ package forge.gamemodes.match.input;
+ 
++// Owned 2026-11-05 patch on Forge 61e9442: optional generation-bound presentation ABI.
++// Owned correction: same-input normal-return interaction receipts reuse that ABI.
++// Owned R7 observation only: report successful popped object/generations outside monitor.
++
+ import forge.game.GameView;
+ import forge.util.IHasForgeLog;
+ import forge.player.PlayerControllerHuman;
+@@ -37,6 +41,84 @@
+ 
+     private final BlockingDeque<InputSynchronized> inputStack = new LinkedBlockingDeque<>();
+     private final GameView gameView;
++    private long inputGeneration;
++    private boolean presentationEnded;
++    private volatile PresentationListener presentationListener;
++    private record PresentationContext(Input input, long generation) { }
++    private final ThreadLocal<PresentationContext> presenting = new ThreadLocal<>();
++    public interface RemovalObserver {
++        void removed(Input input, long beforeGeneration, long afterGeneration);
++    }
++    private volatile RemovalObserver removalObserver;
++    public final void setRemovalObserver(final RemovalObserver observer) {
++        removalObserver = observer;
++    }
++
++    public interface PresentationListener {
++        void invalidated();
++        void presented(Input input, long generation);
++    }
++
++    public final void setPresentationListener(final PresentationListener listener) {
++        synchronized (this) {
++            presentationListener = listener;
++            inputChanged();
++        }
++        notifyInvalidated();
++    }
++
++    public final boolean hasPresentationListener() {
++        return presentationListener != null;
++    }
++
++    public final synchronized long getInputGeneration() {
++        return inputGeneration;
++    }
++
++    public final synchronized boolean isCurrentPresentation(final Input input, final long generation) {
++        return input != null && !presentationEnded && !gameView.isGameOver()
++                && inputGeneration == generation && inputStack.peek() == input;
++    }
++
++    // Call with the queue monitor; never call host code while holding it.
++    private void inputChanged() {
++        inputGeneration++;
++    }
++
++    private void notifyInvalidated() {
++        final PresentationListener listener = presentationListener;
++        if (listener != null) listener.invalidated();
++    }
++
++    final void presentInput(final Input input, final long generation) {
++        if (!isCurrentPresentation(input, generation)) return;
++        final PresentationContext previous = presenting.get();
++        presenting.set(new PresentationContext(input, generation));
++        try {
++            input.showMessageInitial();
++        } finally {
++            if (previous == null) presenting.remove();
++            else presenting.set(previous);
++        }
++    }
++
++    final void presentationCompleted(final Input input) {
++        final PresentationContext context = presenting.get();
++        final PresentationListener listener = presentationListener;
++        if (listener != null && context != null && context.input() == input
++                && isCurrentPresentation(input, context.generation())) {
++            listener.presented(input, context.generation());
++        }
++    }
++
++    final void interactionCompleted(final Input input, final long generation) {
++        // Initial presentation owns its later full-completion receipt.
++        if (presenting.get() != null) return;
++        final PresentationListener listener = presentationListener;
++        if (listener != null && isCurrentPresentation(input, generation)) {
++            listener.presented(input, generation);
++        }
++    }
+ 
+     public InputQueue(final GameView gameView, final InputProxy inputProxy) {
+         this.gameView = gameView;
+@@ -54,6 +136,10 @@
+ 
+     /*pfps sometimes this is being called twice for the same input */
+     public final void removeInput(final Input inp) {
++        boolean popped = false;
++        final long beforeGeneration, afterGeneration;
++        synchronized (this) {
++        beforeGeneration = inputGeneration;
+         final Input topMostInput = inputStack.isEmpty() ? null : inputStack.peek();
+ 
+         if (topMostInput != inp) {
+@@ -61,7 +147,14 @@
+         } else if (topMostInput != null) {
+             // if topMostInput is null then it means the inputstack is already empty, why this is called twice?
+            inputStack.pop();
+-        }
++           popped = true;
++        }
++        inputChanged();
++        afterGeneration = inputGeneration;
++        }
++        notifyInvalidated();
++        final RemovalObserver observer = removalObserver;
++        if (popped && observer != null) observer.removed(inp, beforeGeneration, afterGeneration);
+         updateObservers();
+     }
+ 
+@@ -69,7 +162,13 @@
+         netLog.trace("clearInputs() called, stack size = {}", inputStack.size());
+         int count = 0;
+         while(!inputStack.isEmpty()) {
+-            InputSynchronized inp = inputStack.pop();
++            final InputSynchronized inp;
++            synchronized (this) {
++                inp = inputStack.poll();
++                if (inp == null) break;
++                inputChanged();
++            }
++            notifyInvalidated();
+             netLog.trace("Stopping input #{}: {}", count, inp.getClass().getSimpleName());
+             inp.stop();
+             count++;
+@@ -96,7 +195,11 @@
+         //if (HostedMatch.getHumanCount() > 1) { //update current player if needed
+             //HostedMatch.setCurrentPlayer(game.getPlayer(input.getOwner()));
+         //}
+-        inputStack.push(input);
++        synchronized (this) {
++            inputStack.push(input);
++            inputChanged();
++        }
++        notifyInvalidated();
+         // onGameOver releases only the inputs already waiting when it runs
+         if (gameView.isGameOver()) {
+             input.relaseLatchWhenGameIsOver();
+@@ -112,6 +215,11 @@
+     }
+ 
+     public void onGameOver(final boolean releaseAllInputs) {
++        synchronized (this) {
++            presentationEnded = true;
++            inputChanged();
++        }
++        notifyInvalidated();
+         for (final InputSynchronized inp : inputStack) {
+             inp.relaseLatchWhenGameIsOver();
+             if (!releaseAllInputs) {

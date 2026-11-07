@@ -19,7 +19,7 @@ HELPERS = (
 )
 RUNTIME = (
     'id', 'owner', 'controller', 'zone', 'tapped', 'summoning_sick', 'entered_turn',
-    'counters', 'counter_timestamps', 'keyword_effects', 'base_stat_effects',
+    'counters', 'counter_timestamps', 'keyword_effects', 'activated_ability_effects', 'base_stat_effects',
     'type_effects', 'type_effect_base', 'control_effect_base', 'control_effects',
     'attached_to', 'static_order', 'effect_timestamp', 'battlefield_incarnation',
     'instance_order', 'zone_change_sequence', 'chosen_creature_type',

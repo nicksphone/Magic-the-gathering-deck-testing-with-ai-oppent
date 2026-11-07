@@ -482,6 +482,8 @@ def lose_life(state: MatchState, controller: int, payload: dict) -> None:
         state.log.append(f"{state.players[target_player].name} can't lose life.")
         return
     state.players[target_player].life -= amount
+    from rules_engine.resource_events import record_life_loss
+    record_life_loss(state, target_player, amount)
     state.log.append(f"{state.players[target_player].name} loses {amount} life.")
 
 
@@ -1337,11 +1339,20 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        # Capture before leave events and the zone reset remove battlefield characteristics.
+        life_gain = ((card.controller, effective_combat_stats(state, target)[0])
+                     if payload.get('__gain_exiled_power_life') is True else None)
+        if life_gain is not None and life_gain[1] is None:
+            state.log.append('Unsupported exile instruction: target power is unknown.')
+            return
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
         zone_owner.exile.append(target)
         card.move_to_zone(Zone.EXILE)
         state.log.append(f"{card.name} is exiled.")
+        if life_gain is not None:
+            gain_life(state, controller, {**payload, 'target_player': life_gain[0],
+                                          'amount': max(0, life_gain[1])})
 
 
 def exile_return_immediate(state: MatchState, controller: int, payload: dict) -> None:
@@ -1790,6 +1801,13 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     This is distinct from a normal land play: it does not consume the
     controller's land-play allowance and the effect may enter the land tapped.
     """
+    condition = payload.get('gain_life_if_put_subtype')
+    if condition is not None:
+        from rules_engine.land_types import LAND_TYPES
+        if (type(condition) is not dict or set(condition) != {'subtype', 'amount'}
+                or type(condition['subtype']) is not str or condition['subtype'] not in LAND_TYPES
+                or type(condition['amount']) is not int or condition['amount'] < 0):
+            raise ValueError('Invalid conditional hand-land entry')
     player = state.players[controller]
     eligible = [cid for cid in player.hand if cid in state.cards
                 and state.cards[cid].owner == controller and state.cards[cid].zone == Zone.HAND
@@ -1817,6 +1835,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     if reference is not None and reference != [object_incarnation(state.cards[land_id]),
                                                state.cards[land_id].zone_change_sequence]:
         return
+    from_reference = [object_incarnation(state.cards[land_id]), state.cards[land_id].zone_change_sequence]
     if pause_for_land_entries(state, controller, [land_id], "put_land_from_hand", {**payload, "land_id": land_id}):
         return
     land = state.cards[land_id]
@@ -1828,11 +1847,25 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     land.summoning_sick = True
     land.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, land_id)
+    receipt = None
+    if condition is not None:
+        from rules_engine.land_types import has_land_type
+        receipt = {'card_id': land_id, 'controller': controller, 'from_reference': from_reference,
+                   'entry_reference': [object_incarnation(land), land.zone_change_sequence],
+                   'subtype': condition['subtype'],
+                   'matched_subtype': has_land_type(state, land, condition['subtype'])}
     emit_event(state, "enters_battlefield", {"card_id": land_id, "controller": controller})
     state.log.append(
         f"{player.name} puts {land.name} from hand onto the battlefield"
         f"{' tapped' if land.tapped else ''}."
     )
+    if receipt is not None and receipt['matched_subtype']:
+        from effects.registry import resolve_effect
+        context = {key: payload[key] for key in ('__source_card_id', '__source_lki', '__resolving_item')
+                   if key in payload}
+        resolve_effect(state, controller, 'gain_life', {
+            **context, 'amount': condition['amount'], 'target_player': controller,
+            '__put_land_receipt': receipt})
 
 
 def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
@@ -2019,6 +2052,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     limit = int(payload.get("count", 0) or 0)
     mv_max = payload.get("mv_max")
     mv_max = int(mv_max) if mv_max is not None else None
+    def matches(card):
+        return search_card_matches(card, subtype, mv_max,
+                                   printed_mana_costs=payload.get('printed_mana_costs'))
     owner, effect_controller, frame = _search_resolution_context(state, controller, payload)
     player = state.players[owner]
 
@@ -2045,7 +2081,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     if (payload.get("selected_card_ids") is None
             and (owner in state.mechanic_choice_players
                  or (state.replacement_choice_required and owner in state.replacement_choice_players))):
-        eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
+        eligible = [cid for cid in player.library if matches(state.cards[cid])]
         if eligible:
             state.pending_mechanic_choice = {
                 "kind": "search_library", "player_id": owner,
@@ -2071,7 +2107,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
                 or len(selected) != len(set(selected)) or limit and len(selected) > limit
                 or any(cid not in player.library or cid not in state.cards
                        or state.cards[cid].zone != Zone.LIBRARY or state.cards[cid].owner != owner
-                       or not search_card_matches(state.cards[cid], subtype, mv_max)
+                       or not matches(state.cards[cid])
                        for cid in selected)):
             raise ValueError('Unavailable library search selection')
         references = payload.get('__search_references')
@@ -2087,7 +2123,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     for cid in candidates:
         if cid not in player.library or cid not in state.cards or cid in chosen:
             continue
-        if search_card_matches(state.cards[cid], subtype, mv_max):
+        if matches(state.cards[cid]):
             chosen.append(cid)
             if limit and len(chosen) >= limit:
                 break
@@ -2336,6 +2372,12 @@ def create_shark_token(state: MatchState, controller: int, payload: dict) -> Non
 
 
 def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_faces import EXILE_PLAY_DURATIONS, grant_exile_play_duration
+    duration, numeric = payload.get('play_duration'), payload.get('play_exiled_until')
+    if (duration is not None and (type(duration) is not str or duration not in EXILE_PLAY_DURATIONS)
+            or duration is None and type(numeric) is not int
+            or duration is not None and numeric is not None):
+        raise ValueError('Unsupported or conflicting exile play duration')
     player = state.players[controller]
     amount = max(1, int(payload.get("amount", 2)))
     cards = []
@@ -2343,10 +2385,15 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
         cid = player.library.pop()
         player.exile.append(cid)
         state.cards[cid].move_to_zone(Zone.EXILE)
-        player.exile_play_until[cid] = state.turn + 1
+        if duration is not None:
+            grant_exile_play_duration(state, controller, cid, duration)
+        else:
+            player.exile_play_until[cid] = numeric
         cards.append(state.cards[cid].name)
     if cards:
-        state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
+        label = {'this_turn': 'the end of this turn', 'controller_next_turn': 'the end of their next turn',
+                 'next_controller_end_step': 'their next end step'}.get(duration, f'the end of turn {numeric}')
+        state.log.append(f"{player.name} exiles cards playable until {label}: {', '.join(cards)}.")
 
 
 def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> None:

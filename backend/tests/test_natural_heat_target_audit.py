@@ -84,11 +84,16 @@ def _assert_legacy_snapshot_parity(actual, historical, original, history, histor
                 assert cid == source_id
                 raw = {}
             if cid in departed_lki or not raw:
-                assert all(key in current for key in ('control_effect_base', 'control_effects', 'kicker_count'))
+                assert all(key in current for key in ('control_effect_base', 'control_effects', 'kicker_count',
+                                                     'activated_ability_effects'))
             for key, value in {'control_effect_base': None, 'control_effects': [],
-                               'kicker_count': None}.items():
+                               'kicker_count': None, 'activated_ability_effects': []}.items():
                 if key not in raw and key in current:
                     assert current[key] == value
+                    old = expected['card_observations'][seat][cid]
+                    if key == 'activated_ability_effects' and key in old:
+                        assert old[key] == value
+                        old.pop(key)
                     current.pop(key)
     # Only the original collector's historical AI TRACE log is excluded.
     assert canonical({k: v for k, v in actual.items() if k != 'log'}) == canonical(

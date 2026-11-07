@@ -1,0 +1,19 @@
+{
+  "scope": "Independent declared canonical positions, not private diagnostic roots or full-game histories",
+  "Oracle_or_metadata_modified": false,
+  "network_requests": 0,
+  "sources": {
+    "activated_top_selection/serra-angel.json": "612bebf85f0af1f1784b418277426b18102d8282965e2ddac0adc89ed10597a2",
+    "activated_top_selection/opt.json": "4c1d4b713ae2884e8475dad6c93239d564eb3edfacec3969615df623d40fa3db",
+    "knowledge_profiles/seed155-scryfall.jsonl": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "additional_sources": "Existing ai_joint_cast_resources/provenance.json full cost-reservation rows and full raw Treasure",
+  "Blood_Artist": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 8,
+    "line_sha256_including_newline": "f23dc31f51a20c485ef1c26edbb3986c38797cc33a7268e3993cc55e017059ec",
+    "public_uri": "https://api.scryfall.com/cards/b5275d76-2947-4219-be21-614c7421614a",
+    "provider": "Scryfall public cards/collection API",
+    "source_epoch": "2026-10-12"
+  }
+}

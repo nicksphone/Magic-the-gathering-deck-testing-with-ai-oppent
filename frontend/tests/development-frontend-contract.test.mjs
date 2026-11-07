@@ -211,6 +211,7 @@ test('runtime verifier protocol cannot emit proof when page closure fails', asyn
 
 const originalFixtureRoutes = ['tests/attack-all.html', 'tests/human-actions.html',
   'tests/interactive-preflight.html', 'tests/simulation-preflight.html'];
+const fixtureRoutes = [...originalFixtureRoutes, 'tests/ui-clarity.html'];
 function htmlFiles(directory, relative = '') {
   return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
     const name = path.posix.join(relative, entry.name);
@@ -218,8 +219,8 @@ function htmlFiles(directory, relative = '') {
       : entry.isFile() && entry.name.endsWith('.html') ? [name] : [];
   });
 }
-for (const route of originalFixtureRoutes) {
-  test(`actual build emits original ${route} and real module chunks, not the SPA fallback`, () => {
+for (const route of fixtureRoutes) {
+  test(`actual build emits ${originalFixtureRoutes.includes(route) ? 'original ' : ''}${route} and real module chunks, not the SPA fallback`, () => {
     const asset = output.find(value => value.type === 'asset' && value.fileName === route);
     assert.ok(asset, `Missing original fixture HTML: ${route}`);
     const html = fs.readFileSync(path.join(outDir, route), 'utf8');
@@ -233,7 +234,7 @@ for (const route of originalFixtureRoutes) {
       assert.match(file, /\.js$/); assert.doesNotMatch(script, /\.tsx?(?:[?#]|$)/);
     }
     const expected = ['index.html', ...htmlFiles(path.join(root, 'tests')).map(file => `tests/${file}`)].sort();
-    assert.deepEqual(expected, ['index.html', ...originalFixtureRoutes, 'tests/fixtures/ci-development-runtime/probe.html'].sort());
+    assert.deepEqual(expected, ['index.html', ...fixtureRoutes, 'tests/fixtures/ci-development-runtime/probe.html'].sort());
     assert.deepEqual(output.filter(value => value.type === 'asset' && value.fileName.endsWith('.html')).map(value => value.fileName).sort(), expected);
     const browserSources = fs.readdirSync(path.join(root, 'tests')).filter(file => /^browser-.*\.mjs$/.test(file))
       .map(file => fs.readFileSync(path.join(root, 'tests', file), 'utf8')).join('\n');

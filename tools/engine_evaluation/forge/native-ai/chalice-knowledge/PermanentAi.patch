@@ -1,0 +1,187 @@
+--- preimage/forge-ai/src/main/java/forge/ai/ability/PermanentAi.java
++++ source/forge-ai/src/main/java/forge/ai/ability/PermanentAi.java
+@@ -1,9 +1,14 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Derived from Forge Team/Card-Forge PermanentAi; local Chalice knowledge correction.
+ package forge.ai.ability;
+ 
+ import forge.ai.*;
+ import forge.card.CardStateName;
+ import forge.card.CardType.Supertype;
++import forge.card.GamePieceType;
+ import forge.card.mana.ManaCost;
++import forge.deck.CardPool;
++import forge.deck.DeckSection;
+ import forge.game.ability.AbilityUtils;
+ import forge.game.ability.ApiType;
+ import forge.game.card.*;
+@@ -15,10 +20,18 @@
+ import forge.game.phase.PhaseType;
+ import forge.game.player.Player;
+ import forge.game.spellability.SpellAbility;
++import forge.game.staticability.StaticAbility;
++import forge.game.staticability.StaticAbilityMode;
+ import forge.game.trigger.Trigger;
+ import forge.game.trigger.TriggerType;
+ import forge.game.zone.ZoneType;
++import forge.item.IPaperCard;
++import forge.item.PaperCard;
+ import org.apache.commons.lang3.StringUtils;
++
++import java.util.EnumSet;
++import java.util.HashMap;
++import java.util.Map;
+ 
+ public class PermanentAi extends SpellAbilityAi {
+ 
+@@ -117,29 +130,18 @@
+         if ("ChaliceOfTheVoid".equals(source.getSVar("AICurseEffect"))) {
+             int maxX = sa.getXManaCostPaid(); // as set above
+             CardCollection otherChalices = CardLists.filter(ai.getGame().getCardsIn(ZoneType.Battlefield), CardPredicates.nameEquals("Chalice of the Void"));
++            Map<Integer, Integer> ownCandidates = chaliceFutureCounts(ai, ai);
++            Map<Integer, Integer> opponentCandidates = chaliceFutureCounts(ai.getStrongestOpponent(), ai);
+             outer: for (int i = 0; i <= maxX; i++) {
+                 for (Card chalice : otherChalices) {
+                     if (chalice.getCounters(CounterEnumType.CHARGE) == i) {
+                         continue outer; // already disabled, no point in adding another one
+                     }
+                 }
+-                // assume the AI knows the deck lists of its opponents and if we see a card in a certain zone except for the library or hand,
+-                // it likely won't be cast unless it's bounced back (ideally, this should also somehow account for hidden information such as face down cards in exile)
+-                final int manaValue = i;
+-                CardCollection aiCards = CardLists.filter(ai.getAllCards(), card -> (card.isInZone(ZoneType.Library) || !card.isInZone(ZoneType.Hand))
+-                        && card.getState(CardStateName.Original).getManaCost() != null
+-                        && card.getState(CardStateName.Original).getManaCost().getCMC() == manaValue);
+-                CardCollection oppCards = CardLists.filter(ai.getStrongestOpponent().getAllCards(), card -> (card.isInZone(ZoneType.Library) || !card.isInZone(ZoneType.Hand))
+-                        && card.getState(CardStateName.Original).getManaCost() != null
+-                        && card.getState(CardStateName.Original).getManaCost().getCMC() == manaValue);
+-                if (manaValue == 0) {
+-                    aiCards = CardLists.filter(aiCards, CardPredicates.NON_LANDS);
+-                    oppCards = CardLists.filter(oppCards, CardPredicates.NON_LANDS);
+-                    // also filter out other Chalices in our own deck
+-                    aiCards = CardLists.filter(aiCards, CardPredicates.nameNotEquals("Chalice of the Void"));
+-                }
+-                if (oppCards.size() > 3 && oppCards.size() >= aiCards.size() * 2) {
+-                    sa.setXManaCostPaid(manaValue);
++                int ownCount = ownCandidates.getOrDefault(i, 0);
++                int opponentCount = opponentCandidates.getOrDefault(i, 0);
++                if (opponentCount > 3 && opponentCount >= ownCount * 2) {
++                    sa.setXManaCostPaid(i);
+                     return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+                 }
+             }
+@@ -323,6 +325,114 @@
+         return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+     }
+ 
++    private static boolean chaliceIdentityKnown(Card card, Player observer) {
++        if (card == null) {
++            return false;
++        }
++        CardView view = card.getView();
++        return view.canBeShownTo(observer.getView()) && view.canFaceDownBeShownTo(observer.getView());
++    }
++
++    private static Map<Integer, Integer> chaliceFutureCounts(Player owner, Player observer) {
++        // Retain the existing disclosed-deck assumption; never reconstruct a deck from hidden zones.
++        CardPool main = owner.getRegisteredPlayer().getDeck().getMain();
++        Map<String, Integer> external = new HashMap<>();
++        for (Map.Entry<DeckSection, CardPool> section : owner.getRegisteredPlayer().getDeck()) {
++            if (section.getKey() != DeckSection.Main) {
++                for (Map.Entry<PaperCard, Integer> entry : section.getValue()) {
++                    external.merge(entry.getKey().getName(), entry.getValue(), Integer::sum);
++                }
++            }
++        }
++
++        CardCollection known = new CardCollection();
++        EnumSet<ZoneType> potentialMayPlayZones = EnumSet.noneOf(ZoneType.class);
++        for (ZoneType zone : ZoneType.STATIC_ABILITIES_SOURCE_ZONES) {
++            for (Card card : observer.getGame().getCardsIn(zone)) {
++                if (!chaliceIdentityKnown(card, observer)) {
++                    continue;
++                }
++                known.add(card);
++                for (StaticAbility ability : card.getStaticAbilities()) {
++                    if (ability.checkMode(StaticAbilityMode.Continuous) && ability.zonesCheck()
++                            && ability.hasParam("MayPlay") && !ability.hasParam("MayPlayDontGrantZonePermissions")) {
++                        // Match native zone selection, but never evaluate private definitions or conditions.
++                        if (ability.hasParam("AffectedDefined")) {
++                            potentialMayPlayZones.addAll(ZoneType.STATIC_ABILITIES_SOURCE_ZONES);
++                        } else if (ability.hasParam("AffectedZone")) {
++                            potentialMayPlayZones.addAll(ZoneType.listValueOf(ability.getParam("AffectedZone")));
++                        } else {
++                            potentialMayPlayZones.add(ZoneType.Battlefield);
++                        }
++                    }
++                }
++            }
++        }
++
++        Map<String, Integer> spent = new HashMap<>();
++        for (Card card : known) {
++            if (!chaliceIdentityKnown(card, observer) || card.getOwner() != owner
++                    || card.getGamePieceType() != GamePieceType.CARD || card.isTokenCard()
++                    || !card.isCollectible() || card.isLKI() || card.isCloned()
++                    || card.hasMergedCard() || card.getCopiedPermanent() != null
++                    || chaliceMayCastAgain(card, owner, observer, potentialMayPlayZones)) {
++                continue;
++            }
++            IPaperCard paper = card.getPaperCard();
++            if (paper != null) {
++                spent.merge(paper.getName(), 1, Integer::sum);
++            }
++        }
++        // Any visible departure might be an external copy: reserve those before charging the main.
++        for (Map.Entry<String, Integer> entry : spent.entrySet()) {
++            entry.setValue(Math.max(0, entry.getValue() - external.getOrDefault(entry.getKey(), 0)));
++        }
++
++        Map<Integer, Integer> result = new HashMap<>();
++        for (Map.Entry<PaperCard, Integer> entry : main) {
++            PaperCard paper = entry.getKey();
++            int removed = Math.min(entry.getValue(), spent.getOrDefault(paper.getName(), 0));
++            spent.put(paper.getName(), spent.getOrDefault(paper.getName(), 0) - removed);
++            int remaining = entry.getValue() - removed;
++            ManaCost cost = paper.getRules().getManaCost();
++            if (cost == null || remaining == 0) {
++                continue;
++            }
++            int manaValue = cost.getCMC();
++            if (manaValue == 0 && (paper.getRules().getType().isLand()
++                    || (owner == observer && "Chalice of the Void".equals(paper.getName())))) {
++                continue;
++            }
++            result.merge(manaValue, remaining, Integer::sum);
++        }
++        return result;
++    }
++
++    private static boolean chaliceMayCastAgain(Card card, Player owner, Player observer,
++            EnumSet<ZoneType> potentialMayPlayZones) {
++        for (CardPlayOption option : card.mayPlay(owner)) {
++            if (chaliceIdentityKnown(option.getHost(), observer) && option.grantsZonePermissions()) {
++                return true;
++            }
++        }
++        ZoneType zone = card.getZone().getZoneType();
++        for (SpellAbility spell : card.getSpellAbilities()) {
++            if (spell.isSpell() && (spell.getRestrictions() == null || spell.getRestrictions().getZone() == null
++                    || spell.getRestrictions().getZone() == zone
++                    || zone.name().equals(spell.getParam("AdditionalActivationZone")))) {
++                return true;
++            }
++        }
++        if (zone == ZoneType.Graveyard && (card.hasKeyword(Keyword.FLASHBACK)
++                || card.hasKeyword(Keyword.RETRACE) || card.hasKeyword(Keyword.JUMP_START)
++                || card.hasKeyword(Keyword.ESCAPE) || card.hasKeyword(Keyword.DISTURB)
++                || card.hasKeyword(Keyword.AFTERMATH) || card.hasKeyword(Keyword.HARMONIZE))) {
++            return true;
++        }
++        // A visible active grant with unresolved applicability conservatively retains the candidate.
++        return potentialMayPlayZones.contains(zone);
++    }
++
+     @Override
+     protected AiAbilityDecision doTriggerNoCost(Player ai, SpellAbility sa, boolean mandatory) {
+         if (mandatory) {

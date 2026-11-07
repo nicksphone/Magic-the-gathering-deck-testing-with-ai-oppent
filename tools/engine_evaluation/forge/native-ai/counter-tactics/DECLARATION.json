@@ -1,0 +1,69 @@
+{
+  "ActiveProcessorCount": 1,
+  "Gilded2": {
+    "both_seats": true,
+    "ordinary_choice_has_forced_decline_golden": false,
+    "recorded_choice_executed": false,
+    "seed": 2026110601
+  },
+  "Worship2": {
+    "both_seats": true,
+    "candidate_only_helper_protocol": true,
+    "ordinary_choice_has_forced_decline_golden": false,
+    "recorded_choice_executed": false,
+    "seed": 2026110601
+  },
+  "application_database_imports": false,
+  "baseline": {
+    "Gilded2": "reference observations; helper predicate INAPPLICABLE, not a passing assertion",
+    "Worship2": {
+      "execution": "NOT_EXECUTED",
+      "helper_predicate": "INAPPLICABLE_BASELINE"
+    },
+    "executed_rows": 18,
+    "native_JVMs": 2,
+    "strict_RED_inverted_to_PASS": false,
+    "strict_counter_choices": 16
+  },
+  "candidate": {
+    "cases": 20,
+    "groups": {
+      "Gilded_helper_protocol": 2,
+      "Worship_helper_protocol": 2,
+      "strict_counter_choices": 16
+    },
+    "mains": [
+      "NativeCountertactics16",
+      "NativeCounterTargetLegality2",
+      "NativeCounterWorship2"
+    ],
+    "native_JVMs": 3
+  },
+  "compile_and_native_shared_budget_seconds": 300,
+  "final_qualification_status": "PENDING_PARENT_ACTUAL_RESULTS",
+  "fixture_label": "CONSTRUCTED_NATIVE_STATES_NOT_NATURAL_GAMES",
+  "heap": "1500m",
+  "max_total_concurrent_JVMs": 2,
+  "native_SQL_denial_instrumentation_claim": false,
+  "network_namespace": true,
+  "original16": {
+    "both_seats": true,
+    "direct_lethal_seeds": [
+      2026110601,
+      2026110602,
+      2026110603,
+      2026110604
+    ],
+    "extra_pairs": [
+      "UnfundedBolt",
+      "SupremeVerdict",
+      "FriendlyOpt",
+      "ShusherLowerBolt"
+    ],
+    "manual_post_decline_control_counts_as_AI_pass": false
+  },
+  "owned_concurrent_JVMs": 1,
+  "private_preservation10_applicability4_protocol8_included": false,
+  "schema": 1,
+  "termination_grace_seconds": 5
+}

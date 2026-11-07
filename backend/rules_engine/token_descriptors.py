@@ -9,6 +9,26 @@ DESCRIPTOR = re.compile(
 COLORS = {'white': 'W', 'blue': 'U', 'black': 'B', 'red': 'R', 'green': 'G'}
 
 
+def complete_quoted_creature_token_body(text):
+    """One complete token creation with its inherent, quoted artifact-count text."""
+    match = re.fullmatch(
+        r'Create (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+        r'(\d+)/(\d+) [a-z -]+? creature tokens? with ([\"\u201c\'])(.+)([\"\u201d\'])\.?',
+        text.strip(), re.I | re.S)
+    if match is None or {'"': '"', '\u201c': '\u201d', "'": "'"}[match[4]] != match[6]:
+        return None
+    body = match[5]
+    if not re.fullmatch(r'This (?:token|creature|permanent) gets [+-]\d+/[+-]\d+ '
+                        r'for each artifact you control\.', body, re.I):
+        return None
+    descriptor = creature_token_descriptor(text)
+    if descriptor is None:
+        return None
+    from rules_engine.oracle_effects import _parse_count_token
+    return {**descriptor, 'power': int(match[2]), 'toughness': int(match[3]),
+            'amount': _parse_count_token(match[1]), 'oracle_text': body, 'keywords': []}
+
+
 def complete_x_creature_token_body(text):
     """Receipt for one complete announced-X token body, not a prefix match."""
     from rules_engine.oracle_effects import _extract_keywords_from_text

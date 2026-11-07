@@ -1,13 +1,22 @@
 """Bounded JSON Q/V weights and stdlib inference; no training framework import."""
 from copy import deepcopy
+from contextlib import contextmanager
+from contextvars import ContextVar
+from asyncio import current_task
+from threading import current_thread
 import json
 import math
 import os
 from pathlib import Path
 import stat
+import struct
 
 
 VERSION = 'mtg.qv.v1'
+LEGACY_ACTIVATION = 'relu-tanh'
+LIFE_CONTEXT_VERSION = 'mtg.qv.v2'
+LIFE_CONTEXT_ACTIVATION = 'relu-softsign-life-context'
+STATE_PRODUCT_ACTIVATION = 'relu-softsign-life-state-product'
 FEATURE_VERSION = 'mtg.features.v1'
 FEATURE_SCHEMA_SHA256 = '0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5'
 FEATURE_CONTEXT_VERSION = 'mtg.features.v2'
@@ -32,6 +41,24 @@ PARAMETERS = {
     'v_hidden.weight': (WIDTH, WIDTH), 'v_hidden.bias': (WIDTH,),
     'v_out.weight': (1, WIDTH), 'v_out.bias': (1,),
 }
+
+
+def parameter_shapes(activation):
+    if type(activation) is str and activation == LEGACY_ACTIVATION:
+        return PARAMETERS
+    if type(activation) is str and activation == LIFE_CONTEXT_ACTIVATION:
+        return {**PARAMETERS, 'q_context.weight': (1, 3 * WIDTH)}
+    if type(activation) is str and activation == STATE_PRODUCT_ACTIVATION:
+        return {**PARAMETERS, 'q_context.weight': (1, 3 * WIDTH),
+                'q_interaction.weight': (1, WIDTH)}
+    raise ValueError('Unsupported Q/V activation')
+
+
+def validate_q_activation(activation, contract):
+    parameter_shapes(activation)
+    if (activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION)
+            and contract['feature_version'] != FEATURE_CONTEXT_VERSION):
+        raise ValueError('Life-context Q requires the registered v2 feature contract')
 
 
 def _keys(value, expected):
@@ -142,12 +169,39 @@ def validate_features(pack, *, expected_version=None):
     node(pack['root'], len(pack['entities']))
 
 
+def life_context(state):
+    """Read only the unique authorized actor-relative numeric life paths."""
+    validate_features(state, expected_version=FEATURE_CONTEXT_VERSION)
+
+    def field(value, key):
+        if value['kind'] != 'map':
+            raise ValueError('Explicit life-context map required')
+        matches = [item for name, item in value['items']
+                   if name['kind'] == 'text' and name['value'] == key]
+        if len(matches) != 1:
+            raise ValueError('Unique life-context key required')
+        return matches[0]
+
+    players = field(field(state['root'], 'observation'), 'players')
+    values = [1.0]
+    for role in ('self', 'opponent'):
+        life = field(field(players, role), 'life')
+        if life['kind'] != 'number':
+            raise ValueError('Explicit finite life number required')
+        # validate_features already rejects booleans, overflow and nonfinite numbers.
+        values.append(float(life['value']) / 20)
+    return tuple(values)
+
+
 def _validate(payload, expected):
     _keys(payload, ('version', 'width', 'activation', 'contract', 'provenance', 'weights'))
-    if (payload['version'] != VERSION or type(payload['width']) is not int
-            or payload['width'] != WIDTH or payload['activation'] != 'relu-tanh'):
+    parameters = parameter_shapes(payload['activation'])
+    version = VERSION if payload['activation'] == LEGACY_ACTIVATION else LIFE_CONTEXT_VERSION
+    if (type(payload['version']) is not str or payload['version'] != version
+            or type(payload['width']) is not int or payload['width'] != WIDTH):
         raise ValueError('Unsupported Q/V architecture')
     validate_contract(payload['contract'])
+    validate_q_activation(payload['activation'], payload['contract'])
     validate_contract(expected)
     if payload['contract'] != expected:
         raise ValueError('Q/V engine or feature contract mismatch')
@@ -165,8 +219,8 @@ def _validate(payload, expected):
         limit = 2**63 - 1 if key == 'trainer_seed' else 100000
         if type(p[key]) is not int or not 0 <= p[key] <= limit:
             raise ValueError('Invalid bounded training provenance')
-    _keys(payload['weights'], PARAMETERS)
-    for name, shape in PARAMETERS.items():
+    _keys(payload['weights'], parameters)
+    for name, shape in parameters.items():
         rows = payload['weights'][name]
         if type(rows) is not list or len(rows) != shape[0]:
             raise ValueError('Q/V tensor shape mismatch')
@@ -180,8 +234,10 @@ def _validate(payload, expected):
             _numeric(value, 100)
 
 
-def checkpoint(weights, contract, provenance):
-    payload = {'version': VERSION, 'width': WIDTH, 'activation': 'relu-tanh',
+def checkpoint(weights, contract, provenance, *, activation=LEGACY_ACTIVATION):
+    parameter_shapes(activation)
+    version = VERSION if activation == LEGACY_ACTIVATION else LIFE_CONTEXT_VERSION
+    payload = {'version': version, 'width': WIDTH, 'activation': activation,
                'contract': contract, 'provenance': provenance, 'weights': weights}
     _validate(payload, contract)
     if len(json.dumps(payload, separators=(',', ':'), allow_nan=False).encode()) > MAX_CHECKPOINT_BYTES:
@@ -189,10 +245,103 @@ def checkpoint(weights, contract, provenance):
     return deepcopy(payload)
 
 
+_encoder_state = ContextVar('decision_encoder_scope', default=None)
+_ENTITY_KEY_LIMIT = 8192
+_ENTITY_VECTOR_LIMIT = 1024
+
+
+def _entity_identifier(value, prior, cache):
+    """Intern validated ordered syntax, resolving refs to prior structural IDs."""
+    kind = value['kind']
+    if kind == 'ref':
+        key = (kind, prior[value['index']])
+    elif kind == 'map':
+        key = (kind, tuple(tuple(_entity_identifier(item, prior, cache) for item in pair)
+                           for pair in value['items']))
+    elif kind in ('list', 'set'):
+        key = (kind, tuple(_entity_identifier(item, prior, cache) for item in value['items']))
+    elif kind == 'number':
+        scalar = value['value']
+        key = (kind, type(scalar).__name__, struct.pack('!d', scalar) if type(scalar) is float else scalar)
+    else:
+        key = (kind, value.get('value'))
+    nodes = cache.setdefault('entity_nodes', {})
+    identifier = nodes.get(key)
+    if identifier is None:
+        serial = cache.setdefault('entity_serial', {'next': 0})
+        serial['next'] += 1
+        identifier = nodes[key] = serial['next']
+    return identifier
+
+
+def _encoder_owner():
+    try:
+        task = current_task()
+    except RuntimeError:
+        task = None
+    return current_thread(), task
+
+
+def _active_encoder(policy):
+    scope = _encoder_state.get()
+    if scope is None or not scope['active'] or scope['policy'] is not policy:
+        return None
+    owner = _encoder_owner()
+    return scope if (scope['lane'][0] is owner[0] and scope['lane'][1] is owner[1]
+                     and scope['active_agents']) else None
+
+
+def _capture_encoder_scope(owner, policy):
+    scope = _active_encoder(policy)
+    identity = id(owner)
+    return scope if (scope is not None and identity in scope['active_agents']
+                     and scope['approved'].get(identity) is owner) else None
+
+
+def _register_encoder_child(scope, child, policy):
+    if scope is not None and _active_encoder(policy) is scope:
+        scope['approved'][id(child)] = child
+
+
+@contextmanager
+def _decision_encoder_scope(policy, owner=None, actor=None):
+    native = type(policy) is QVPolicy and (actor is None or type(actor) is int and actor in (1, 2))
+    inherited = _active_encoder(policy) if native else None
+    identity = id(owner)
+    joins = (inherited is not None and inherited['actor'] == actor
+             and identity not in inherited['active_agents'] and identity in inherited['approved']
+             and inherited['approved'][identity] is owner)
+    scope = inherited if joins else None
+    if scope is None and native:
+        scope = dict(policy=policy, lane=_encoder_owner(), actor=actor, cache={}, active=True,
+                     approved={identity: owner}, active_agents=set())
+    if scope is not None:
+        scope['active_agents'].add(identity)
+    token = _encoder_state.set(scope)
+    try:
+        yield
+    finally:
+        if scope is not None:
+            scope['active_agents'].discard(identity)
+            if not joins:
+                scope['active'] = False
+                scope['approved'].clear()
+        _encoder_state.reset(token)
+
+
+def _trim_encoder_cache(cache):
+    for name, limit in (('banks', 4), ('texts', 1024),
+                        ('entity_nodes', _ENTITY_KEY_LIMIT), ('entity_vectors', _ENTITY_VECTOR_LIMIT)):
+        values = cache.get(name, {})
+        if len(values) > limit:
+            cache[name] = {key: values[key] for key in list(values)[-limit:]}
+
+
 class QVPolicy:
     def __init__(self, payload, *, expected):
         _validate(payload, expected)
-        self._payload = checkpoint(payload['weights'], payload['contract'], payload['provenance'])
+        self._payload = checkpoint(payload['weights'], payload['contract'], payload['provenance'],
+                                   activation=payload['activation'])
 
     def payload(self):
         return deepcopy(self._payload)
@@ -200,8 +349,12 @@ class QVPolicy:
     def _linear(self, name, values, relu=True):
         weights = self._payload['weights']
         bias = weights.get(name + '.bias', [0.0] * len(weights[name + '.weight']))
-        result = [sum(a * b for a, b in zip(row, values)) + offset
-                  for row, offset in zip(weights[name + '.weight'], bias)]
+        if self._payload['activation'] in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
+            result = [math.sumprod(row, values) + offset
+                      for row, offset in zip(weights[name + '.weight'], bias)]
+        else:
+            result = [sum(a * b for a, b in zip(row, values)) + offset
+                      for row, offset in zip(weights[name + '.weight'], bias)]
         if any(not math.isfinite(value) for value in result):
             raise ValueError('Nonfinite Q/V activation')
         return [max(0.0, value) for value in result] if relu else result
@@ -225,9 +378,12 @@ class QVPolicy:
                 if text in texts:
                     return texts[text]
                 moments, length = text_moments(text)
-                pooled = [math.fsum(coefficient * weights['byte.weight'][byte][index]
-                                   for byte, coefficient in enumerate(row) if coefficient)
-                          for row in moments for index in range(WIDTH)]
+                pooled = []
+                for row in moments:
+                    products = [[coefficient * weight for weight in weights['byte.weight'][byte]]
+                                for byte, coefficient in enumerate(row) if coefficient]
+                    # Preserve product rounding and byte order in every fsum.
+                    pooled.extend(map(math.fsum, zip(*products)) if products else [0.0] * WIDTH)
                 texts[text] = self._linear('text', pooled + [length])
                 return texts[text]
             elif kind == 'list':
@@ -250,8 +406,18 @@ class QVPolicy:
         if bank_key in banks:
             bank = banks[bank_key]
         else:
+            shared = _active_encoder(self) is not None
+            identifiers = []
             for entity in pack['entities']:
-                bank.append(node(entity))
+                if shared:
+                    identifier = _entity_identifier(entity, identifiers, cache)
+                    identifiers.append(identifier)
+                    vectors = cache.setdefault('entity_vectors', {})
+                    if identifier not in vectors:
+                        vectors[identifier] = node(entity)
+                    bank.append(vectors[identifier])
+                else:
+                    bank.append(node(entity))
             banks[bank_key] = bank
         return node(pack['root'])
 
@@ -266,15 +432,31 @@ class QVDecision:
     """One fixed-checkpoint decision, retaining no engine or raw-reference objects."""
 
     def __init__(self, policy, state):
-        self._policy, self._cache = policy, {}
-        self._state = policy._encode(state, self._cache)
-        self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
+        scope = _active_encoder(policy)
+        self._policy, self._cache = policy, {} if scope is None else scope['cache']
+        try:
+            self._context = (life_context(state)
+                             if policy._payload['activation'] in
+                             (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION) else None)
+            self._state = policy._encode(state, self._cache)
+            self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
+        finally:
+            if scope is not None:
+                _trim_encoder_cache(self._cache)
 
     def predict(self, action):
         # New action-only entries cannot accumulate across arbitrarily many proposals.
         cache = {key: dict(value) for key, value in self._cache.items()}
         vector = self._policy._encode(action, cache)
         q = self._policy._linear('q_out', self._policy._linear('q_hidden', self._state + vector), False)[0]
+        if self._context is not None:
+            q += self._policy._linear('q_context',
+                [scale * item for scale in self._context for item in vector], False)[0]
+            if self._policy._payload['activation'] == STATE_PRODUCT_ACTIVATION:
+                # Weight first: finite embeddings can overflow their unweighted product.
+                weights = self._policy._payload['weights']['q_interaction.weight'][0]
+                q += sum(w * s * a for w, s, a in zip(weights, self._state, vector))
+            return {'q': normalized_number(q), 'v': self._value}
         return {'q': math.tanh(q), 'v': self._value}
 
 

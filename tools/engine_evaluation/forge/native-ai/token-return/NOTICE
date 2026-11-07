@@ -1,0 +1,18 @@
+Derived from Forge Team / Card-Forge, revision
+61e9442c433711a82258daca3236f936a1d6f70e.
+Upstream: https://github.com/Card-Forge/forge
+
+The five native audit sources and complete canonical native card/token programs
+are Forge-derived material distributed under GPL-3.0-or-later. LICENSE is the
+unchanged GNU General Public License version 3 from the preceding public family.
+Existing SPDX notices, upstream material and attribution are retained.
+
+Audit sources are copied byte-unchanged; Java classes are not renamed.
+These are bounded constructed native/internal-protocol fixtures, not natural or
+expert games. Observer10 registers internal metadata, not a printed card trigger.
+No authorship of Forge, execution of this public package, private qualification,
+query purity, general AI correctness or general multi-step planning is claimed.
+The separate pending Raman protocol10 is not included.
+
+Rite of Replication copy-token regression uses the same Forge Team/Card-Forge
+GPL-3.0-or-later card program and native rules. No private game trace is included.

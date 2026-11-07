@@ -1,5 +1,25 @@
 # MTG Deck Testing Lab
 
+AI progress: [what is implemented, what remains, and current game coverage](AI-STATUS.md).
+Working features and passing regressions are not a claim that AI playing strength
+or RC acceptance is complete.
+
+External engine evaluation credits the **Forge Team/Card-Forge contributors** and
+**XMage contributors** for their card/rules implementations. See the
+[comparison](docs/testing/external-engine-card-knowledge.md),
+[credited test code](tools/engine_evaluation/README.md) and
+[third-party license notices](THIRD-PARTY-NOTICES.md). Neither engine has replaced
+the running backend; their work is not represented as ours.
+The [native-engine integration status](docs/testing/native-engine-integration-status.md)
+distinguishes the reusable implementation from the bridge work still needed.
+An [opt-in native app table](docs/testing/forge-app-session.md) adds separate
+session ownership, native choices and reload reconnection. It requires an
+operator-configured runtime and does not switch the live Python service.
+An isolated [native AI knowledge correction](docs/testing/native-ai-knowledge-boundary.md)
+now filters unknown card identities and mana-source inputs in the tested combat
+forecast. This is bounded correction evidence, not a claim of expert or globally
+fair native AI.
+
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
 the original corpus retained and both-seat paid copy/blink regressions. The new

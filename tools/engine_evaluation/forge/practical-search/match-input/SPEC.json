@@ -1,0 +1,53 @@
+{
+  "builtin_source_sha256": "236bc11807d9aeea3134c2b1ec9d1fa73a29d9dc366bf0e11a79ed605a14c0b3",
+  "decks": [
+    {
+      "file": "burn.dck",
+      "main": {
+        "Boros Charm": 4,
+        "Eidolon of the Great Revel": 4,
+        "Goblin Guide": 4,
+        "Lava Spike": 4,
+        "Lightning Bolt": 4,
+        "Monastery Swiftspear": 4,
+        "Mountain": 16,
+        "Plains": 4,
+        "Plateau": 4,
+        "Rift Bolt": 4,
+        "Searing Blaze": 4,
+        "Skullcrack": 4
+      },
+      "main_origin": "unchanged application builtin",
+      "name": "Burn",
+      "sideboard": {}
+    },
+    {
+      "file": "white-weenie.dck",
+      "main": {
+        "Adeline, Resplendent Cathar": 4,
+        "Brutal Cathar": 4,
+        "Hopeful Initiate": 4,
+        "Lay Down Arms": 4,
+        "Ossification": 4,
+        "Plains": 28,
+        "Recruitment Officer": 4,
+        "Thalia, Guardian of Thraben": 4,
+        "Wedding Announcement": 4
+      },
+      "main_origin": "unchanged application builtin",
+      "name": "White Weenie",
+      "sideboard": {}
+    }
+  ],
+  "engine_pin": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "flat_monte_carlo": true,
+  "heap_bytes": 2147483648,
+  "live_application_changed": false,
+  "max_natural_games": 5,
+  "native_profile": "Default; MAX/LITE off; native AI timeout 5 seconds",
+  "open_decklists": true,
+  "seed": 2026110501,
+  "sideboard_scope": "empty diagnostic sideboards; no sideboarding-strength claim",
+  "use_public_name_controller": true,
+  "wall_bound_seconds": 300
+}

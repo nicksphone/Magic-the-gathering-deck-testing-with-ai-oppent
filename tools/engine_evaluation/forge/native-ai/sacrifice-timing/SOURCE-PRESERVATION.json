@@ -1,0 +1,32 @@
+{
+  "old_parent_sources_preserved": 10,
+  "old_parent_classes_preserved": 17,
+  "candidate_source_count": 12,
+  "candidate_class_count": 20,
+  "override_identity_schema": 9,
+  "new_sources": {
+    "forge-ai/src/main/java/forge/ai/AiController.java": {
+      "complete_preimage_sha256": "908859ee3b94bff36227614240700b4e2ff5d5a0db191bdc73857aabf376ca1b",
+      "current_modified_source_pin_authority": "CANDIDATE-PIN.json:sources:forge-ai/src/main/java/forge/ai/AiController.java"
+    },
+    "forge-ai/src/main/java/forge/ai/SpellAbilityAi.java": {
+      "complete_preimage_sha256": "777af6c3a3a43a4ef7c26f8bfd980f75344d0e27589c57ba2d7491b13a1f505b",
+      "current_modified_source_pin_authority": "CANDIDATE-PIN.json:sources:forge-ai/src/main/java/forge/ai/SpellAbilityAi.java"
+    }
+  },
+  "current_product_source_class_pins_authority": "CANDIDATE-PIN.json",
+  "private_helper_ABI_retained": "private static boolean hasKnownWinningSacrificeCost(Player, SpellAbility)",
+  "original_three_Java_audits_byte_unchanged": true,
+  "no_canonical_fixture_overwrites": true,
+  "mechanical_undo_byteproof": {
+    "status": "PASS",
+    "SpellAbilityAi_all_preexisting_bytes_restore_after_removing_only_declared_additions": true,
+    "AiController_only_one_predicate_changes": true,
+    "old_10sources_17classes_byte_unchanged": true,
+    "new_sources": {
+      "forge-ai/src/main/java/forge/ai/SpellAbilityAi.java": "e3ae29b8137219293c28a7597579fd75c3c6088d637b6415b96cb0c73312a5c2",
+      "forge-ai/src/main/java/forge/ai/AiController.java": "e8a7ae4d39b73a9f95c70dbae2b5c54e75b3c1a7cdfb14c6fa2e013026b563e7"
+    },
+    "scope": "Source byte-preservation, not behavioral/fairness proof"
+  }
+}

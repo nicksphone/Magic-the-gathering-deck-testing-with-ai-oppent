@@ -482,6 +482,12 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
         ordinary_methods.append(CostOption(id='prototype', label='Prototype', mana_cost=prototype['mana_cost']))
     if alt:
         ordinary_methods.append(CostOption(id='alternate', label=f'Alternate {alt.group(1)}', mana_cost=alt.group(1)))
+    from rules_engine.oracle_text import without_reminder_text
+    spectacle = re.search(r'^spectacle[ \t]+((?:\{[^}]+\})+)\.?[ \t]*$',
+                          without_reminder_text(card.oracle_text or ''), re.I | re.M)
+    if (spectacle and not without_mana
+            and state.life_lost_this_turn.get(3-player_id, 0) > 0):
+        ordinary_methods.append(CostOption(id='spectacle', label='Spectacle', mana_cost=spectacle[1]))
     if without_mana:
         options = [base]
         # Prototype changes characteristics, unlike an alternative mana cost.

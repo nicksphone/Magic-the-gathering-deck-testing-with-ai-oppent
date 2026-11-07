@@ -12,6 +12,7 @@ export function buildDevelopmentFrontend({root, configFile, outDir}) {
       humanActions: path.join(root, 'tests/human-actions.html'),
       interactivePreflight: path.join(root, 'tests/interactive-preflight.html'),
       simulationPreflight: path.join(root, 'tests/simulation-preflight.html'),
+      uiClarity: path.join(root, 'tests/ui-clarity.html'),
       developmentProof: path.join(root, 'tests/fixtures/ci-development-runtime/probe.html')}}}});
 }
 

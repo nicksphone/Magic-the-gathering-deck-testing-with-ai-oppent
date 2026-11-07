@@ -1,0 +1,22 @@
+{
+  "scope": "Independent declared canonical boards, not EVAL20 roots or full games",
+  "facts_modified": false,
+  "http_requests": 0,
+  "sources": {
+    "cost_reservation_overlap/canonical.json": "fd6c5a98c5d88557589f6fa5f7b87dcb33a88be5bff76aa6a316595d1aa1f9ec",
+    "manual_mana_leftovers_a227/treasure.raw.json": "c27b1805f7ba3ed13f16f85a0ee042c839f98d81763448578011ff9ac7f5faf2"
+  },
+  "provenance_refs": [
+    "cost_reservation_overlap/provenance.json",
+    "manual_mana_leftovers_a227/PROVENANCE.json"
+  ],
+  "used_names": [
+    "Deadly Dispute",
+    "Crop Rotation",
+    "Swamp",
+    "Forest",
+    "Island",
+    "Raging Goblin",
+    "Treasure"
+  ]
+}

@@ -1,9 +1,42 @@
 @import "./table.css";
 @import "./competitive.css";
+@import "./play-shell.css";
 
 .game-result { border: 2px solid var(--gold); background: var(--panel); padding: clamp(1rem, 3vw, 2rem); margin-bottom: 1rem; }
 .game-result h2 { margin: .5rem 0; }
 .game-ended #table *, .game-ended #table *::before, .game-ended #table *::after { animation: none !important; transition: none !important; }
+
+.cast-readiness-guidance,
+.combat-draft-status {
+  padding: .6rem .75rem;
+  border-inline-start: 2px solid var(--gold);
+  background: var(--bg-1);
+  color: var(--text);
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.table-navigation { grid-row: 2; }
+.play-guide-slot { grid-column: 1 / -1; grid-row: 3; display: grid; gap: 10px; }
+.play-guide { border-inline-start: 3px solid var(--gold); }
+.play-guide > details > summary { color: var(--gold); font-weight: 600; cursor: pointer; }
+.play-guide summary small { margin-inline-start: .7rem; color: var(--muted); font-weight: 400; }
+.play-guide-content { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; justify-content: space-between; padding-top: 8px; }
+.play-guide-content > div { flex: 1 1 320px; }
+.play-guide-content h2 { margin: 0 0 6px; }
+.play-guide-content p { margin: 0; max-width: 85ch; color: var(--muted); }
+.guide-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; border: 1px solid var(--gold); border-radius: 6px; text-decoration: none; }
+.quick-glossary { margin-top: 12px; font-size: .85rem; }
+.quick-glossary dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 18px; }
+.quick-glossary dt { color: var(--text); font-weight: 600; }
+.quick-glossary dd { margin: 4px 0 0; color: var(--muted); }
+.setup-options, .advanced-turn-controls { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 6px; }
+.setup-options summary, .advanced-turn-controls summary { cursor: pointer; }
+.priority-help { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+@media (max-width: 760px) {
+  .workspace-lobby .left-column { grid-row: 4; }
+  .workspace-lobby .right-column { grid-row: 5; }
+}
 
 /* Existing feature-specific surfaces remain below the table theme. */
 @layer legacy {

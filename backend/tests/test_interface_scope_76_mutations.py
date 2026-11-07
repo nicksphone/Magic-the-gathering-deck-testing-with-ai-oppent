@@ -64,7 +64,11 @@ def test_each_approved_function_reconstructs_its_original_digest(identity):
     source = (TESTS / module).read_text()
     restored = normalize(module, source)
     assert digest(function(restored, name)) == EXPECTED[identity]
-    assert digest(function(source, name)) == DATA['functions'][identity]['new_sha256']
+    segment = function(source, name)
+    if identity == api.CONTROLLER_NEXT_TURN_IDENTITY:
+        assert digest(segment) == api.CONTROLLER_NEXT_TURN_INVERSE['new_sha256']
+        segment = api._restore(segment, api.CONTROLLER_NEXT_TURN_INVERSE)
+    assert digest(segment) == DATA['functions'][identity]['new_sha256']
 
 
 @pytest.mark.parametrize('identity', IDENTITIES)
@@ -72,7 +76,9 @@ def test_each_historical_function_remains_an_accepted_exact_input(identity):
     module, name = identity.split(':')
     source = (TESTS / module).read_text()
     segment = function(source, name)
-    historical = api._restore(segment, DATA['functions'][identity])
+    reviewed = (api._restore(segment, api.CONTROLLER_NEXT_TURN_INVERSE)
+                if identity == api.CONTROLLER_NEXT_TURN_IDENTITY else segment)
+    historical = api._restore(reviewed, DATA['functions'][identity])
     input_source = source.replace(segment, historical, 1)
     restored = normalize(module, input_source)
     assert function(restored, name) == historical
@@ -152,6 +158,9 @@ def test_corrupt_function_recipe_cannot_reconstruct_expected_history(mutation):
     identity = IDENTITIES[0]
     module, name = identity.split(':')
     source = function((TESTS / module).read_text(), name)
+    if identity == api.CONTROLLER_NEXT_TURN_IDENTITY:
+        source = api._restore(source, api.CONTROLLER_NEXT_TURN_INVERSE)
+    assert digest(api._restore(source, DATA['functions'][identity])) == EXPECTED[identity]
     recipe = deepcopy(DATA['functions'][identity])
     if mutation == 'old_sha':
         recipe['old_sha256'] = '0' * 64

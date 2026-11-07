@@ -6,6 +6,12 @@ from game_state.state import Zone
 from rules_engine.oracle_text import without_reminder_text
 
 
+def record_life_loss(state, player_id, amount):
+    """Record an accepted loss; a new witness cannot complete legacy history."""
+    if amount > 0:
+        state.life_lost_this_turn[player_id] = state.life_lost_this_turn.get(player_id, 0) + amount
+
+
 def tap_permanents(state, card_ids):
     """Entering tapped is not a tap event; only an untapped battlefield object changes."""
     changed = []

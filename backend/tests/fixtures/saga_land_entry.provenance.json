@@ -1,0 +1,79 @@
+{
+  "kind": "FULL_CANONICAL_CARD_OBJECTS_NOT_GAMEPLAY",
+  "network_during_tests": false,
+  "canonical_card_data_unmodified": true,
+  "cards": {
+    "Urza's Saga": {
+      "id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+      "oracle_id": "4c6a0c30-b547-4eff-8ff4-0ca25803c076",
+      "uri": "https://api.scryfall.com/cards/c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+      "sha256": "0555791aa99f643011aaf70fde680718e0b43ee503106fc508f4d2c3e644ccd9"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "uri": "https://api.scryfall.com/cards/dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "sha256": "4725c52c2d81cb23e6a4f969ff8653eb81e32cc49d988d4b76a3fb17bcb50c24"
+    },
+    "Vorinclex, Monstrous Raider": {
+      "id": "92613468-205e-488b-930d-11908477e9f8",
+      "oracle_id": "5a3fdf5a-bff8-4896-b288-3f43f9a72d9b",
+      "uri": "https://api.scryfall.com/cards/92613468-205e-488b-930d-11908477e9f8",
+      "sha256": "579eb5d6730e2eb3938ff206dd0cf61a03f524f0e134f510e101e5fea969892e"
+    },
+    "Solemnity": {
+      "id": "0a71fb62-acbd-49f5-842f-0fc9fa48afea",
+      "oracle_id": "f0b4331b-ddd3-4f11-ba16-67c651c8954c",
+      "uri": "https://api.scryfall.com/cards/0a71fb62-acbd-49f5-842f-0fc9fa48afea",
+      "sha256": "1fa732d5c3147431f98c7f6799062966ae16f3457904a338ddf8fda1c353c201"
+    },
+    "Hallowed Fountain": {
+      "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+      "uri": "https://api.scryfall.com/cards/b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "sha256": "8355f36038bc6d07d4ea0cb856c90c8cff0291fa662ab052a89a4b45a9ac0460"
+    },
+    "Bala Ged Recovery // Bala Ged Sanctuary": {
+      "id": "c5cb3052-358d-44a7-8cfd-cd31b236494a",
+      "oracle_id": "d2075f58-b0e9-4e85-b7e6-0523a27a1d5b",
+      "uri": "https://api.scryfall.com/cards/c5cb3052-358d-44a7-8cfd-cd31b236494a",
+      "sha256": "78a7d061887a4ac6bc08f04ff669d0dd58f4caa5d830f33dde4c94cc8c49c8f7"
+    },
+    "Plains": {
+      "id": "09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "uri": "https://api.scryfall.com/cards/09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "sha256": "b6b75cec7ff00ecaf6cc54e177ad5f2b380904cd541dafd2a9abca069ddbd135"
+    },
+    "Island": {
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "uri": "https://api.scryfall.com/cards/1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "sha256": "61575e868ce2843695359b44e467a35eb797b7836252722f471b19d38abf6cd6"
+    },
+    "History of Benalia": {
+      "id": "d134385d-b01c-41c7-bb2d-30722b44dc5a",
+      "oracle_id": "c15bb7eb-aaaa-4468-9641-8f706d6137e8",
+      "uri": "https://api.scryfall.com/cards/d134385d-b01c-41c7-bb2d-30722b44dc5a",
+      "sha256": "1e80fb7eefcfaba0657d0a4934d570c4e3e8158afb0ef44361aef8c935ed1e40"
+    },
+    "The Phasing of Zhalfir": {
+      "id": "0770eb6a-4f01-4677-a401-14c1b30692c9",
+      "oracle_id": "6b92a5f4-a241-48c8-9aec-c8e9d5b01fa5",
+      "uri": "https://api.scryfall.com/cards/0770eb6a-4f01-4677-a401-14c1b30692c9",
+      "sha256": "34ac7e755eeb233ace57aba7712692c3a6a289b9bf6771b9cd3977d8c3651d22"
+    },
+    "Muldrotha, the Gravetide": {
+      "id": "705b4d97-2f50-47f7-9053-d748f4337553",
+      "oracle_id": "e4625704-1d52-44e4-804f-2f45644d76ac",
+      "uri": "https://api.scryfall.com/cards/705b4d97-2f50-47f7-9053-d748f4337553",
+      "sha256": "58957a4dab1f1f74cbd9b1c2ef7d40a8c40df2d1453560d97083861c3e9540c9"
+    },
+    "Exploration": {
+      "id": "5b372045-a4a0-44c8-96ec-1e201d61ed26",
+      "oracle_id": "0c2841bb-038c-4fbf-8360-bc0a1522b58d",
+      "uri": "https://api.scryfall.com/cards/5b372045-a4a0-44c8-96ec-1e201d61ed26",
+      "sha256": "b8209d9a54fde6a06cba259338477c885c5fe4d4f440eb9557cffabb22b2a681"
+    }
+  }
+}

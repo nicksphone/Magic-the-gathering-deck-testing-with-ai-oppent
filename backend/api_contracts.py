@@ -88,7 +88,7 @@ class LandAction(CardAction):
     from_graveyard: StrictBool = False
     graveyard_permission_key: Annotated[str, Field(min_length=1, max_length=100)] | None = None
     selected_face_index: Annotated[StrictInt, Field(ge=0, le=20)] | None = None
-    entry_choice: Literal["tapped", "pay_two_life"] | None = None
+    entry_choice: Literal["tapped", "pay_two_life", "untapped"] | None = None
 
 
 class ForetellAction(CardAction):

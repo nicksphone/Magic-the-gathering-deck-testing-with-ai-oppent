@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "sources": {
+    "forge-ai/src/main/java/forge/ai/ComputerUtil.java": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java": "7ea882eb888ed5182cbfeb7d6f185ad916a4d29aab3b21de1ec132ee7718783e"
+  },
+  "classes": {
+    "forge/ai/ComputerUtil.class": "23b15557de80e398db989e40d78bb6b1849ba19f91a98f7419fb16f44ca65a0a",
+    "forge/ai/ComputerUtilCost$1.class": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+    "forge/ai/ComputerUtilCost.class": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+    "forge/ai/ComputerUtilMana.class": "544c419f8227bbf2a087d2b32107e1293c2ddf4f5236089dd66139be6191edc2"
+  }
+}

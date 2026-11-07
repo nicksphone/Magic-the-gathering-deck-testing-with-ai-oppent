@@ -987,7 +987,12 @@ def test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission() 
     assert key == "exile_top_cards_playable"
     resolve_effect(state, 1, key, payload)
     assert top_id in state.players[1].exile
-    assert state.players[1].exile_play_until[top_id] == state.turn + 1
+    from rules_engine.card_faces import ordinary_exile_permission
+    from rules_engine.source_linked_exile import reference
+    assert state.players[1].exile_play_durations[top_id] == {
+        'version': 1, 'duration': 'controller_next_turn', 'grant_turn': state.turn,
+        'reference': reference(state.cards[top_id])}
+    assert ordinary_exile_permission(state, 1, top_id)
 
 
 def test_goblin_guide_style_reveals_defending_top_land() -> None:

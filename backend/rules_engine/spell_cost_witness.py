@@ -84,6 +84,87 @@ def _escape_viable(state, recipe, pending):
         state, player_id, card_id, count, ids) is not None
 
 
+def escape_fuel_proven_impossible(state, player_id, condition):
+    """Negative proof for closed boards where paying mana cannot add fuel."""
+    from game_state.state import CardInstance, MatchState, Zone
+    from rules_engine.costs import parse_activated_cost
+    from rules_engine.mana import _nonland_mana_effect_outputs
+    from rules_engine.oracle_effects import ACTIVATED_ABILITY_RE
+    from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.state_based_actions import _is_legendary
+    from rules_engine.zone_actions import is_departed_token
+
+    if (type(condition) is not _BoundedPaymentPostcondition
+            or condition.predicate is not None or condition.valid is not True
+            or type(condition.recipe) is not dict
+            or set(condition.recipe) != {'kind', 'player_id', 'card_id', 'count', 'selected'}
+            or type(state) is not MatchState):
+        return False
+    recipe = condition.recipe
+    if (recipe['kind'] != 'escape' or type(player_id) is not int
+            or type(recipe['player_id']) is not int or type(recipe['card_id']) is not str
+            or recipe['player_id'] != player_id or player_id not in state.players
+            or type(recipe['count']) is not int or recipe['count'] < 0
+            or type(condition.pending) is not tuple
+            or any(type(cid) is not str for cid in condition.pending)
+            or recipe['selected'] is not None and (
+                type(recipe['selected']) is not tuple
+                or any(type(cid) is not str for cid in recipe['selected']))
+            or recipe['card_id'] not in state.players[player_id].graveyard):
+        return False
+    pending = set(condition.pending)
+    eligible = sum(cid != recipe['card_id'] and cid not in pending
+                   and not is_departed_token(state.cards[cid])
+                   for cid in state.players[player_id].graveyard)
+    if eligible >= recipe['count']:
+        return False
+    if any(getattr(state, field) for field in (
+            'stack', 'delayed_triggers', 'staged_triggers', 'trigger_staging',
+            'pending_trigger_order', 'pending_mechanic_choice', 'pending_replacement_choice',
+            'mana_continuation', 'emblems', 'temporary_control_changes', 'linked_exiles',
+            'pending_entry_counters', 'retained_counter_prohibitions', 'combat_cost_effects',
+            'cleanup_deferred_triggers')):
+        return False
+    for player in state.players.values():
+        if player.life <= 0 or player.poison >= 10 or player.counters:
+            return False
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if (type(card) is not CardInstance or card.zone != Zone.BATTLEFIELD
+                    or card.controller != player.id or _is_legendary(card)
+                    or set(card.types) - {'Artifact', 'Creature', 'Land', 'Token', 'Basic', 'Snow'}
+                    or any(type(keyword) is not str or keyword.lower() not in {'flying', 'haste'}
+                           for keyword in card.keywords)
+                    or card.layout not in ('', 'normal', 'token')
+                    or card.control_effect_base is not None or card.type_effect_base is not None
+                    or any(getattr(card, field) for field in (
+                        'counters', 'type_effects', 'keyword_effects', 'base_stat_effects',
+                        'control_effects', 'printed_characteristics', 'bestow_characteristics',
+                        'attached_to', 'card_faces', 'suspend_haste', 'granted_flashback'))
+                    or 'Creature' in card.types and (
+                        type(card.toughness) is not int or card.toughness <= 0
+                        or card.printed_toughness not in (None, str(card.toughness)))):
+                return False
+            # Inspect every clause, not just the subset recognized as mana abilities.
+            # Empty land text retains the native intrinsic tap-mana abilities.
+            for line in without_reminder_text(card.oracle_text).splitlines():
+                line = line.strip()
+                if not line or line.lower() in {'flying', 'haste'}:
+                    continue
+                match = ACTIVATED_ABILITY_RE.fullmatch(line)
+                if match is None:
+                    return False
+                cost = parse_activated_cost(match[1])
+                if (not cost.supported or cost.pay_life or cost.discard_cards
+                        or cost.discard_source or cost.remove_source_counters
+                        or (cost.sacrifice_source or cost.sacrifice_creatures) and not (
+                            card.is_token and cost.sacrifice_source
+                            and cost.sacrifice_creatures <= 1)
+                        or not _nonland_mana_effect_outputs(match[2], state=state, card=card)):
+                    return False
+    return True
+
+
 def export_payment_condition(condition):
     if (type(condition) is not _BoundedPaymentPostcondition
             or condition.predicate is not None or condition.recipe is None):

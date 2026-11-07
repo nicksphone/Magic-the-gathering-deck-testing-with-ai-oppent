@@ -3,11 +3,11 @@ from copy import deepcopy
 
 from ai.action_contract import complete_action
 from ai.information import decision_view
+from ai.interaction_reservation import affordable_interactions, preserves_interactions
 from ai.pending_effects import planning_copy, settled_public_position
 from game_state.state import Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
-from rules_engine.costs import collect_cost_options
-from rules_engine.mana import can_pay_with_pool_and_lands, mana_value
+from rules_engine.mana import mana_value
 from rules_engine.suspend import instruction
 
 
@@ -87,14 +87,7 @@ def idle_suspend(agent, state, moves, player_id):
     # Conservative pressure guard, not a lethal-combat proof (blockers may exist).
     if pressure >= state.players[player_id].life:
         return None
-    answers = []
-    for cid in state.players[player_id].hand:
-        card = state.cards[cid]
-        if {'counter', 'removal'} & agent._spell_tags(card):
-            for option in collect_cost_options(state, player_id, card):
-                if can_pay_with_pool_and_lands(state, player_id, option.mana_cost,
-                                              spell_types=card.types, source_card_id=cid):
-                    answers.append((cid, option.mana_cost, card.types))
+    answers = affordable_interactions(agent, state, player_id)
     candidates = []
     for move in moves:
         if move.get('type') != 'suspend':
@@ -121,9 +114,7 @@ def idle_suspend(agent, state, moves, player_id):
             projected = checked_action(state, agent.engine, player_id, action)
         except (ActionRejected, ValueError):
             continue
-        if any(not can_pay_with_pool_and_lands(projected, player_id, price,
-                                              spell_types=types, source_card_id=source)
-               for source, price, types in answers):
+        if not preserves_interactions(projected, player_id, cid, answers):
             continue
         candidates.append(((value + max(0, saving)) / (delay + 1), cid, action))
     return max(candidates, key=lambda row: row[:2])[2] if candidates else None

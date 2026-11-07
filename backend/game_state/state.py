@@ -74,6 +74,7 @@ class CardInstance:
     counter_timestamps: dict[str, int] = field(default_factory=dict)
     keywords: list[str] = field(default_factory=list)
     keyword_effects: list[dict] = field(default_factory=list)
+    activated_ability_effects: list[dict] = field(default_factory=list, kw_only=True)
     base_stat_effects: list[dict] = field(default_factory=list)
     type_effects: list[dict] = field(default_factory=list)
     type_effect_base: list[str] | None = None
@@ -138,6 +139,7 @@ class CardInstance:
 
     def move_to_zone(self, zone: Zone) -> None:
         if zone != self.zone and self.zone == Zone.BATTLEFIELD:
+            self.activated_ability_effects.clear()
             from rules_engine.control_effects import clear_control_effects
             clear_control_effects(self)
             from rules_engine.type_effects import clear_type_effects
@@ -198,6 +200,7 @@ class PlayerState:
     lands_played_this_turn: int = 0
     last_land_play_turn: int = 0
     land_plays_recorded_on_turn: int = 0
+    exile_play_durations: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass
@@ -294,6 +297,8 @@ class MatchState:
     discards_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     land_entries_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     land_entry_history_known: bool = True
+    life_lost_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    life_loss_history_known: bool = True
     players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)
