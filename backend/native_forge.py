@@ -25,6 +25,9 @@ import threading
 import time
 import uuid
 
+import native_checkpoint_store as checkpoints
+from native_forge_persistence import NativeSaves, SaveError
+
 
 _FRAME_LIMIT = 2 * 1024 * 1024
 _TRANSCRIPT_LIMIT = 16 * 1024 * 1024
@@ -38,6 +41,7 @@ _TERM_GRACE = .3
 _KILL_GRACE = 1
 _WRITE_TIMEOUT = 1
 _LAUNCH_TIMEOUT = 5
+_CHECKPOINT_TIMEOUT = 12
 _POLL = .05
 _OPAQUE = re.compile(r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")
 _CAPABILITY = re.compile(r"[0-9a-f]{64}")
@@ -180,6 +184,7 @@ class RuntimeConfig:
     cwd: Path
     sessions_dir: Path
     build_id: str
+    causal_verifier: tuple[str, ...] | None = None
 
     def __post_init__(self):
         try:
@@ -195,6 +200,13 @@ class RuntimeConfig:
             _require(self.cwd.is_absolute() and self.cwd.is_dir())
             _require(type(self.build_id) is str and _CAPABILITY.fullmatch(self.build_id) is not None)
             _local_root(self.sessions_dir)
+            if self.causal_verifier is not None:
+                verifier = self.causal_verifier
+                _require(type(verifier) in (list, tuple) and len(verifier) >= 3
+                         and all(type(arg) is str and arg and "\x00" not in arg for arg in verifier)
+                         and os.path.isabs(verifier[0]) and Path(verifier[0]).name == "java"
+                         and list(verifier[-2:]) == ["forge.evaluation.CausalCompletionVerifier", "--checkpoint-prefix"])
+                object.__setattr__(self, "causal_verifier", tuple(verifier))
         except (OSError, ValueError, TypeError, RecursionError):
             raise ForgeError(503, "invalid_runtime_config", "Native runtime configuration unavailable") from None
 
@@ -205,7 +217,8 @@ class RuntimeConfig:
                 raw = handle.read(65537)
             _require(len(raw) <= 65536)
             value = _decode(raw)
-            _require(type(value) is dict and set(value) == {"argv", "cwd", "sessions_dir", "build_id"})
+            required = {"argv", "cwd", "sessions_dir", "build_id"}
+            _require(type(value) is dict and required <= set(value) <= required | {"causal_verifier"})
             return cls(**value)
         except (OSError, ValueError, TypeError, RecursionError):
             raise ForgeError(503, "invalid_runtime_config", "Native runtime configuration unavailable") from None
@@ -331,8 +344,16 @@ def _private_file(path):
     return os.fdopen(fd, "wb", buffering=0)
 
 
+def _process_identity(pid):
+    """Linux start time fences an observed descendant against PID reuse."""
+    try:
+        return Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19]
+    except (FileNotFoundError, ProcessLookupError):
+        return None
+
+
 class _Session:
-    def __init__(self, config, session_id, capability, spec):
+    def __init__(self, config, session_id, capability, spec, *, saves=None, start=None, saved=None, epoch=0):
         self.config, self.id, self.capability = config, session_id, capability
         self.directory = config.sessions_dir / session_id
         self.lock = threading.RLock()
@@ -340,31 +361,69 @@ class _Session:
         self.launched = threading.Event()
         self.process = self.reader = None
         self.files = []
+        self.descendants = {}
+        self.descendant_scan_failed = False
         self.actions, self.awaiting, self.invocations = {}, deque(), {}
         self.requests = set()
         self.last_action = None
         self.starts = self.completions = 0
         self.deferred = self.pending_result = None
         self.result_at = None
+        self.finish_verified = False
         self.activity_at = time.monotonic()
+        self.saves, self.start = saves, start
+        self.controls, self.capture = {}, None
+        self.captured = threading.Event()
+        self.frontier = self.replay = None
+        self.replay_waiting = False
+        self.replay_active = set()
+        self.saved_invocations = {}
+        self.has_save = saved is not None
+        self.abandoned = False
+        self.resume_retry = None
         self.data = {"engine": "forge", "session_id": session_id, "sequence": 0, "status": "starting",
                      "actor_id": None, "state": None, "question": None, "info": {},
                      "last_answer": None, "result": None, "error": None}
+        self.data["sequence"] = epoch
+        if saved is not None:
+            meta, self.saved_checkpoint = saved
+            record = meta["record"]
+            self.data = copy.deepcopy(record["public"])
+            self.data["sequence"] = max(epoch, self.data["sequence"] + 1)
+            self.actions = {key: {"fingerprint": bytes.fromhex(row["fingerprint"]),
+                                  "receipt": copy.deepcopy(row["receipt"])} for key, row in record["actions"].items()}
+            self.controls = copy.deepcopy(record["controls"])
+            if self.data["status"] == "suspended":
+                for key, control in self.controls.items():
+                    accepted = {"sequence": record["public"]["sequence"] - 1, "action_id": key}
+                    if control == {"operation": "resume", "fingerprint": _fingerprint(accepted).hex()}:
+                        self.resume_retry = key
+            self.start = copy.deepcopy(record["start"])
+            self.last_action = record["last_action"]
+            self.invocations = {int(key): value for key, value in record["invocations"].items()}
+            self.closed.set()
+            return
+        self._launch(spec)
+
+    def _launch(self, spec, checkpoint=None):
         try:
-            _local_root(config.sessions_dir)
-            config.sessions_dir.mkdir(mode=0o700, exist_ok=True)
-            self.directory.mkdir(mode=0o700)
-            (self.directory / "decks").mkdir(mode=0o700)
-            with _private_file(self.directory / "SPEC.json") as handle:
-                handle.write(_encode(spec))
-            for row in spec["decks"]:
-                text = "[metadata]\nName=" + row["name"] + "\n[Main]\n"
-                text += "".join(str(quantity) + " " + name + "\n" for name, quantity in row["main"].items())
-                with _private_file(self.directory / "decks" / row["file"]) as handle:
-                    handle.write(text.encode("utf-8"))
+            _local_root(self.config.sessions_dir)
+            self.config.sessions_dir.mkdir(mode=0o700, exist_ok=True)
+            if checkpoint is not None:
+                checkpoints.restore_inputs(checkpoint, self.directory)
+            else:
+                self.directory.mkdir(mode=0o700)
+                (self.directory / "decks").mkdir(mode=0o700)
+                with _private_file(self.directory / "SPEC.json") as handle:
+                    handle.write(_encode(spec))
+                for row in spec["decks"]:
+                    text = "[metadata]\nName=" + row["name"] + "\n[Main]\n"
+                    text += "".join(str(quantity) + " " + name + "\n" for name, quantity in row["main"].items())
+                    with _private_file(self.directory / "decks" / row["file"]) as handle:
+                        handle.write(text.encode("utf-8"))
             for name in ("stdout.private.jsonl", "stderr.private.log"):
                 self.files.append(_private_file(self.directory / name))
-            self.reader = threading.Thread(target=self._run, name="forge-" + session_id, daemon=True)
+            self.reader = threading.Thread(target=self._run, name="forge-" + self.id, daemon=True)
             self.reader.start()
             if not self.launched.wait(timeout=_LAUNCH_TIMEOUT):
                 self._fail("native_launch_timeout", "Native worker launch did not finish in time")
@@ -372,8 +431,8 @@ class _Session:
                 self.reader.join(timeout=_POLL + _TERM_GRACE + _KILL_GRACE + 1)
         except (OSError, ValueError, TypeError, RuntimeError):
             self._fail("native_launch_failed", "Native worker could not start")
-            self._shutdown()
-            self.closed.set()
+            if self._shutdown():
+                self.closed.set()
             self.launched.set()
 
     def _run(self):
@@ -396,8 +455,21 @@ class _Session:
             if not self.stopping.is_set():
                 self._read()
         finally:
-            self._shutdown()
-            self.closed.set()
+            quiet = self._shutdown()
+            try:
+                with self.lock:
+                    if not quiet:
+                        self._fail("native_close_timeout", "Native descendant shutdown is still pending")
+                    elif self.finish_verified and not self.stopping.is_set():
+                        self.data.update(status="completed", result=self.pending_result, question=None, info={})
+                        self._changed()
+                        if self.has_save:
+                            self.saves.update(self.id, self.capability, self._record())
+            except (OSError, ValueError):
+                self._fail("completion_save_uncertain", "Native result could not be durably recorded")
+            finally:
+                if quiet:
+                    self.closed.set()
 
     def _changed(self):
         self.data["sequence"] += 1
@@ -436,6 +508,30 @@ class _Session:
         _require(type(frame) is dict and type(frame.get("event")) is str)
         event = frame["event"]
         if event in {"checkpoint_saved", "checkpoint_failed"}:
+            if self.capture is not None:
+                _require(frame.get("request_id") == self.capture["request_id"] and "ack" not in self.capture)
+                self.capture["ack"] = frame
+                self.captured.set()
+                if self.replay is not None:
+                    _require(event == "checkpoint_saved")
+                    current = self._checkpoint_bytes(frame)
+                    checkpoints.verify_frontier(self.replay, current, causal_verifier=self.config.causal_verifier)
+                    frontier = self.frontier
+                    self.replay = self.capture = None
+                    self.invocations = self.saved_invocations
+                    self.data.update(status="running", state=_state(frontier["state"]),
+                                     question=_question(frontier["question"], self.data["actor_id"]),
+                                     info=_info(frontier["info"], self.data["actor_id"]))
+                    self._changed()
+            return
+        if event == "rejected" and self.capture is not None:
+            self.capture["ack"] = frame
+            self.captured.set()
+            if self.replay is not None:
+                raise _ProtocolError("Replay checkpoint refused")
+            return
+        if self.replay is not None:
+            self._replay_frame(frame)
             return
         _require(self.pending_result is None and self.data["status"] not in _TERMINAL)
         if event == "view":
@@ -454,6 +550,7 @@ class _Session:
             _require(request not in self.requests and len(self.requests) < 4096)
             self.requests.add(request)
             self.data.update(state=state, question=question, info=info, status="running")
+            self.frontier = copy.deepcopy(frame)
             self.deferred = None
         elif event == "input_ready":
             _text(frame["input"], 128)
@@ -515,6 +612,7 @@ class _Session:
                     os.set_blocking(pipe.fileno(), False)
                     selector.register(pipe, selectors.EVENT_READ, index)
                 while not self.stopping.is_set():
+                    self._remember_children()
                     now = time.monotonic()
                     if now - started >= _WALL_TIMEOUT:
                         self._fail("native_wall_timeout", "Native session reached its wall limit")
@@ -563,13 +661,16 @@ class _Session:
                     if pending or process.poll() != 0 or self.pending_result is None:
                         self._fail("native_exit_failed", "Native worker ended without a verified result")
                     else:
-                        self.data.update(status="completed", result=self.pending_result, question=None, info={})
-                        self._changed()
+                        self.finish_verified = True
         except (OSError, ValueError, TypeError, KeyError, RecursionError, OverflowError):
             self._fail("native_protocol_error", "Invalid native worker output")
 
     def _shutdown(self):
         process = self.process
+        try:
+            self._remember_children()
+        except (OSError, ValueError, IndexError):
+            self.descendant_scan_failed = True
         if process is not None:
             if process.stdin is not None:
                 process.stdin.close()
@@ -589,12 +690,19 @@ class _Session:
                     pipe.close()
         for handle in self.files:
             handle.close()
+        try:
+            self._reap_descendants()
+        except ForgeError:
+            return False
+        return process is None or process.poll() is not None
 
     def answer(self, payload):
         with self.lock:
             if type(payload) is not dict or set(payload) != {"request_id", "tokens", "sequence", "action_id"}:
                 raise ForgeError(422, "invalid_answer", "Invalid native answer fields")
             action = _key(payload["action_id"])
+            if action in self.controls:
+                raise ForgeError(409, "action_conflict", "Action key already identifies a control")
             try:
                 fingerprint = _fingerprint(payload)
             except (TypeError, ValueError, RecursionError, OverflowError):
@@ -603,7 +711,8 @@ class _Session:
                 if not hmac.compare_digest(self.actions[action]["fingerprint"], fingerprint):
                     raise ForgeError(409, "action_conflict", "Action key already identifies another answer")
                 return self.snapshot(action)
-            if self.data["status"] in _TERMINAL or self.stopping.is_set():
+            if (self.data["status"] in _TERMINAL | {"suspended", "restoring"}
+                    or self.stopping.is_set() or self.capture is not None):
                 raise ForgeError(409, "session_closed", "Native session is closed")
             question = self.data["question"]
             if (not _integer(payload["sequence"]) or payload["sequence"] != self.data["sequence"]
@@ -630,42 +739,300 @@ class _Session:
                 self.deferred = None
             self._changed()
             self.activity_at = time.monotonic()
+            self.finish_verified = False
             try:
-                fd = self.process.stdin.fileno()
-                remaining = memoryview(raw)
-                deadline = time.monotonic() + _WRITE_TIMEOUT
-                with selectors.DefaultSelector() as writer:
-                    writer.register(fd, selectors.EVENT_WRITE)
-                    while remaining:
-                        timeout = deadline - time.monotonic()
-                        if timeout <= 0 or not writer.select(timeout):
-                            raise OSError("Native pipe write timed out")
-                        try:
-                            written = os.write(fd, remaining)
-                        except BlockingIOError:
-                            continue
-                        if written <= 0:
-                            raise OSError("Native pipe closed")
-                        remaining = remaining[written:]
+                self._write(raw)
             except (OSError, ValueError):
                 self._fail("native_write_uncertain", "Native answer delivery is uncertain; do not resend")
             return self.snapshot()
 
-    def close(self):
+    def _write(self, raw):
+        fd = self.process.stdin.fileno()
+        remaining = memoryview(raw)
+        deadline = time.monotonic() + _WRITE_TIMEOUT
+        with selectors.DefaultSelector() as writer:
+            writer.register(fd, selectors.EVENT_WRITE)
+            while remaining:
+                timeout = deadline - time.monotonic()
+                if timeout <= 0 or not writer.select(timeout):
+                    raise OSError("Native pipe write timed out")
+                try:
+                    written = os.write(fd, remaining)
+                except BlockingIOError:
+                    continue
+                if written <= 0:
+                    raise OSError("Native pipe closed")
+                remaining = remaining[written:]
+
+    def _remember_children(self):
+        if self.process is None or not _integer(self.process.pid, 1):
+            return
+        pending, seen = [self.process.pid], set()
+        while pending:
+            parent = pending.pop()
+            if parent in seen:
+                continue
+            seen.add(parent)
+            try:
+                children = Path(f"/proc/{parent}/task/{parent}/children").read_text().split()
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            for value in children:
+                pid = int(value)
+                identity = _process_identity(pid)
+                if identity is not None:
+                    self.descendants.setdefault(pid, identity)
+                    pending.append(pid)
+
+    def _record(self, public=None):
+        return {"public": self.snapshot() if public is None else public,
+                "actions": {key: {"fingerprint": row["fingerprint"].hex(), "receipt": copy.deepcopy(row["receipt"])}
+                            for key, row in self.actions.items()},
+                "controls": copy.deepcopy(self.controls), "start": self.start,
+                "invocations": {str(key): action for key, action in self.invocations.items()},
+                "last_action": self.last_action}
+
+    def _control(self, operation, payload):
+        fields = {"sequence", "action_id"} | ({"request_id"} if operation == "checkpoint" else set())
+        if type(payload) is not dict or set(payload) != fields:
+            raise ForgeError(422, "invalid_control", "Invalid native control fields")
+        action, fingerprint = _key(payload["action_id"]), _fingerprint(payload).hex()
+        if action in self.controls:
+            if self.controls[action] != {"operation": operation, "fingerprint": fingerprint}:
+                raise ForgeError(409, "action_conflict", "Control key already identifies another operation")
+            return action, fingerprint, True
+        if action in self.actions or len(self.controls) >= 128:
+            raise ForgeError(409, "action_conflict", "Control key is unavailable")
+        if not _integer(payload["sequence"]) or payload["sequence"] != self.data["sequence"]:
+            raise ForgeError(409, "stale_question", "Read the current native session first")
+        return action, fingerprint, False
+
+    def _checkpoint_bytes(self, ack):
+        _require(type(ack.get("sha256")) is str and _CAPABILITY.fullmatch(ack["sha256"]) is not None)
+        with checkpoints._directory(self.directory) as directory:
+            raw = checkpoints._read_at(directory, "CHECKPOINT.json", checkpoints._SNAPSHOT_LIMIT)
+        _require(hmac.compare_digest(hashlib.sha256(raw).hexdigest(), ack["sha256"]))
+        value = checkpoints._decode(raw)
+        checkpoints._validate(value)
+        _require(self.frontier is not None
+                 and checkpoints._same_json(value["pending_offer"], self.frontier["replay_offer"])
+                 and _state(value["actor_view"])["actor_id"] == self.data["actor_id"])
+        return value
+
+    def checkpoint(self, payload):
         with self.lock:
-            if self.data["status"] not in _TERMINAL:
-                self.data["status"] = "aborted"
-                self._invalidate("session_closed")
+            action, fingerprint, duplicate = self._control("checkpoint", payload)
+            if duplicate:
+                return self.snapshot()
+            question = self.data["question"]
+            if (self.data["status"] != "running" or self.capture is not None or question is None
+                    or payload["request_id"] != question["request_id"] or self.awaiting):
+                raise ForgeError(409, "checkpoint_busy", "Native question is no longer available to save")
+            self.capture = {"request_id": question["request_id"]}
+            self.captured.clear()
+            try:
+                self._write(_encode({"checkpoint_request_id": question["request_id"]}) + b"\n")
+            except (OSError, ValueError):
+                self.capture = None
+                self._fail("native_write_uncertain", "Native control delivery is uncertain; reconnect")
+                raise ForgeError(503, "checkpoint_unavailable", "Native checkpoint could not be captured") from None
+        committed = False
+        try:
+            deadline = time.monotonic() + _CHECKPOINT_TIMEOUT
+            while not self.captured.wait(_POLL):
+                if self.stopping.is_set() or time.monotonic() >= deadline:
+                    raise _ProtocolError("Checkpoint acknowledgement unavailable")
+            with self.lock:
+                _require(not self.abandoned and not self.stopping.is_set()
+                         and self.data["status"] == "running"
+                         and self.data["question"] is not None
+                         and self.data["question"]["request_id"] == payload["request_id"])
+                ack = self.capture["ack"]
+                _require(ack["event"] == "checkpoint_saved")
+                current = self._checkpoint_bytes(ack)
+                public = self.snapshot()
+                public.update(status="suspended", sequence=public["sequence"] + 1, question=None, info={})
+                self.controls[action] = {"operation": "checkpoint", "fingerprint": fingerprint}
+                self.saves.publish(self.id, self.capability, self.directory / "CHECKPOINT.json", self._record(public))
+                committed = self.has_save = True
+                self.saved_checkpoint = current
+                self.stopping.set()
+            self._reap()
+            with self.lock:
+                if self.abandoned:
+                    raise ForgeError(409, "session_closed", "Native session was explicitly closed")
+                self.data = public
+                return self.snapshot()
+        except (OSError, ValueError, KeyError, TypeError, RecursionError) as error:
+            if (committed or getattr(error, "committed", False)) and not self.abandoned:
+                self._fail("checkpoint_uncertain", "Saved-point durability or worker shutdown needs reconnect")
+            else:
+                self.controls.pop(action, None)
+            raise ForgeError(503, "checkpoint_unavailable", "Native checkpoint could not be saved") from None
+        finally:
+            with self.lock:
+                self.capture = None
+
+    def _replay_frame(self, frame):
+        event, saved = frame["event"], self.replay
+        if event in {"view", "choice"}:
+            state = _state(frame["state"])
+            self._bind(state)
+            if event == "view":
+                return
+            _question(frame["question"], state["actor_id"])
+            _info(frame["info"], state["actor_id"])
+            _require(not self.replay_waiting and self.capture is None)
+            self.frontier = copy.deepcopy(frame)
+            if self.starts < saved["starts"]:
+                ticket = saved["journals"]["starts"][self.starts]["ticket"]
+                _require(checkpoints._same_json(frame["replay_offer"], ticket["offer"]))
+                tokens, used = [], set()
+                for selected in ticket["selected"]:
+                    matches = [(i, row) for i, row in enumerate(frame["question"]["choices"])
+                               if i not in used and checkpoints._same_json(row["display"], selected)]
+                    _require(len(matches) == 1)
+                    index, row = matches[0]
+                    used.add(index)
+                    tokens.append(row["token"])
+                question = frame["question"]
+                _require(question["min"] <= len(tokens) <= question["max"])
+                self._write(_encode({"request_id": question["request_id"], "tokens": tokens}) + b"\n")
+                self.replay_waiting = True
+            else:
+                _require(checkpoints._same_json(frame["replay_offer"], saved["pending_offer"]))
+        elif event == "started":
+            _require(self.replay_waiting and _integer(frame["start_id"])
+                     and _integer(frame["count"], 1, _MAX_ACTIONS) and frame["start_id"] == self.starts
+                     and frame["count"] == self.starts + 1 and self.starts < saved["starts"]
+                     and frame["role"] == "invocation_not_acceptance")
+            self.replay_waiting = False
+            self.replay_active.add(self.starts)
+            self.starts += 1
+        elif event == "completion":
+            _require(_integer(frame["start_id"]) and _integer(frame["count"], 1, _MAX_ACTIONS)
+                     and frame["start_id"] in self.replay_active and frame["count"] == self.completions + 1
+                     and frame["role"] == "native_return_not_cast_receipt")
+            self.replay_active.remove(frame["start_id"])
+            self.completions += 1
+        elif event == "input_ready":
+            return
+        else:
+            raise _ProtocolError("Unexpected native replay event")
+        if (self.frontier is not None and self.starts == saved["starts"]
+                and self.completions == saved["completions"] and not self.replay_waiting
+                and self.capture is None
+                and checkpoints._same_json(self.frontier["replay_offer"], saved["pending_offer"])):
+            request = self.frontier["question"]["request_id"]
+            self.capture = {"request_id": request}
+            self._write(_encode({"checkpoint_request_id": request}) + b"\n")
+
+    def resume(self, payload):
+        with self.lock:
+            action, fingerprint, duplicate = self._control("resume", payload)
+            if duplicate and (self.resume_retry != action or self.data["status"] != "suspended"):
+                return self.snapshot()
+            if self.data["status"] != "suspended" or not self.closed.is_set():
+                raise ForgeError(409, "session_not_suspended", "Only a saved and stopped session can resume")
+            if not duplicate:
+                sequence = self.data["sequence"]
+                self.controls[action] = {"operation": "resume", "fingerprint": fingerprint}
                 self._changed()
-            self.stopping.set()
-            if self.process is not None and self.process.stdin is not None:
-                self.process.stdin.close()
+                try:
+                    self.saves.update(self.id, self.capability, self._record())
+                except (OSError, ValueError) as error:
+                    if getattr(error, "committed", False):
+                        try:
+                            meta, checkpoint = self.saves.load(self.id, self.capability)
+                            _require(checkpoints._same_json(meta["record"], self._record())
+                                     and checkpoints._same_json(checkpoint, self.saved_checkpoint))
+                            self.resume_retry = action
+                        except (OSError, ValueError):
+                            self._fail("resume_uncertain", "Resume metadata needs recovery before starting a worker")
+                    else:
+                        self.controls.pop(action, None)
+                        self.data["sequence"] = sequence
+                    raise ForgeError(503, "resume_uncertain", "Resume was not started; reconnect before retrying") from None
+            self.resume_retry = None
+            self.saved_invocations = dict(self.invocations)
+            self.invocations = {}
+            self.starts = self.completions = 0
+            self.frontier, self.capture = None, None
+            self.replay = self.saved_checkpoint
+            self.replay_active = set()
+            self.replay_waiting = False
+            self.data.update(status="restoring", question=None, info={})
+            self.directory = self.config.sessions_dir / (self.id + "-resume-" + uuid.uuid4().hex)
+            self.stopping, self.closed, self.launched = threading.Event(), threading.Event(), threading.Event()
+            self.files = []
+            self.descendants = {}
+            self.descendant_scan_failed = False
+            self.activity_at = time.monotonic()
+            self._changed()
+            self._launch(None, self.saved_checkpoint)
+            return self.snapshot()
+
+    def _reap(self):
         if self.reader is not None and self.reader.ident is not None:
             self.reader.join(timeout=_POLL + _TERM_GRACE + _KILL_GRACE + 1)
             if self.reader.is_alive():
                 raise ForgeError(503, "native_close_timeout", "Native session shutdown is still pending")
         if self.process is not None and self.process.poll() is None:
             raise ForgeError(503, "native_close_timeout", "Native session shutdown is still pending")
+        self._reap_descendants()
+        self.closed.set()
+
+    def _reap_descendants(self):
+        deadline = time.monotonic() + _KILL_GRACE
+        try:
+            while True:
+                remaining = []
+                for pid, identity in self.descendants.items():
+                    if _process_identity(pid) != identity:
+                        continue
+                    # A subreaper may adopt these exact known children. Never
+                    # reap unrelated children or signal a potentially reused PID.
+                    try:
+                        os.waitpid(pid, os.WNOHANG)
+                    except ChildProcessError:
+                        pass
+                    if _process_identity(pid) == identity:
+                        remaining.append(pid)
+                if not remaining:
+                    break
+                if time.monotonic() >= deadline:
+                    raise OSError("Observed native descendants remain")
+                time.sleep(.01)
+            if self.descendant_scan_failed:
+                raise OSError("Native descendant inspection failed")
+        except (OSError, ValueError, IndexError):
+            raise ForgeError(503, "native_close_timeout", "Native descendant shutdown is still pending") from None
+
+    def close(self, *, preserve_save=False):
+        persistence_error = None
+        with self.lock:
+            if preserve_save and self.data["status"] == "suspended":
+                return self.snapshot()
+            if not preserve_save:
+                self.abandoned = True
+            if (self.data["status"] not in _TERMINAL
+                    or (self.has_save and not preserve_save and self.data["status"] == "failed")):
+                self.data["status"] = "aborted"
+                self._invalidate("session_closed")
+                self.invocations.clear()
+                self.awaiting.clear()
+                self._changed()
+            self.stopping.set()
+            if self.process is not None and self.process.stdin is not None:
+                self.process.stdin.close()
+            if self.has_save and not preserve_save and self.data["status"] == "aborted":
+                try:
+                    self.saves.update(self.id, self.capability, self._record())
+                except (OSError, ValueError) as error:
+                    persistence_error = error
+        self._reap()
+        if persistence_error is not None:
+            raise ForgeError(503, "abandonment_uncertain", "Worker stopped but saved-game abandonment needs retry") from None
         return self.snapshot()
 
 
@@ -677,6 +1044,19 @@ class ForgeManager:
         self._lock = threading.RLock()
         self._sessions, self._starts = {}, {}
         self._closed = False
+        self._saves = (NativeSaves(self.config.sessions_dir.with_name("." + self.config.sessions_dir.name + "-saves"),
+                                   self.config.build_id) if self.config is not None else None)
+        self._epoch = 0
+        if self._saves is not None and self._saves.has_saves():
+            self._own()
+
+    def _own(self):
+        if not self._epoch:
+            try:
+                self._epoch = self._saves.reserve_epoch()
+            except SaveError as error:
+                self._saves.release()
+                raise ForgeError(503, error.code, "Native runtime storage is unavailable or already owned") from None
 
     @classmethod
     def from_environment(cls):
@@ -696,6 +1076,18 @@ class ForgeManager:
             spec = _start_payload(payload)
             fingerprint = _fingerprint(payload)
             identity = (capability, key)
+            self._own()
+            if identity not in self._starts:
+                try:
+                    saved_id = self._saves.find_start(capability, key)
+                    if saved_id is not None:
+                        saved = self._saves.load(saved_id, capability)
+                        session = _Session(self.config, saved_id, capability, None, saves=self._saves,
+                                           saved=saved, epoch=self._epoch)
+                        self._sessions[saved_id] = session
+                        self._starts[identity] = (bytes.fromhex(session.start["fingerprint"]), saved_id)
+                except SaveError as error:
+                    raise ForgeError(409, error.code, "Native saved start is unavailable") from None
             if identity in self._starts:
                 old_fingerprint, session_id = self._starts[identity]
                 if not hmac.compare_digest(old_fingerprint, fingerprint):
@@ -713,7 +1105,8 @@ class ForgeManager:
                 del self._sessions[expired]
                 self._starts = {identity: record for identity, record in self._starts.items() if record[1] != expired}
             session_id = uuid.uuid4().hex
-            session = _Session(self.config, session_id, capability, spec)
+            session = _Session(self.config, session_id, capability, spec, saves=self._saves,
+                               start={"key": key, "fingerprint": fingerprint.hex()}, epoch=self._epoch)
             self._sessions[session_id] = session
             self._starts[identity] = (fingerprint, session_id)
             return session.snapshot()
@@ -722,6 +1115,18 @@ class ForgeManager:
         capability = _capability_hash(capability)
         with self._lock:
             session = self._sessions.get(session_id) if type(session_id) is str else None
+            if (session is None and self._saves is not None and type(session_id) is str
+                    and re.fullmatch(r"[0-9a-f]{32}", session_id) is not None):
+                try:
+                    saved = self._saves.load(session_id, capability)
+                    session = _Session(self.config, session_id, capability, None, saves=self._saves,
+                                       saved=saved, epoch=self._epoch)
+                    self._sessions[session_id] = session
+                    start = session.start
+                    self._starts[(capability, start["key"])] = (bytes.fromhex(start["fingerprint"]), session_id)
+                except SaveError as error:
+                    if error.code != "not_found":
+                        raise ForgeError(409, error.code, "Native save is incompatible or unavailable") from None
             if session is None or not hmac.compare_digest(session.capability, capability):
                 raise ForgeError(404, "session_not_found", "Native session not found")
             return session
@@ -731,6 +1136,18 @@ class ForgeManager:
 
     def answer(self, session_id, capability, payload):
         return self._session(session_id, capability).answer(payload)
+
+    def checkpoint(self, session_id, capability, payload):
+        return self._session(session_id, capability).checkpoint(payload)
+
+    def resume(self, session_id, capability, payload):
+        with self._lock:
+            if not self.available:
+                raise ForgeError(503, "native_unavailable", "Native Forge runtime is disabled")
+            session = self._session(session_id, capability)
+            if sum(not row.closed.is_set() for row in self._sessions.values()) >= 2 and session.closed.is_set():
+                raise ForgeError(503, "native_capacity", "Native session capacity reached")
+            return session.resume(payload)
 
     def close(self, session_id, capability):
         return self._session(session_id, capability).close()
@@ -742,8 +1159,10 @@ class ForgeManager:
         failure = None
         for session in sessions:
             try:
-                session.close()
+                session.close(preserve_save=True)
             except ForgeError as error:
                 failure = failure or error
         if failure is not None:
             raise failure
+        if self._saves is not None:
+            self._saves.release()

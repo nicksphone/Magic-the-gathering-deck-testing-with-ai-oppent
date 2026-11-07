@@ -322,6 +322,15 @@ evidence that Ramp strategy is finished.
   not application integration or every-choice/BO3 persistence. See
   [the current result and retained failures](docs/testing/native-engine-integration-status.md#actual-cold-reconstruction-and-continuation).
 - [ ] Make a production adoption decision, including distribution/license review.
+- [x] **Explicit native app checkpoint connection:** save/resume endpoints and
+  table controls now use the shared private store, build/capability fences,
+  semantic replay and full-frontier verification before fresh tokens are
+  exposed. Seven backend modules passed 258 tests; the full frontend test chain,
+  lint and build passed. A real Forge manager saved at three native starts,
+  cold-resumed and advanced to a fourth with immediate observed-process closure.
+  This is source/component qualification, not a live profile switch, separate
+  backend-process/browser restart, automatic per-action persistence or durable BO3.
+  See [scope, original failures and remaining work](docs/testing/forge-app-checkpoints.md).
 - [ ] **Native durable resume:** a six-process Forge compatibility check restored
   selected settled life/card-placement controls, but lost a genuinely paid spell
   on the stack in both seats (stack 1 to 0; caster inventory 60 to 59). Raw
