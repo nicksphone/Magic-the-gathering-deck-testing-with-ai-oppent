@@ -115,6 +115,13 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   and four natural Tempo/Ramp games finish cleanly with the original source-choice
   error corrected. This is not a complete land planner or a strength certificate.
   See [the permission boundary and measured scope](docs/testing/native-expiring-land-ai.md).
+  A shared native timing correction now recognizes incoming friendly stat buffs
+  before combat without adding named-card hints. Both original funded refusals
+  are corrected; two canonical lords/both seats use actual Forest payments and
+  preserve ready mana-Elf attackers. Existing 172 controls pass and matched four
+  parent/four corrected Tribal/Ramp games complete. This does not close arbitrary
+  combat planning, training or application adoption.
+  See [the timing and payment evidence](docs/testing/native-precombat-buff-ai.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all
