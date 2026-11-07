@@ -1,0 +1,103 @@
+{
+  "scope": "Controlled/native protocol qualification, not naturally dealt games or expert labels",
+  "final_content_id": "940a13aa7bd0a5bd56d19117a4c9bba4913575255e259f1f48feb14899c4f193",
+  "profile_build_id": "5103accc1b45b44cb4820ec13576977c29b92a5bdda270704302c509882ae3b5",
+  "sources": 15,
+  "classes": 24,
+  "base_resources_reverified": 59971,
+  "inherited14sources23classes_unchanged": true,
+  "final_serial_whole_groups": [
+    {
+      "group": "controls20",
+      "cases": 20,
+      "exit": 0,
+      "seconds": 17.60195822804235,
+      "native_canaries": {
+        "sql_api_denied_before_open": true,
+        "native_socket_syscall_denied": true,
+        "network_filter_installed_before_jvm": true
+      }
+    },
+    {
+      "group": "paid4",
+      "cases": 4,
+      "exit": 0,
+      "seconds": 22.212088624946773,
+      "native_canaries": {
+        "sql_api_denied_before_open": true,
+        "native_socket_syscall_denied": true,
+        "network_filter_installed_before_jvm": true
+      }
+    },
+    {
+      "group": "mandatory2",
+      "cases": 2,
+      "exit": 0,
+      "seconds": 18.404462327016518,
+      "native_canaries": {
+        "sql_api_denied_before_open": true,
+        "native_socket_syscall_denied": true,
+        "network_filter_installed_before_jvm": true
+      }
+    },
+    {
+      "group": "lifecycle101",
+      "cases": 101,
+      "exit": 0,
+      "seconds": 28.028594868956134,
+      "native_canaries": {
+        "sql_api_denied_before_open": true,
+        "native_socket_syscall_denied": true,
+        "network_filter_installed_before_jvm": true
+      }
+    }
+  ],
+  "final_total_cases": 127,
+  "native_lifecycle_testng": {
+    "ignored": "0",
+    "total": "101",
+    "passed": "101",
+    "failed": "0",
+    "skipped": "0"
+  },
+  "synthetic_profile_tests": {
+    "total": 45,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "source": "three added acceptance tests; original42 unchanged"
+  },
+  "history": {
+    "original_four": {
+      "manual_controls_pass": 2,
+      "AI_allocation_red": 2,
+      "harness_errors": 0
+    },
+    "direction_controls_baseline": {
+      "pass": 16,
+      "declared_red": 4,
+      "harness_errors": 0
+    },
+    "initial_directional_candidate_125": "passed before mandatory edge was reviewed; not full generic acceptance",
+    "review_finding": "nullable discard-oriented helper violated mandatory min1 for a protected permanent plus Bolt",
+    "mandatory_before": {
+      "pass": 0,
+      "declared_red": 2,
+      "harness_errors": 0
+    },
+    "mandatory_after_unchanged": {
+      "pass": 2,
+      "declared_red": 0,
+      "harness_errors": 0
+    },
+    "synthetic_profile_before": {
+      "pass": 43,
+      "failures": 2,
+      "errors": 0
+    }
+  },
+  "source_and_prefix_before_end_equal": true,
+  "native_games": 0,
+  "live_default_switch": false,
+  "broader_joint_allocation_strength_fairness_training_BO3_accepted": false
+}

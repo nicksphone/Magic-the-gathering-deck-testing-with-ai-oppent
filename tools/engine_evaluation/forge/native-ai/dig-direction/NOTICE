@@ -1,0 +1,9 @@
+This source delta and native card programs derive from Forge: Play Magic: the Gathering, by the Forge Team/Card-Forge contributors.
+
+Upstream: https://github.com/Card-Forge/forge
+Reviewed upstream revision: 61e9442c433711a82258daca3236f936a1d6f70e
+License: GNU General Public License version 3 or later. See LICENSE.
+
+Project changes correct generic own-library-bottom selection through the existing native chooser, including a nonnull valid-card fallback. Forge authors retain credit for their rules, card definitions and baseline AI. No upstream endorsement is implied.
+
+Magic: The Gathering and card names/text are Wizards of the Coast intellectual property; project modifications do not claim authorship of them. See repository THIRD-PARTY-NOTICES.md.

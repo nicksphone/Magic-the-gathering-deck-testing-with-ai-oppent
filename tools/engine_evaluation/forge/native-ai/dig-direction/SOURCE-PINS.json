@@ -1,0 +1,12 @@
+{
+  "parent_content_id": "16517907e0dc07f6f136d4a6b7199bb0e62a8c629a549ef25797644bfe7bb1e7",
+  "candidate_content_id": "940a13aa7bd0a5bd56d19117a4c9bba4913575255e259f1f48feb14899c4f193",
+  "source": "forge-ai/src/main/java/forge/ai/ability/DigAi.java",
+  "pre_sha256": "b96029967cebb2d88217b2cd1a4b0d1422386ddf912979525fd9c40dca4e2fc2",
+  "post_sha256": "7a64976210e2b57fe488dc2451fc07ada294cc0a3b04d0fc7701abab86819e38",
+  "class_sha256": "b48e3f7b77c5724165839e485cbb358fba29f81ebf2cc553d779c627cc2edffb",
+  "inherited14sources23classes_unchanged": true,
+  "bundle_schema": 12,
+  "sources": 15,
+  "classes": 24
+}

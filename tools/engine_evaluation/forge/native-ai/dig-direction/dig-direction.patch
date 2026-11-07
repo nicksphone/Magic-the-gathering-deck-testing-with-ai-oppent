@@ -1,0 +1,16 @@
+--- a/forge-ai/src/main/java/forge/ai/ability/DigAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DigAi.java
+@@ -157,6 +157,13 @@
+         if (sa.getActivatingPlayer().isOpponentOf(ai) && relatedPlayer.isOpponentOf(ai) && !"ChooseBestForOpponent".equals(logic)) {
+             return ComputerUtilCard.getWorstPermanentAI(valid, false, true, false, false);
+         }
++        // Forge Team/Card-Forge selector: bottom selection is the opposite of retaining a card.
++        if (logic.isEmpty() && sa.getActivatingPlayer() == ai && relatedPlayer == ai
++                && "Library".equals(sa.getParamOrDefault("DestinationZone", "Hand"))
++                && "-1".equals(sa.getParamOrDefault("LibraryPosition", "-1"))) {
++            Card worst = ComputerUtilCard.getWorstAI(valid);
++            return worst != null ? worst : ComputerUtilCard.getCheapestPermanentAI(valid, null, false);
++        }
+         return ComputerUtilCard.getBestAI(valid);
+     }
+ 
