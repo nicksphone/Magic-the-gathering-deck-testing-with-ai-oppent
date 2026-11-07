@@ -1,0 +1,205 @@
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
+@@ -1,3 +1,5 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Forge Team/Card-Forge AI; local linked-pressure completion preserves the native choice/payment pipeline.
+ package forge.ai.ability;
+ 
+ import com.google.common.collect.Lists;
+@@ -22,15 +24,18 @@
+ import forge.game.player.PlayerPredicates;
+ import forge.game.spellability.AbilitySub;
+ import forge.game.spellability.SpellAbility;
++import forge.game.spellability.SpellAbilityCondition;
+ import forge.game.spellability.TargetChoices;
+ import forge.game.spellability.TargetRestrictions;
+ import forge.game.staticability.StaticAbilityMustTarget;
++import forge.game.trigger.TriggerType;
+ import forge.game.zone.ZoneType;
+ import forge.util.MyRandom;
+ import forge.util.collect.FCollectionView;
+ 
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.lang3.tuple.Pair;
++import org.apache.commons.lang3.builder.EqualsBuilder;
+ 
+ import java.util.Arrays;
+ import java.util.Collection;
+@@ -40,6 +45,8 @@
+ import forge.util.IterableUtil;
+ 
+ public class DamageDealAi extends DamageAiBase {
++
++    private static final SpellAbilityCondition DEFAULT_LINKED_CONDITION = new SpellAbilityCondition();
+ 
+     @Override
+     public AiAbilityDecision chkDrawback(Player ai, SpellAbility sa) {
+@@ -88,6 +95,17 @@
+                 dmg--; // the card will be spent casting the spell, so actual damage is 1 less
+             }
+         }
++        // Reevaluate the linked pressure target before the ordinary kill-only selector can replace it.
++        if (root != sa && root.getSubAbility() == sa && root.getTargets().isTargetingAnyPlayer()
++                && !isLethalDamageToPlayer(root.getTargets().getFirstTargetedPlayer(), source, dmg,
++                        root.hasParam("NoPrevention"))) {
++            sa.resetTargets();
++            if (getSupportedLinkedDamageTargets(ai, sa, dmg) != null) {
++                final boolean complete = completeLethalLinkedDamage(ai, sa, dmg);
++                return new AiAbilityDecision(complete ? 100 : 0,
++                        complete ? AiPlayDecision.WillPlay : AiPlayDecision.TargetingFailed);
++            }
++        }
+         if (damageTargetAI(ai, sa, dmg, true)) {
+             return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+         }
+@@ -97,7 +115,7 @@
+         return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
+     }
+ 
+-    private boolean completeLethalLinkedDamage(final Player ai, final SpellAbility child, final int damage) {
++    private List<Card> getSupportedLinkedDamageTargets(final Player ai, final SpellAbility child, final int damage) {
+         final SpellAbility root = child.getRootAbility();
+         final SpellAbility resolve = child.getSubAbility();
+         if (damage <= 0 || !root.isSpell() || root.isTrigger() || root.isCopied() || root.getParent() != null
+@@ -109,7 +127,7 @@
+                 || root.getHostCard().getManaCost().countX() != 0 || !"True".equals(root.getParam("DamageMap"))
+                 || resolve == null || resolve.getApi() != ApiType.DamageResolve || resolve.getSubAbility() != null
+                 || resolve.getMapParams().size() != 1 || !"DamageResolve".equals(resolve.getParam("DB"))) {
+-            return false;
++            return null;
+         }
+         // Unknown conditions, optional targets and extra effect parameters are outside this fallback.
+         if (!Arrays.asList("SP", "ValidTgts", "TgtPrompt", "NumDmg", "DamageMap", "SubAbility", "AILogic",
+@@ -117,7 +135,7 @@
+                 || !Arrays.asList("DB", "ValidTgts", "TgtPrompt", "NumDmg", "SubAbility", "SpellDescription",
+                 "NoPrevention", "TargetMin", "TargetMax").containsAll(child.getMapParams().keySet())
+                 || !root.usesTargeting() || !child.usesTargeting() || !child.getTargets().isEmpty()) {
+-            return false;
++            return null;
+         }
+         final TargetRestrictions rootTargets = root.getTargetRestrictions();
+         final TargetRestrictions childTargets = child.getTargetRestrictions();
+@@ -126,45 +144,102 @@
+                 || rootTargets.isRandomTarget() || childTargets.isRandomTarget()
+                 || root.getTargets().size() != 1 || !root.getTargets().isTargetingAnyPlayer()
+                 || rootTargets.getValidTgts().length == 0 || childTargets.getValidTgts().length == 0) {
+-            return false;
++            return null;
+         }
+         for (String selector : rootTargets.getValidTgts()) {
+             if (!selector.equals("Player") && !selector.equals("Opponent") && !selector.equals("Planeswalker")) {
+-                return false;
++                return null;
+             }
+         }
+         for (String selector : childTargets.getValidTgts()) {
+             if (!selector.equals("Creature.ControlledBy ParentTargetedController")
+                     && !selector.equals("Creature.ControlledBy ParentTarget")) {
+-                return false;
++                return null;
+             }
+         }
+         final String amount = root.getParam("NumDmg");
+         if (amount == null || amount.equals("X") || !amount.equals(child.getParam("NumDmg"))
+                 || root.hasParam("NoPrevention") != child.hasParam("NoPrevention")) {
+-            return false;
++            return null;
+         }
+         if (!amount.matches("[0-9]+")) {
+             final String definition = root.getSVar(amount);
+             if (!definition.equals(child.getSVar(amount))
+                     || !definition.matches("(?:Number\\$[0-9]+|Count\\$Landfall\\.[0-9]+\\.[0-9]+)")) {
+-                return false;
++                return null;
+             }
+         }
+         final Player enemy = root.getTargets().getFirstTargetedPlayer();
+         if (!enemy.isOpponentOf(ai) || !root.canTarget(enemy)) {
+-            return false;
++            return null;
+         }
+         final List<Card> targets = getTargetableCards(ai, child, enemy, childTargets, ai,
+                 child.getHostCard(), ai.getGame());
+         StaticAbilityMustTarget.filterMustTargetCards(ai, targets, child);
+-        // Reuse the child's existing amount; the native forecast can evaluate authored replacement SVars.
+-        if (targets.isEmpty() || !isLethalDamageToPlayer(enemy, root.getHostCard(), damage,
+-                root.hasParam("NoPrevention"))) {
+-            return false;
+-        }
+-        child.getTargets().add(targets.get(0));
++        return targets;
++    }
++
++    private boolean completeLethalLinkedDamage(final Player ai, final SpellAbility child, final int damage) {
++        final List<Card> targets = getSupportedLinkedDamageTargets(ai, child, damage);
++        if (targets == null) return false;
++        final SpellAbility root = child.getRootAbility();
++        final SpellAbility resolve = child.getSubAbility();
++        final Player enemy = root.getTargets().getFirstTargetedPlayer();
++        if (targets.isEmpty()) {
++            return false;
++        }
++        // Preserve the existing lethal completion; pressure needs a separate safe target/value check.
++        if (isLethalDamageToPlayer(enemy, root.getHostCard(), damage, root.hasParam("NoPrevention"))) {
++            child.getTargets().add(targets.get(0));
++            return true;
++        }
++        if (!enemy.canLoseLife() || enemy.cantLoseForZeroOrLessLife()
++                || root.getHostCard().isInfectDamage(enemy) || avoidTargetP(ai, root)
++                || ComputerUtilCombat.predictDamageTo(enemy, damage, root.getHostCard(), false) <= 0) {
++            return false;
++        }
++        for (final SpellAbility part : Arrays.asList(root, child, resolve)) {
++            if (part.getConditions() == null || part.getConditions().getClass() != SpellAbilityCondition.class
++                    || !EqualsBuilder.reflectionEquals(part.getConditions(), DEFAULT_LINKED_CONDITION, true)
++                    || !part.getAdditionalAbilities().isEmpty() || !part.getAdditionalAbilityLists().isEmpty()) {
++                return false;
++            }
++        }
++        targets.removeIf(target -> !target.getView().canBeShownTo(ai.getView())
++                || !target.getView().canFaceDownBeShownTo(ai.getView())
++                || ComputerUtilCombat.predictDamageTo(target, damage, root.getHostCard(), false) <= 0
++                || target.getTriggers().stream().anyMatch(trigger -> !trigger.isSuppressed()
++                        && Arrays.asList(TriggerType.BecomesTarget, TriggerType.BecomesTargetOnce,
++                                TriggerType.DamageDone, TriggerType.DamageDoneOnce,
++                                TriggerType.DamageDoneOnceByController, TriggerType.DamageDealtOnce,
++                                TriggerType.DamageAll, TriggerType.DamagePreventedOnce,
++                                TriggerType.ExcessDamage, TriggerType.ExcessDamageAll).contains(trigger.getMode()))
++                || target.getReplacementEffects().stream().anyMatch(replacement -> !replacement.isSuppressed()
++                        && "DamageDone".equals(replacement.getParam("Event"))));
++        final Card target = ComputerUtilCard.getBestRemovalTargetAI(ai,
++                ComputerUtil.filterAITgts(child, ai, new CardCollection(targets), true));
++        if (target == null) return false;
++        child.getTargets().add(target);
+         return true;
++    }
++
++    private boolean targetLinkedPressure(final Player ai, final SpellAbility root, final int damage) {
++        final SpellAbility child = root.getSubAbility();
++        final Player enemy = ai.getWeakestOpponent();
++        final Game game = ai.getGame();
++        final PhaseHandler phase = game.getPhaseHandler();
++        // Only the new root admission waits; existing native root choices keep their normal timing.
++        if (!game.getStack().isEmpty() || !phase.isPlayerTurn(ai)
++                || !(phase.is(PhaseType.MAIN2) || phase.is(PhaseType.END_OF_TURN))
++                || child == null || root.getParent() != null || !root.usesTargeting() || !root.canTarget(enemy)) {
++            return false;
++        }
++        root.resetTargets();
++        root.getTargets().add(enemy);
++        child.resetTargets();
++        if (completeLethalLinkedDamage(ai, child, damage)) return true;
++        root.resetTargets();
++        return false;
+     }
+ 
+     @Override
+@@ -345,7 +420,7 @@
+                 AiController aic = ((PlayerControllerAi)ai.getController()).getAi();
+                 aic.reserveManaSourcesForNextSpell(chainDmg.getKey(), sa);
+             }
+-        } else if (!damageTargetAI(ai, sa, dmg, false)) {
++        } else if (!damageTargetAI(ai, sa, dmg, false) && !targetLinkedPressure(ai, sa, dmg)) {
+             // simple targeting when there is no spell chaining plan
+             return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
+         }

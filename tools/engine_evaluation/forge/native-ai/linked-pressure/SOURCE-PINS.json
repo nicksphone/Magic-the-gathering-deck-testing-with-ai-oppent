@@ -1,0 +1,17 @@
+{
+  "forge_commit": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "base_commit": "01e3bc69007781ae40cff4167b1ec0e9fea15485",
+  "base_candidate": "d47eee87846bda289c3a855f4ad12095155379177bd1f4581659ec1ba7ce66cb",
+  "candidate": "842989f447e0986ddc3eae0b884cc3979462051f8a63674ad034648f9b1c9a28",
+  "file": "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java",
+  "before_sha256": "6237f0491d82781b8c4e242d7bd49b9bc7b83c08cbcb570a7d93cf5c9c94dc7d",
+  "after_sha256": "25caf630e8c75540ba80d6a9439e2b18ccf7b8a808e586177bf155aace5072e9",
+  "inherited13sources22classes_unchanged": true,
+  "test_source_sha256": {
+    "NativeSearingLinkedPressure10.java": "380396a66799505ee7f738187af02cb3172eb5d64f26eac2546cc767ff5e559e",
+    "NativeLinkedPressureReview4.java": "b6e1ff33e75de9a70b142f6d976dc9acbab5f4fc2963855925b0434490c506cc",
+    "NativeLinkedPressureThreshold4.java": "571f9a14336e463411673ef2f62b01a83dadeb6b64d67aefc7532981075f45db",
+    "NativeLinkedPhasePreservation4.java": "864f21986ba72f026a9e93ace60ca9607457479a824f4e1d5dc6b58eb9b6fb6b",
+    "NativeLinkedPressureHazard20.java": "84eb512d5add29e9f01fd830a6b8f61cb5ada6e92b35503e69552671388457d7"
+  }
+}

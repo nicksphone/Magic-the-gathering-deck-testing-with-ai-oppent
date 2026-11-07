@@ -128,6 +128,14 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   Meathook/Nissa failures; four fixed-seed Ramp/Tribal games complete. This is
   component evidence, not expert strategy or a live engine migration. See the
   [decision evidence and limits](docs/testing/native-entry-sweeper-ai.md).
+- [x] **Bounded native linked-damage pressure:** ordinary native choices now use
+  safe nonlethal player/creature damage instead of declining the reproduced
+  funded line. The original ten checks, review/threshold/timing controls,
+  canonical target hazards, existing186 regressions and unchanged lethal18 pass
+  as separately declared cohorts. Four fixed-seed Burn/Control games complete;
+  one former Burn loss becomes a win, not a strength estimate. Upstream credits
+  and GPL notices are retained. This isolated candidate is not a live/default
+  engine switch or trained-policy result. See [scope and rejected drafts](docs/testing/native-linked-pressure-ai.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all
