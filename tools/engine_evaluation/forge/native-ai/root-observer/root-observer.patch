@@ -1,0 +1,205 @@
+--- a/forge-ai/src/main/java/forge/ai/AiController.java
++++ b/forge-ai/src/main/java/forge/ai/AiController.java
+@@ -87,6 +87,123 @@
+  * @version $Id$
+  */
+ public class AiController {
++    // Optional private-study observer; never re-enumerates or evaluates native choices.
++    private java.util.function.Consumer<DecisionTrace> decisionObserver;
++    private final java.util.concurrent.atomic.AtomicLong decisionObserverFailures = new java.util.concurrent.atomic.AtomicLong();
++    private long decisionRoot;
++    private DecisionCollector activeDecisionTrace;
++
++    public record DecisionAction(Integer abilityId, Integer cardId, String name, String api) { }
++
++    public record DecisionVisit(String stage, int batch, List<DecisionAction> actions,
++                                String opinion, Boolean affordability) {
++        public DecisionVisit {
++            actions = actions == null ? null : List.copyOf(actions);
++        }
++    }
++
++    public record DecisionTrace(long root, int gameId, int actorId, int turn, String phase,
++                                String outcome, boolean returnedNull, List<DecisionAction> selected,
++                                List<DecisionVisit> visits, boolean completeLegalActionSet, boolean truncated) {
++        public DecisionTrace {
++            selected = List.copyOf(selected);
++            visits = List.copyOf(visits);
++        }
++    }
++
++    public void setDecisionObserver(java.util.function.Consumer<DecisionTrace> observer) {
++        decisionObserver = observer;
++    }
++
++    public long getDecisionObserverFailures() {
++        return decisionObserverFailures.get();
++    }
++
++    private final class DecisionCollector {
++        private static final int LIMIT = 4096;
++        private final long root = ++decisionRoot;
++        private final int gameId = game.getId();
++        private final int actorId = player.getId();
++        private final int turn = game.getPhaseHandler().getTurn();
++        private final String phase = game.getPhaseHandler().getPhase() == null
++                ? null : game.getPhaseHandler().getPhase().name();
++        private final List<DecisionVisit> visits = new ArrayList<>();
++        private final java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock();
++        private final java.util.concurrent.atomic.AtomicInteger batches = new java.util.concurrent.atomic.AtomicInteger();
++        private final java.util.concurrent.atomic.AtomicInteger identities = new java.util.concurrent.atomic.AtomicInteger();
++        private volatile boolean closed;
++        private volatile boolean truncated;
++
++        private DecisionAction identity(SpellAbility sa) {
++            Card host = sa == null ? null : sa.getHostCard();
++            if (host == null || host.isFaceDown() || !host.getView().canBeShownTo(player.getView())) {
++                return new DecisionAction(null, null, null, null);
++            }
++            return new DecisionAction(sa.getId(), host.getId(), host.getName(),
++                    sa.getApi() == null ? null : sa.getApi().name());
++        }
++
++        private List<DecisionAction> identities(List<SpellAbility> all, boolean visitBudget) {
++            if (all == null) return null;
++            List<DecisionAction> values = new ArrayList<>();
++            for (SpellAbility sa : all) {
++                if (values.size() >= LIMIT || (visitBudget && identities.getAndIncrement() >= LIMIT)) {
++                    truncated = true;
++                    break;
++                }
++                values.add(identity(sa));
++            }
++            return values;
++        }
++
++        private int offered(List<SpellAbility> all) {
++            int batch = batches.incrementAndGet();
++            add("OFFERED", batch, all, null);
++            return batch;
++        }
++
++        private void add(String stage, int batch, List<SpellAbility> all, String opinion) {
++            if (closed) return;
++            final List<DecisionAction> actions;
++            try {
++                // Read engine identities outside the collector lock, never delaying timeout cancellation.
++                actions = identities(all, true);
++            } catch (RuntimeException failure) {
++                truncated = true;
++                decisionObserverFailures.incrementAndGet();
++                return;
++            }
++            if (!lock.tryLock()) {
++                truncated = true;
++                return;
++            }
++            try {
++                if (closed) return;
++                if (visits.size() >= LIMIT) truncated = true;
++                else visits.add(new DecisionVisit(stage, batch, actions, opinion, null));
++            } finally {
++                lock.unlock();
++            }
++        }
++
++        private DecisionTrace finish(String outcome, List<SpellAbility> chosen) {
++            closed = true; // A cancelled eval worker cannot append to the next root's trace.
++            List<DecisionAction> selected = identities(chosen, false);
++            List<DecisionVisit> frozen = List.of();
++            if (lock.tryLock()) {
++                try {
++                    frozen = List.copyOf(visits);
++                } finally {
++                    lock.unlock();
++                }
++            } else {
++                truncated = true;
++            }
++            return new DecisionTrace(root, gameId, actorId, turn, phase, outcome, chosen == null,
++                    selected == null ? List.of() : selected, frozen, false, truncated);
++        }
++    }
++
+     private final Player player;
+     private final Game game;
+     private final AiCardMemory memory;
+@@ -1637,6 +1754,12 @@
+      * (= the AI passes priority) the moment the timer runs out.
+      */
+     public List<SpellAbility> chooseSpellAbilityToPlay() {
++        final java.util.function.Consumer<DecisionTrace> observer = decisionObserver;
++        final DecisionCollector previousTrace = activeDecisionTrace;
++        final DecisionCollector trace = observer == null ? null : new DecisionCollector();
++        activeDecisionTrace = trace;
++        List<SpellAbility> observedChoice = null;
++        String observedOutcome = "exception";
+         final long id = AITimeoutTracker.key(game.getId(), player.getId());
+         final long timeoutNanos = TimeUnit.SECONDS.toNanos(game.getAITimeout());
+         AITimeoutTracker.begin(id, timeoutNanos);
+@@ -1649,12 +1772,23 @@
+             if (SimAudit.ENABLED) {
+                 SimAudit.afterChoice(game, player, chosen);
+             }
++            observedChoice = chosen;
++            observedOutcome = chosen == null || chosen.isEmpty() ? "no_action" : "selected";
+             return chosen;
+         } catch (AITimeoutTracker.Expired e) {
++            observedOutcome = "timeout";
+             return null; // out of time: pass priority
+         } finally {
+             AITimeoutTracker.disarm(limit);
+             AITimeoutTracker.end(id);
++            activeDecisionTrace = previousTrace;
++            if (trace != null) {
++                try {
++                    observer.accept(trace.finish(observedOutcome, observedChoice));
++                } catch (RuntimeException failure) {
++                    decisionObserverFailures.incrementAndGet();
++                }
++            }
+         }
+     }
+ 
+@@ -2598,6 +2732,9 @@
+      */
+     private List<SpellAbility> chooseSpellAbilitiesToPlayFromList(final List<SpellAbility> all, boolean skipCounter, final int maxResults,
+                                                                   final List<SpellAbility> extrasOut) {
++        // Capture this root explicitly: the existing evaluator runs on a different thread.
++        final DecisionCollector trace = activeDecisionTrace;
++        final int traceBatch = trace == null ? 0 : trace.offered(all);
+         if (all == null || all.isEmpty())
+             return Collections.emptyList();
+ 
+@@ -2621,6 +2758,7 @@
+                 //avoid ComputerUtil.aiLifeInDanger in loops as it slows down a lot.. call this outside loops will generally be fast...
+                 final boolean isLifeInDanger = massReanimation && ComputerUtil.aiLifeInDanger(player, true, 0);
+                 for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, player)) {
++                    if (trace != null) trace.add("CONSIDERED", traceBatch, List.of(sa), null);
+                     AITimeoutTracker.check();
+ 
+                     // Don't add Counterspells to the "normal" playcard lookups
+@@ -2684,6 +2822,7 @@
+                         // reset LastStateBattlefield - also when the deadline fired inside canPlayAndPayFor
+                         sa.clearLastState();
+                     }
++                    if (trace != null) trace.add("OPINION", traceBatch, List.of(sa), opinion.name());
+                     // PhaseHandler ph = game.getPhaseHandler();
+                     // System.out.printf("Ai thinks '%s' of %s -> %s @ %s %s >>> \n", opinion, sa.getHostCard(), sa, Lang.getInstance().getPossesive(ph.getPlayerTurn().getName()), ph.getPhase());
+ 
+@@ -2713,6 +2852,7 @@
+ 
+                 return approvedPlays;
+             } catch (AITimeoutTracker.Expired e) {
++                if (trace != null) trace.add("EVAL_TIMEOUT", traceBatch, List.of(), null);
+                 return approvedPlays; // whatever was approved before time ran out
+             } finally {
+                 AITimeoutTracker.disarm(evalLimit); // matters as soon as this runs on a pooled thread
+@@ -2725,6 +2865,7 @@
+             // wait only for what is left of the shared deadline (not a fresh full timeout per call)
+             return future.get(Math.max(0, deadlineNanos - System.nanoTime()), TimeUnit.NANOSECONDS);
+         } catch (InterruptedException | ExecutionException | TimeoutException e) {
++            if (trace != null) trace.add("EVAL_ABORTED", traceBatch, List.of(), e.getClass().getSimpleName());
+             e.printStackTrace();
+             if (e instanceof TimeoutException) {
+                 // log where the eval thread currently is - each timeout doubles as a

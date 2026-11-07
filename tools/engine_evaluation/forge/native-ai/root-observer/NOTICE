@@ -1,0 +1,5 @@
+Forge Team/Card-Forge: original engine and AI, GPL-3.0-or-later.
+Upstream: https://github.com/Card-Forge/forge
+Reference revision: 61e9442c433711a82258daca3236f936a1d6f70e
+This package adds optional instrumentation and controlled tests. Retain original
+source notices and LICENSE; no warranty or independent card-data authorship.

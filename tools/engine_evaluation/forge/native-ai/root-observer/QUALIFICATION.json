@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "status": "BOUNDED_CONTROLLED_ACCEPTANCE_PASS",
+  "upstream": "Forge Team/Card-Forge; GPL-3.0-or-later",
+  "content_id": "23ef672ad6f7f99196bd2df2da28ab104d5a6a17b8a5fb0bfb2b9c60e0a88f71",
+  "profile_build_id": "346a6034826fecb322b232a581926d5b152810f22d9d833fd7f74d15f628d930",
+  "operator_build_id": "b84996a1c35901d38b9d5013e4a8ba716784601df15abba99bfadc9030bd0f93",
+  "sources": 15,
+  "classes": 28,
+  "all59971_base_resources_reverified": true,
+  "final_cohorts": [
+    {
+      "name": "actual root, corrected eligibility fixture",
+      "tests": 20,
+      "passed": 20,
+      "failed": 0,
+      "seconds": 24.584,
+      "runtime_scope": "earlier corrected diagnostic overlay; same six policy-class bytes, not final prefix execution"
+    },
+    {
+      "name": "internal lock, selection-budget and identity protocol",
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "seconds": 19.256954741082154,
+      "runtime_scope": "earlier corrected diagnostic overlay; later included in final strict26"
+    },
+    {
+      "name": "unchanged native lifecycle, eight whole classes",
+      "tests": 101,
+      "passed": 101,
+      "failed": 0,
+      "seconds": 27.474371499964036
+    },
+    {
+      "name": "synthetic profile builder, one whole module",
+      "tests": 48,
+      "passed": 48,
+      "failed": 0,
+      "seconds": 0.6543982819421217
+    }
+  ],
+  "historical": [
+    {
+      "name": "missing API baseline",
+      "exit": 1,
+      "marker": "MISSING_NATIVE_ROOT_CANDIDATE_HOOK"
+    },
+    {
+      "name": "first observer internal protocol",
+      "passed": 0,
+      "failed": 2,
+      "reason": "blocking collector and selected-identity budget"
+    },
+    {
+      "name": "first actual-root test source",
+      "passed": 16,
+      "failed": 4,
+      "reason": "new fixture required an ineligible hidden host to be offered; no disclosure demonstrated"
+    },
+    {
+      "name": "profile first draft",
+      "passed": 46,
+      "errors": 2,
+      "reason": "expected unadmitted schema represented as uncaught ValueError"
+    },
+    {
+      "name": "profile corrected assertion baseline",
+      "passed": 46,
+      "failed": 2,
+      "errors": 0
+    }
+  ],
+  "natural_games": 0,
+  "runtime_guards": "existing bwrap/JNI/kernel SQL/network canaries unchanged; one CPU, 1500m, global native max2",
+  "privacy": "Real root checks exclusion. Separate four internal identity cases test redaction, not legal admission. Raw traces remain private.",
+  "limits": [
+    "complete legal action set and affordability are NOT established",
+    "some early paths return without invoking the observed list selector",
+    "not a playing-strength, training, fairness, full timeout-race or natural RNG-neutrality certificate",
+    "not wired to default/live application or natural-game recorder",
+    "no Java binary serialization promise for these observer records"
+  ],
+  "final_runtime_cohorts": [
+    {
+      "name": "two whole root/protocol classes on final strict prefix",
+      "tests": 26,
+      "passed": 26,
+      "failed": 0,
+      "seconds": 26.92107572290115
+    },
+    {
+      "name": "eight unchanged lifecycle classes on final strict prefix",
+      "tests": 101,
+      "passed": 101,
+      "failed": 0,
+      "seconds": 27.474371499964036
+    }
+  ]
+}

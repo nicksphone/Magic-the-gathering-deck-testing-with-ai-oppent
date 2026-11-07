@@ -921,5 +921,69 @@ class SyntheticProfileTests(unittest.TestCase):
             self.assertTrue(stage.is_dir())
 
 
+    def root_observer_bundle(self):
+        bundle = self.dig_direction_bundle()
+        bundle['schema'] = 13
+        for nested in ('DecisionAction', 'DecisionVisit', 'DecisionTrace', 'DecisionCollector'):
+            bundle['classes']['forge/ai/AiController$' + nested + '.class'] = 'f' * 64
+        return bundle
+
+    def test_root_observer_exact_nested_closure_preserves_parent_membership(self):
+        parent, bundle = self.dig_direction_bundle(), self.root_observer_bundle()
+        before = copy.deepcopy(bundle)
+        try:
+            runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        except ValueError as error:
+            self.fail('Exact root-observer closure was rejected: ' + str(error))
+        self.assertEqual(bundle, before)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual(bundle['sources'], parent['sources'])
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (15, 28))
+        self.assertEqual({k: bundle['classes'][k] for k in parent['classes']}, parent['classes'])
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', parent)[0]['build_id'])
+
+    def test_root_observer_missing_nested_or_relabelled_shadow_is_rejected(self):
+        bundle = self.root_observer_bundle()
+        for missing in bundle['classes']:
+            with self.subTest(missing=missing), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                                {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if k != missing}})
+        for schema in (12, 14, True, '13'):
+            with self.subTest(schema=schema), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', {**bundle, 'schema': schema})
+        with self.assertRaises(ValueError):
+            P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile',
+                            {**bundle, 'classes': {**bundle['classes'], 'forge/ai/AiController$Unknown.class': 'f' * 64}})
+
+    def test_root_observer_real_file_hashes_are_checked_before_publication(self):
+        with tempfile.TemporaryDirectory(prefix='synthetic-root-observer-profile-') as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.root_observer_bundle()
+            for folder, key in [('source', 'sources'), ('shadow', 'classes')]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(('SYNTHETIC; NOT NATIVE: ' + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / 'approval.json'
+            approval.write_text(json.dumps(bundle))
+            try:
+                P.main(*args, root / 'output', approval)
+            except ValueError as error:
+                self.fail('Exact root-observer publication was rejected: ' + str(error))
+            self.assertEqual(json.loads((root / 'output/BUILD-IDENTITY.json').read_text())['overrides'], bundle)
+            for nested in ('DecisionAction', 'DecisionVisit', 'DecisionTrace', 'DecisionCollector'):
+                path = build / 'shadow' / ('forge/ai/AiController$' + nested + '.class')
+                original = path.read_bytes()
+                path.write_bytes(b'SYNTHETIC CHANGED')
+                with self.subTest(nested=nested), mock.patch.object(P, '_publish') as publish:
+                    with self.assertRaisesRegex(ValueError, 'byte identity'):
+                        P.main(*args, root / ('reject-' + nested), approval)
+                    publish.assert_not_called()
+                path.write_bytes(original)
+
+
 if __name__ == "__main__":
     unittest.main()
