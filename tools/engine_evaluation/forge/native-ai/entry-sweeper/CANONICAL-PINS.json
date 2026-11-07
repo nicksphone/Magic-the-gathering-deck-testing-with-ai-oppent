@@ -1,0 +1,110 @@
+{
+  "Arboreal Grazer": {
+    "path": "canonical/arboreal_grazer.txt",
+    "sha256": "5b6b2a2f1984f5e1ebb890e5db736011a05d61beb54c407853a3daa6035a50e8"
+  },
+  "Bayou": {
+    "path": "canonical/bayou.txt",
+    "sha256": "2979fe7ecbf86d94d8a39764b095256a967fdaeeea22e22304772f8a45e4942b"
+  },
+  "Collected Company": {
+    "path": "canonical/collected_company.txt",
+    "sha256": "3208ed25ff814490e3b8ecf4f78e6cc3aacf3fdeded7cda8e144254019875754"
+  },
+  "Cultivate": {
+    "path": "canonical/cultivate.txt",
+    "sha256": "f804fe704727242e2630128ad4e3d6415573342c8c391a4b6e72ac5f6f0ae925"
+  },
+  "Elvish Archdruid": {
+    "path": "canonical/elvish_archdruid.txt",
+    "sha256": "5935d95fb0f637b0c98771dd3b9e8db7fc213c0eebd78f9ed2184e52d4385657"
+  },
+  "Elvish Clancaller": {
+    "path": "canonical/elvish_clancaller.txt",
+    "sha256": "0e71f3fd56cacb7ba45f45857a54646e2f836c2d0caa9f636d7e01076fa1e764"
+  },
+  "Elvish Mystic": {
+    "path": "canonical/elvish_mystic.txt",
+    "sha256": "032fdc52a4f8f965afc76feef3fc298385ebddb859aad4d116da4507a3504740"
+  },
+  "Elvish Warmaster": {
+    "path": "canonical/elvish_warmaster.txt",
+    "sha256": "486e40a58d171a3a11a4d32288ce1ee208b9c86772573addc61bb00f7af53c3b"
+  },
+  "Fatal Push": {
+    "path": "canonical/fatal_push.txt",
+    "sha256": "28cb8e0ce926618f4a1f9b7f3f633986e4078e392a0ad3a3ee68bee8019241c7"
+  },
+  "Forest": {
+    "path": "canonical/forest.txt",
+    "sha256": "9a574ea2a8136e588ab77ff8bf260075a94572d8099a7d0d98c62590479aa5a6"
+  },
+  "Go for the Throat": {
+    "path": "canonical/go_for_the_throat.txt",
+    "sha256": "91ee52966b7a8f67a1ac72150ae86f15e79631e98a50ddcedff522cb0025faf5"
+  },
+  "Growth Spiral": {
+    "path": "canonical/growth_spiral.txt",
+    "sha256": "f15466778b08aca4e9cd15010c7a911fe84d8732b3b96918c624d49fe2a9d525"
+  },
+  "Hydroid Krasis": {
+    "path": "canonical/hydroid_krasis.txt",
+    "sha256": "de1ecf8591e0e06babe90ec6840ece284dde3d9156dcf590131a2af87ad3c258"
+  },
+  "Llanowar Elves": {
+    "path": "canonical/llanowar_elves.txt",
+    "sha256": "f8eab9c6d1b3bc9c180228a150d3a386248c10b8563f2ac54319129d7570e7f3"
+  },
+  "Migration Path": {
+    "path": "canonical/migration_path.txt",
+    "sha256": "daa4ebfb205eaabe3f5cb7f6cbf61b3f1f6e8faa899f151b9c1734c346b38640"
+  },
+  "Nissa, Who Shakes the World": {
+    "path": "canonical/nissa_who_shakes_the_world.txt",
+    "sha256": "7bf0a21428167c82a297223e22441aa491782f2e5bd9b8be093bdd53a3c30ca0"
+  },
+  "Realmwalker": {
+    "path": "canonical/realmwalker.txt",
+    "sha256": "38866142f8b549a203b3030ee3f964d57fd02dc83997f700184a0465d7503ca4"
+  },
+  "Shaman of the Pack": {
+    "path": "canonical/shaman_of_the_pack.txt",
+    "sha256": "a95aac0349ae500e89b56f2f6c28405e0e68b0e0a6931fb3f9c6980944652ffd"
+  },
+  "Storm the Festival": {
+    "path": "canonical/storm_the_festival.txt",
+    "sha256": "c6681586994d0340e53d0092372ce37a46596e2ad53cd84c6ca63836d63bb217"
+  },
+  "Swamp": {
+    "path": "canonical/swamp.txt",
+    "sha256": "96a473942577dee4fffe52906874ef343a7e8d1413872334baa576066112d252"
+  },
+  "The Meathook Massacre": {
+    "path": "canonical/the_meathook_massacre.txt",
+    "sha256": "e0664e64db4731ae2692f9cd7a9a0d7b16a96173725d1ff5c054824a86e58e96"
+  },
+  "Topiary Stomper": {
+    "path": "canonical/topiary_stomper.txt",
+    "sha256": "636fffe16a2545cd934192953a911469ef8cdd404814bee98783885f9ae0b0c2"
+  },
+  "Tropical Island": {
+    "path": "canonical/tropical_island.txt",
+    "sha256": "648ea0faaea86f696ae732270cbd8949a586ecaeaa5cd2a96b1d9f8af439b2cc"
+  },
+  "Ugin, the Spirit Dragon": {
+    "path": "canonical/ugin_the_spirit_dragon.txt",
+    "sha256": "f51b478430187ffd327ec5c8d0de5229071c80c44b6e0f3b0a36f8f50a64c39a"
+  },
+  "Underground Sea": {
+    "path": "canonical/underground_sea.txt",
+    "sha256": "721bbec86101d211610f0d5b39f09886cdaf055a7143802da5eab814c0b57322"
+  },
+  "elesh_norn_mother_of_machines.txt": {
+    "path": "canonical/elesh_norn_mother_of_machines.txt",
+    "sha256": "42ca751b0ba94e897613f17527902f54e815ac8efca85b86d3bbd854980c39c3"
+  },
+  "humility.txt": {
+    "path": "canonical/humility.txt",
+    "sha256": "0cda8a0a27b320b89b560ae3165dd8b430c1a76bd2f07ca3dc2c8bfc9b92adbf"
+  }
+}

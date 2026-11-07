@@ -73,43 +73,46 @@ def _check_bundle(bundle):
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilMana"]}
     classes = {"forge/ai/" + name + ".class"
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilCost$1", "ComputerUtilMana"]}
-    if isinstance(bundle, dict) and bundle.get("schema") in (2, 3, 4, 5, 6, 7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (2, 3, 4, 5, 6, 7, 8, 9, 10, 11):
         sources.add("tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java")
         classes.update({"forge/evaluation/ActorBoundary.class", "forge/evaluation/ActorBoundary$Pending.class"})
-    if isinstance(bundle, dict) and bundle.get("schema") in (3, 4, 5, 6, 7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (3, 4, 5, 6, 7, 8, 9, 10, 11):
         sources.add("forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java")
         classes.add("forge/ai/ability/DamageDealAi.class")
-    if isinstance(bundle, dict) and bundle.get("schema") in (4, 5, 6, 7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (4, 5, 6, 7, 8, 9, 10, 11):
         sources.add("forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java")
         classes.add("forge/ai/ability/DamageAiBase.class")
-    if isinstance(bundle, dict) and bundle.get("schema") in (5, 6, 7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (5, 6, 7, 8, 9, 10, 11):
         sources.add("forge-ai/src/main/java/forge/ai/ability/DrawAi.java")
         classes.add("forge/ai/ability/DrawAi.class")
-    if isinstance(bundle, dict) and bundle.get("schema") in (6, 7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (6, 7, 8, 9, 10, 11):
         sources.add("tools/engine_evaluation/forge/stdio/NativeHumanWorker.java")
         classes.update("forge/evaluation/NativeHumanWorker" + suffix + ".class"
                        for suffix in ("", "$1", "$2", "$3", "$Answer", "$Input"))
-    if isinstance(bundle, dict) and bundle.get("schema") in (7, 8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (7, 8, 9, 10, 11):
         sources.add("forge-ai/src/main/java/forge/ai/ability/PermanentAi.java")
         classes.add("forge/ai/ability/PermanentAi.class")
-    if isinstance(bundle, dict) and bundle.get("schema") in (8, 9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (8, 9, 10, 11):
         sources.add("forge-ai/src/main/java/forge/ai/ability/CounterAi.java")
         classes.add("forge/ai/ability/CounterAi.class")
-    if isinstance(bundle, dict) and bundle.get("schema") in (9, 10):
+    if isinstance(bundle, dict) and bundle.get("schema") in (9, 10, 11):
         sources.update("forge-ai/src/main/java/forge/ai/" + name + ".java"
                        for name in ("SpellAbilityAi", "AiController"))
         classes.update("forge/ai/" + name + ".class"
                        for name in ("SpellAbilityAi", "AiController", "AiController$1"))
-    if isinstance(bundle, dict) and bundle.get("schema") == 10:
+    if isinstance(bundle, dict) and bundle.get("schema") in (10, 11):
         sources.add("forge-game/src/main/java/forge/game/trigger/TriggerHandler.java")
         classes.add("forge/game/trigger/TriggerHandler.class")
+    if isinstance(bundle, dict) and bundle.get("schema") == 11:
+        sources.add("forge-ai/src/main/java/forge/ai/ComputerUtilAbility.java")
+        classes.update({"forge/ai/ComputerUtilAbility.class", "forge/ai/ComputerUtilAbility$SortKey.class"})
     if (not isinstance(bundle, dict) or set(bundle) != {"schema", "sources", "classes"}
-            or type(bundle["schema"]) is not int or bundle["schema"] not in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+            or type(bundle["schema"]) is not int or bundle["schema"] not in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
             or not isinstance(bundle["sources"], dict) or set(bundle["sources"]) != sources
             or not isinstance(bundle["classes"], dict) or set(bundle["classes"]) != classes
             or not all(isinstance(v, str) and HEX.fullmatch(v)
                        for group in [bundle["sources"], bundle["classes"]] for v in group.values())):
-        raise ValueError("Expected an approved AI, actor-boundary, lethal-timing, pressure, draw, bounded-worker, Chalice, counter or sacrifice composition")
+        raise ValueError("Expected an approved AI, actor-boundary, lethal-timing, pressure, draw, bounded-worker, Chalice, counter, sacrifice or sweeper composition")
 
 
 def derive_bundle(runtime, identity, shadow, output, bundle):

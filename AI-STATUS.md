@@ -122,6 +122,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   parent/four corrected Tribal/Ramp games complete. This does not close arbitrary
   combat planning, training or application adoption.
   See [the timing and payment evidence](docs/testing/native-precombat-buff-ai.md).
+- [x] **Bounded native entry-sweeper priority:** the shared comparator now gives
+  supported self-entry creature debuffs its existing board-wipe bonus. The
+  unchanged ten-case choice/payment regression passes, including both former
+  Meathook/Nissa failures; four fixed-seed Ramp/Tribal games complete. This is
+  component evidence, not expert strategy or a live engine migration. See the
+  [decision evidence and limits](docs/testing/native-entry-sweeper-ai.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all
