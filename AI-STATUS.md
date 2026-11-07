@@ -94,6 +94,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **Broad full-game quality:** demonstrate competent play on a fixed current
   source across Aggro/Burn, Control, Midrange, Tempo, Ramp and Tribal, then the
   supported more complex deck families. Historical games are not current acceptance.
+  The isolated native candidate now completes a declared 24-game, six-archetype
+  baseline with zero native errors or incomplete games. It covers six pairings,
+  both seat orders and two seeds, not all fifteen matchups or expert decision
+  quality. Review identified funded life-gain-denial windows for a separate
+  reproduction; no training completion or live switch is claimed. See
+  [the measured baseline and guard scope](docs/testing/native-six-archetype-baseline.md).
 - [ ] **Decision review:** turn recorded passes, attacks, blocks, targets and
   sequencing into verified findings. A pass with playable cards is a review
   candidate, not automatically a mistake.
