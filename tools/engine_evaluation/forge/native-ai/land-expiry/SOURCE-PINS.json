@@ -1,0 +1,23 @@
+{
+  "parent_content_id": "f4c8d41f6de9016c194551b2bfcedad9f61ddf2fdf556eb88e16a6618d40dfb5",
+  "candidate_content_id": "2b086a13c67644cc8d23f178544f3942b6274e9f1af0e363c171e9ea7e26f929",
+  "changed_sources": {
+    "forge-ai/src/main/java/forge/ai/AiController.java": {
+      "before": "599dc8a999f36b482c0fb40a482c0072278b80280815a3c8ccf154ac0e02f630",
+      "after": "b683bfc5a70958efb59db0988c5c60c349c7ac947708e50ad19ee58fffc16113"
+    }
+  },
+  "changed_classes": {
+    "forge/ai/AiController$1.class": {
+      "before": "72b309e05e75cba642a8a1dfc15c8509f16dc15e943d7cf22befaaf758d556b0",
+      "after": "53df20ea915a3529601b7331026f1cc2e2508bd9678ea1f9521e57eae32cc5fb"
+    },
+    "forge/ai/AiController.class": {
+      "before": "bff0060ecba49e3237dbe61689638d5bee2f6d956ce0d4d28381acd5582cf8a5",
+      "after": "9de5f3788224ea9b05e86ec9b5655d776773cc99ceb58d51dd0537ee594fc2a5"
+    }
+  },
+  "source_count": 13,
+  "physical_class_count": 21,
+  "not_a_standalone_installer": true
+}

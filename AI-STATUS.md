@@ -109,6 +109,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   games finish cleanly. Natural casts are legally countered and all four outcomes
   remain Control wins; this is not trained-policy or broad strength acceptance.
   See [the source delta and measured scope](docs/testing/native-gain-denial.md).
+  A subsequent native land-choice reproduction now spends a known expiring
+  exile land before an equal-scored hand land. Six unchanged cases and seventeen
+  labelled helper checks pass, existing 156 plus prior gain cohorts remain green,
+  and four natural Tempo/Ramp games finish cleanly with the original source-choice
+  error corrected. This is not a complete land planner or a strength certificate.
+  See [the permission boundary and measured scope](docs/testing/native-expiring-land-ai.md).
 - [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
   six declined funded counters against lethal Bolt and two missed lower-stack
   responses before Vexing Shusher. The current isolated correction passes all
