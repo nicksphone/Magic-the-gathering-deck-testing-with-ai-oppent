@@ -78,7 +78,17 @@ public final class NativeWorkerCompletionTest extends SimulationTest {
         Assert.assertTrue(game.isGameOver());Assert.assertEquals(other.getLife(),0);Assert.assertNotNull(game.getOutcome());
         StringWriter output=new StringWriter();NativeHumanWorker worker=worker(output);
         Assert.assertFalse(flag(worker,"reversedSeen"));Assert.assertFalse(flag(worker,"paidSeen"));
+        set(worker,"actor",actor);set(worker,"boundary",new ActorBoundary(actor));
         worker.completed(game);
+        List<JsonObject> all=events(output);
+        List<JsonObject> views=all.stream().filter(e->e.get("event").getAsString().equals("view")).toList();
+        Assert.assertEquals(views.size(),1,"Final actor view must be published after genuine native lethal");
+        Assert.assertEquals(all.get(all.size()-2).get("event").getAsString(),"view");
+        for(JsonElement p:views.get(0).getAsJsonObject("state").getAsJsonArray("players")) {
+            JsonObject player=p.getAsJsonObject();
+            int expected=player.get("player_id").getAsInt()==other.getId()?0:20;
+            Assert.assertEquals(player.get("life").getAsInt(),expected,"Final actor life must match native committed life");
+        }
         List<JsonObject> complete=events(output).stream().filter(e->e.get("event").getAsString().equals("game_complete")).toList();
         Assert.assertEquals(complete.size(),1,"A genuine native win must be reported even without scripted ordering/payment coverage: "+output);
         Assert.assertEquals(complete.get(0).get("draw").getAsBoolean(),game.getOutcome().isDraw());

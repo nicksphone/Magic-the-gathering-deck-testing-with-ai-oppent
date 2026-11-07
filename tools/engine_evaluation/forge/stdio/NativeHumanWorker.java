@@ -455,6 +455,7 @@ public final class NativeHumanWorker implements IRemote {
         try { Files.writeString(evidence.resolve("COMPLETION-CONTRACT.json"),JSON.toJson(causalVerifier.diagnostic())); }
         catch (IOException error) { failed=true; throw new IllegalStateException(error); }
         invalidate();
+        emit(Map.of("event","view","state",boundary.snapshot(game.getView())));
         emit(Map.of("event","game_complete","turns",game.getOutcome().getLastTurnNumber(),
                 "outcomes",game.getOutcome().getOutcomeStrings(),"draw",game.getOutcome().isDraw(),
                 "win_condition",game.getOutcome().getWinCondition().name(),
