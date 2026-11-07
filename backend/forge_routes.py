@@ -43,6 +43,17 @@ class ForgeAnswerRequest(InputModel):
     action_id: str = Field(min_length=1, max_length=100)
 
 
+class ForgeCheckpointRequest(InputModel):
+    sequence: Annotated[StrictInt, Field(ge=0, le=2**63 - 1)]
+    request_id: NativeToken
+    action_id: str = Field(min_length=1, max_length=100)
+
+
+class ForgeResumeRequest(InputModel):
+    sequence: Annotated[StrictInt, Field(ge=0, le=2**63 - 1)]
+    action_id: str = Field(min_length=1, max_length=100)
+
+
 class _PrivateRoute(APIRoute):
     def get_route_handler(self):
         original = super().get_route_handler()
@@ -96,6 +107,14 @@ def create_forge_router(get_manager) -> APIRouter:
     @router.post("/sessions/{session_id}/answer")
     def answer(session_id: str, payload: ForgeAnswerRequest, capability: str = Depends(_capability)):
         return call(lambda: get_manager().answer(session_id, capability, payload.model_dump()))
+
+    @router.post("/sessions/{session_id}/checkpoint")
+    def checkpoint(session_id: str, payload: ForgeCheckpointRequest, capability: str = Depends(_capability)):
+        return call(lambda: get_manager().checkpoint(session_id, capability, payload.model_dump()))
+
+    @router.post("/sessions/{session_id}/resume")
+    def resume(session_id: str, payload: ForgeResumeRequest, capability: str = Depends(_capability)):
+        return call(lambda: get_manager().resume(session_id, capability, payload.model_dump()))
 
     @router.delete("/sessions/{session_id}")
     def close(session_id: str, capability: str = Depends(_capability)):

@@ -102,12 +102,14 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
   const [missing, setMissing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uncertain, setUncertain] = useState<string | null>(null);
+  const [controlUncertain, setControlUncertain] = useState(false);
   const [reload, setReload] = useState(0);
   const busyRef = useRef(false);
   const current = useRef<ForgeSnapshot | null>(null);
   const identity = saved.session;
   const sessionRef = useRef(identity?.session_id ?? null);
   const rejectedRequest = useRef<string | null>(null);
+  const controlEpoch = useRef(0);
 
   function accept(next: ForgeSnapshot) {
     if (sessionRef.current !== next.session_id) return;
@@ -128,17 +130,18 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
     const controller = new AbortController();
     async function poll() {
       const rejected = rejectedRequest.current;
+      const epoch = controlEpoch.current;
       try {
         const next = await client.get(identity!.session_id, identity!.capability, controller.signal);
-        if (!live || sessionRef.current !== identity!.session_id) return;
-        accept(next); setError(''); setMissing(false);
+        if (!live || sessionRef.current !== identity!.session_id || epoch !== controlEpoch.current || busyRef.current) return;
+        accept(next); setError(''); setMissing(false); setControlUncertain(false);
         if (rejected !== null && rejectedRequest.current === rejected) {
           setUncertain(request => request === rejected ? null : request);
           rejectedRequest.current = null;
         }
-        if (['starting','running'].includes(next.status)) timer = window.setTimeout(() => void poll(), 500);
+        if (['starting','running','restoring'].includes(current.current!.status)) timer = window.setTimeout(() => void poll(), 500);
       } catch (e) {
-        if (!live || sessionRef.current !== identity!.session_id) return;
+        if (!live || sessionRef.current !== identity!.session_id || epoch !== controlEpoch.current || busyRef.current) return;
         setMissing(e instanceof ForgeHttpError && e.status === 404);
         setError(message(e));
       }
@@ -169,7 +172,7 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
     } finally { busyRef.current = false; setBusy(false); }
   }
   async function answer(tokens: string[]) {
-    if (busyRef.current || !identity || !current.current || disabled) return;
+    if (busyRef.current || !identity || !current.current || disabled || controlUncertain) return;
     const s = current.current;
     if (uncertain === s.question?.request_id && s.last_answer?.status !== 'rejected') return;
     busyRef.current = true; setBusy(true); setError('');
@@ -184,6 +187,21 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
     }
     finally { busyRef.current = false; setBusy(false); setReload(n => n + 1); }
   }
+  async function checkpointControl(resume = false) {
+    const s = current.current;
+    if (busyRef.current || blocked || !identity || !s
+      || (resume ? s.status !== 'suspended' : !canAnswerForge(s))) return;
+    busyRef.current = true; controlEpoch.current++; setBusy(true); setError(''); setControlUncertain(true);
+    try {
+      const operation = {sequence: s.sequence, action_id: newForgeKey()};
+      const next = resume ? await client.resume(identity.session_id, identity.capability, operation)
+        : await client.checkpoint(identity.session_id, identity.capability, {...operation, request_id: s.question!.request_id});
+      accept(next); setControlUncertain(false);
+      if (!resume && current.current?.status !== 'suspended')
+        setError('Save was not confirmed. Reconnect to read the native session before acting.');
+    } catch (e) { setError(message(e)); }
+    finally { controlEpoch.current++; busyRef.current = false; setBusy(false); setReload(n => n + 1); }
+  }
   async function close() {
     if (busyRef.current || !identity || disabled) return;
     busyRef.current = true; setBusy(true);
@@ -191,7 +209,7 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
       accept(await client.close(identity.session_id, identity.capability));
       clearForgeSaved(localStorage); setSaved(readForgeSaved());
       sessionRef.current = null; current.current = null; rejectedRequest.current = null;
-      setSnapshot(null); setUncertain(null); setMissing(false); setError(''); onActiveChange(false);
+      setSnapshot(null); setUncertain(null); setControlUncertain(false); setMissing(false); setError(''); onActiveChange(false);
     } catch (e) { setError(message(e)); }
     finally { busyRef.current = false; setBusy(false); }
   }
@@ -199,11 +217,12 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
     if (!missing || busyRef.current) return;
     try {
       clearForgeSaved(localStorage); setSaved(readForgeSaved()); sessionRef.current = null; current.current = null; setSnapshot(null);
-      rejectedRequest.current = null; setMissing(false); setUncertain(null); setError(''); onActiveChange(false);
+      rejectedRequest.current = null; setMissing(false); setUncertain(null); setControlUncertain(false); setError(''); onActiveChange(false);
     } catch { setError('Private browser storage is unavailable.'); }
   }
   const q = snapshot?.question;
-  const blocked = busy || disabled || Boolean(error) || missing || (uncertain === q?.request_id && snapshot?.last_answer?.status !== 'rejected');
+  const blocked = busy || disabled || Boolean(error) || missing || controlUncertain
+    || (uncertain === q?.request_id && snapshot?.last_answer?.status !== 'rejected');
   const deckIssue = !deckA || !deckB ? 'Select both saved decks in the matchup controls.'
     : deckA.mainboard.reduce((n,c) => n + c.quantity, 0) !== 60 || deckB.mainboard.reduce((n,c) => n + c.quantity, 0) !== 60
       ? 'Both mainboards must contain exactly 60 cards.' : '';
@@ -214,7 +233,8 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
     <header><span className="eyebrow">Experimental / Opt-in native engine</span><h2>Forge table</h2></header>
     <p>One human versus native AI: Default Forge heuristic. The legacy Master difficulty dropdown does not apply.
       Single game, 60-card mains, empty runtime sideboards, open decklists.
-      No BO3 or cold app restore. Reload reconnects only to the same running server process.</p>
+      No BO3 or cold app restore of unsaved progress. Explicitly saved games can be resumed after a backend restart.</p>
+    <p>Manual save only: unsaved progress after the last save is not guaranteed. Keep this browser's private session handle to resume.</p>
     <p>Sideboards are not used in this single-game preview; saved decklists are unchanged.</p>
     <p className="forge-meta">Powered by Forge Team / Card-Forge.</p>
     {!opened ? <button type="button" disabled={disabled} onClick={() => setOpened(true)}>Open native table</button> : <>
@@ -228,14 +248,19 @@ export function ForgeGame({ deckA, deckB, humanSeat, disabled, onActiveChange }:
       <button type="button" disabled={disabled || busy || available !== true} onClick={() => start(true)}>Recover native start</button></div> : null}
     {identity ? <div className="forge-toolbar">
       <button type="button" disabled={busy} onClick={() => setReload(n => n + 1)}>Reconnect native session</button>
+      <button type="button" disabled={blocked || !snapshot || !canAnswerForge(snapshot)} onClick={() => checkpointControl()}>Save and pause</button>
+      <button type="button" disabled={blocked || snapshot?.status !== 'suspended'} onClick={() => checkpointControl(true)}>Resume saved game</button>
       <button type="button" disabled={busy || disabled} onClick={close}>Close native session</button>
       {missing ? <button type="button" disabled={busy} onClick={forgetMissing}>Forget unavailable native session</button> : null}
     </div> : null}
     {busy ? <p role="status">Native request pending...</p> : null}
     {error ? <p role="alert">{error}</p> : null}
-    {missing ? <p>This server no longer owns the session. Cold app restore is not supported.</p> : null}
+    {missing ? <p>This server cannot find the session. Reconnect to the backend that owns its saved checkpoint before forgetting the private handle.</p> : null}
     {snapshot ? <>
       <p className="forge-meta" role="status">Native session {snapshot.status} / update {snapshot.sequence}</p>
+      {snapshot.status === 'suspended' ? <p role="status">Saved and paused at the last saved point. Resume saved game when ready.</p> : null}
+      {snapshot.status === 'restoring' ? <p role="status">Restoring the saved game. Native choices remain unavailable until verification finishes.</p> : null}
+      {controlUncertain ? <p role="status">Save or resume delivery is uncertain. Reconnect to read the authoritative session; the request will not be resent automatically.</p> : null}
       {snapshot.last_answer ? <p role="status">Answer {snapshot.last_answer.status}{snapshot.last_answer.reason ? `: ${snapshot.last_answer.reason}` : ''}.
         {' '}This reports callback processing, not a successful cast or game action.</p> : null}
       {uncertain === q?.request_id && snapshot.last_answer?.status !== 'rejected' ? <p role="status">This answer was submitted or its delivery is uncertain. Reconnect to read the receipt; it will not be resent automatically.</p> : null}

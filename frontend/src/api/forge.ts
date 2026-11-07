@@ -23,7 +23,7 @@ export type ForgeInfo = { prompt?: string; title?: string; labels?: string[]; ok
   selection?: ForgeInputMetadata & { min: number; max: number; chosen: (ForgeCard | {hidden: true} | {player_id: number; name: string})[] };
   stack_selection?: ForgeInputMetadata & { chosen: {stack_id: number; source: ForgeCard | {hidden: true}}[] } };
 export type ForgeSnapshot = { engine: 'forge'; session_id: string; sequence: number;
-  status: 'starting' | 'running' | 'completed' | 'aborted' | 'failed'; actor_id: number | null;
+  status: 'starting' | 'running' | 'suspended' | 'restoring' | 'completed' | 'aborted' | 'failed'; actor_id: number | null;
   state: ForgeState | null; question: ForgeQuestion | null; info: ForgeInfo;
   last_answer: { action_id: string; request_id: string; status: 'submitted' | 'processing' | 'processed' | 'rejected' | 'uncertain'; reason: string | null } | null;
   result: { outcomes: string[]; turns: number; draw: boolean; win_condition: string } | null;
@@ -32,6 +32,8 @@ export type ForgeStart = { deck_a: DeckItem[]; deck_b: DeckItem[]; name_a: strin
 export type ForgeIntent = { key: string; capability: string; payload: ForgeStart };
 export type ForgeIdentity = { session_id: string; capability: string };
 export type ForgeAnswer = { request_id: string; tokens: string[]; sequence: number; action_id: string };
+export type ForgeCheckpoint = Pick<ForgeAnswer, 'sequence' | 'request_id' | 'action_id'>;
+export type ForgeResume = Pick<ForgeAnswer, 'sequence' | 'action_id'>;
 type StorageAccess = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 function record(v: unknown): v is Record<string, unknown> { return typeof v === 'object' && v !== null && !Array.isArray(v); }
@@ -106,7 +108,7 @@ function info(v: unknown, actor: unknown, q: ForgeQuestion | null): v is ForgeIn
 export function parseForgeSnapshot(v: unknown): ForgeSnapshot {
   need(record(v) && keys(v, ['engine','session_id','sequence','status','actor_id','state','question','info','last_answer','result','error']));
   need(v.engine === 'forge' && typeof v.session_id === 'string' && ID.test(v.session_id) && count(v.sequence)
-    && typeof v.status === 'string' && ['starting','running','completed','aborted','failed'].includes(v.status)
+    && typeof v.status === 'string' && ['starting','running','suspended','restoring','completed','aborted','failed'].includes(v.status)
     && (v.actor_id === null || count(v.actor_id)) && (v.state === null || state(v.state))
     && (v.question === null || question(v.question)) && info(v.info, v.actor_id, v.question));
   need(v.state === null || v.state.actor_id === v.actor_id);
@@ -121,7 +123,7 @@ export function parseForgeSnapshot(v: unknown): ForgeSnapshot {
     && Array.isArray(v.result.outcomes) && v.result.outcomes.every(text) && count(v.result.turns)
     && typeof v.result.draw === 'boolean' && text(v.result.win_condition)));
   need((v.status === 'completed') === (v.result !== null));
-  need(!['completed','aborted','failed'].includes(v.status) || v.question === null);
+  need(!['suspended','restoring','completed','aborted','failed'].includes(v.status) || v.question === null);
   need(v.error === null || text(v.error) || (record(v.error) && keys(v.error, ['code','message']) && text(v.error.code) && text(v.error.message)));
   return v as ForgeSnapshot;
 }
@@ -241,7 +243,7 @@ export function createForgeClient(base = API_BASE, fetcher: typeof fetch = fetch
     if (key) headers['Idempotency-Key'] = key;
     let response: Response;
     try {
-      const deadline = AbortSignal.timeout(path === '/sessions' ? 45000 : 15000);
+      const deadline = AbortSignal.timeout(path === '/sessions' ? 45000 : path.endsWith('/checkpoint') ? 30000 : 15000);
       response = await fetcher(`${base}/forge${path}`, { method, headers, cache: 'no-store', redirect: 'error',
         referrerPolicy: 'no-referrer', body: body === undefined ? undefined : JSON.stringify(body), signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
     } catch { throw new Error('Native connection unavailable. Reconnect; uncertain answers are never resent automatically.'); }
@@ -272,6 +274,17 @@ export function createForgeClient(base = API_BASE, fetcher: typeof fetch = fetch
     async start(intent: ForgeIntent) { return parseForgeSnapshot(await request('/sessions', 'POST', intent.capability, intent.payload, intent.key)); },
     async get(id: string, cap: string, signal?: AbortSignal) { return session(id, request(path(id), 'GET', cap, undefined, undefined, signal)); },
     async answer(id: string, cap: string, answer: ForgeAnswer) { return session(id, request(`${path(id)}/answer`, 'POST', cap, answer)); },
+    async checkpoint(id: string, cap: string, value: ForgeCheckpoint) {
+      need(record(value) && keys(value, ['sequence','request_id','action_id']) && count(value.sequence)
+        && typeof value.request_id === 'string' && UUID.test(value.request_id)
+        && typeof value.action_id === 'string' && ID.test(value.action_id));
+      return session(id, request(`${path(id)}/checkpoint`, 'POST', cap, value));
+    },
+    async resume(id: string, cap: string, value: ForgeResume) {
+      need(record(value) && keys(value, ['sequence','action_id']) && count(value.sequence)
+        && typeof value.action_id === 'string' && ID.test(value.action_id));
+      return session(id, request(`${path(id)}/resume`, 'POST', cap, value));
+    },
     async close(id: string, cap: string) { return session(id, request(path(id), 'DELETE', cap)); },
   };
 }
