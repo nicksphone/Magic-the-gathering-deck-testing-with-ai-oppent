@@ -22,6 +22,10 @@ the earlier incomplete run and leaves the remaining backend scope unqualified.
 The next [activation and legacy-snapshot component](docs/testing/activated-timing-qualification-20261108.md)
 passes both whole modules, including four original Master choices and one HTTP
 case. Cold-process restart and the full RC scope remain open.
+The [closed-runtime test archiver](docs/testing/closed-http-owner-metadata-20261108.md)
+now preserves owner-lock metadata without reading or copying its body, rejects
+protected/unlisted payloads, and passes both complete archive modules. Actual
+cold-process qualification and the full-suite/RC gates remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

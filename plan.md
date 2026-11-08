@@ -108,6 +108,17 @@ policy. No previous case is repeated or summed. The following cold-restart modul
 needs separately reviewed process/loopback resources and a correction to its
 archiver's unconditional protected owner-lock body reads. Full acceptance remains.
 
+The [closed-runtime archiver correction](docs/testing/closed-http-owner-metadata-20261108.md)
+then replaces owner payloads with explicit metadata-only entries, rejects protected
+models/unsafe locks and denies late unlisted members before tar body access. Both
+unchanged original module scopes plus twelve new regressions pass all 33 cases;
+all original assertions/caller bytes remain. Two RED stages expose the original
+and late-insertion defects before protected bodies can be accessed. A full entry
+on the first implementation retains its known 230-pass/one replay-CLI guard failure;
+final-source collection finds 36,708 nodes with no deselections or test execution.
+These are separate source-bound checks, not a green full suite. Actual native
+cold-restart/process/loopback qualification and the full RC/AI/data scope remain.
+
 
 ## October 29 AI Iteration
 

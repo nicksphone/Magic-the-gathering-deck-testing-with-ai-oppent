@@ -62,6 +62,15 @@ fixture metadata/output/closure checks verify, with no previous case repeated.
 The subsequent cold-restart archiver requires protected-file handling before
 its native-process/network module can run. No full-suite or RC gate closes.
 
+The following [archive correction](closed-http-owner-metadata-20261108.md) preserves
+valid owner locks as metadata only, rejects protected/unsafe members and blocks
+late unlisted tar payloads before body access. Final whole lifecycle/caller modules
+pass 33 cases, preserving the original assertions and adding twelve regressions.
+Both RED stages deny body access before contents, with all failures retained.
+The initial implementation's broad entry stops at the known replayCLI guard;
+final source collects 36,708 nodes without deselection but executes no tests there.
+No full backend, cold native-process/network, AI/data or RC acceptance follows.
+
 
 ## Candidate And GitHub State
 

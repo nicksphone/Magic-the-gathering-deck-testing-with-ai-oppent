@@ -26,7 +26,14 @@ def _inventory(roots):
         while pending:
             path = pending.pop()
             info = path.lstat()
-            if stat.S_ISDIR(info.st_mode):
+            if path.name in ('MODEL.private.json', 'FEATURES.private.json'):
+                raise RuntimeError('HTTP_RUNTIME_PROTECTED_MEMBER')
+            if path.name.endswith('capacity-owner.lock'):
+                if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                        or stat.S_IMODE(info.st_mode) != 0o600 or info.st_size != 0):
+                    raise RuntimeError('HTTP_RUNTIME_UNSAFE_OWNER_LOCK')
+                kind, digest = 'owner-lock-metadata', None
+            elif stat.S_ISDIR(info.st_mode):
                 kind, digest = 'directory', None
                 pending.extend(path.iterdir())
             elif stat.S_ISREG(info.st_mode) and info.st_nlink == 1:
@@ -43,7 +50,8 @@ def _inventory(roots):
 
 def _verify_archive(archive, roots, inventory):
     expected = {label if name == '.' else label + '/' + name: (label, name, facts)
-                for label, nodes in inventory.items() for name, facts in nodes.items()}
+                for label, nodes in inventory.items() for name, facts in nodes.items()
+                if facts[0] != 'owner-lock-metadata'}
     manifest = json.dumps(inventory, sort_keys=True, separators=(',', ':')).encode()
     with tarfile.open(archive, 'r:gz') as tar:
         seen = set()
@@ -119,6 +127,19 @@ def archive_closed_http_runtime(server, *, runtime, data, evidence_root):
                {'pid': proc.pid, 'registered_owners': 0, 'pool_checkedout': 0}.items()):
             raise RuntimeError('HTTP_RUNTIME_CLOSURE_RECEIPT')
     inventory = _inventory(roots)
+    metadata_only = {label + '/' + name for label, nodes in inventory.items()
+                     for name, facts in nodes.items() if facts[0] == 'owner-lock-metadata'}
+    payload_members = {label if name == '.' else label + '/' + name
+                       for label, nodes in inventory.items() for name, facts in nodes.items()
+                       if facts[0] != 'owner-lock-metadata'}
+    def include_body(member):
+        if member.name.rsplit('/', 1)[-1] in ('MODEL.private.json', 'FEATURES.private.json'):
+            raise RuntimeError('HTTP_RUNTIME_PROTECTED_MEMBER')
+        if member.name in metadata_only:
+            return None
+        if member.name not in payload_members:
+            raise RuntimeError('HTTP_RUNTIME_CHANGED')
+        return member
     parent = evidence / 'closed-http-runtime'
     parent.mkdir(mode=0o700, exist_ok=True)
     _canonical(parent)
@@ -130,7 +151,7 @@ def archive_closed_http_runtime(server, *, runtime, data, evidence_root):
         os.chmod(archive, 0o600)
         with tarfile.open(fileobj=stream, mode='w:gz') as tar:
             for label, root in roots.items():
-                tar.add(root, arcname=label)
+                tar.add(root, arcname=label, filter=include_body)
             member = tarfile.TarInfo('OWNED_INVENTORY.json')
             member.size = len(manifest)
             member.mode = 0o600
@@ -144,7 +165,9 @@ def archive_closed_http_runtime(server, *, runtime, data, evidence_root):
                'closure_kind': 'native-owner-and-process' if data is not None else 'terminal-process',
                'roots': {label: str(root) for label, root in roots.items()},
                'original_root_inodes': {label: inventory[label]['.'][1:3] for label in roots},
-               'members': sum(len(nodes) for nodes in inventory.values())}
+               'members': sum(len(nodes) for nodes in inventory.values()),
+               'byte_members': sum(facts[0] == 'file' for nodes in inventory.values() for facts in nodes.values()),
+               'metadata_only_members': sorted(metadata_only)}
     receipt_path = destination / 'VERIFIED.json'
     receipt_path.write_text(json.dumps(receipt, sort_keys=True) + '\n')
     if (json.loads(receipt_path.read_text()) != receipt or _inventory(roots) != inventory
