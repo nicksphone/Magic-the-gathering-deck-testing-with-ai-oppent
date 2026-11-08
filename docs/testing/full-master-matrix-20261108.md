@@ -32,3 +32,11 @@ runner, saved receipts and pending process are preserved without restart or
 limit changes. This frozen run predates the
 [lossless custom replay envelope](evaluator-lossless-replay.md); its compact
 quality traces cannot retroactively support exact action reconstruction.
+
+At the later independent **26-receipt observation**, 24 games resolve naturally
+and two are deadline-limited. Every saved raw/normalized hash and trace/tick count
+verifies, and all 2,691 bound files still match at that observation. Partial games
+are excluded from quality sums. Existing six counters are zero where available,
+with per-metric game-seat denominators ranging from 46 to 48; unavailable values
+are not converted to zero. This remains a live incomplete matrix and is not a
+strategy or expert-strength certificate.

@@ -20,6 +20,15 @@ previously failed npm/GitHub name resolution. The registry metadata request also
 failed through the web tool. No guessed integrity, hand-built package contents,
 major-version substitute or manifest-only remediation is represented as a fix.
 
+The GitHub connector additionally verifies the signed release tag points to
+`83ab40b53969349d5c4ed259313fff367bb86827`, and its
+[publish workflow](https://github.com/vitejs/vite/actions/runs/39549994290)
+succeeds. The release has no downloadable package assets and neither the publish
+nor CI run retains artifacts. The npm publish log names `vite-6.4.5.tgz` and gives
+SHA-1 `8da9987120422f92e432b6d25535b82cee867dad`, but truncates the SHA-512 integrity.
+These primary-source checks establish publication, not possession of the package
+or installation of its fixed contents. Intake metadata remains private evidence.
+
 Next work: obtain authoritative registry metadata and the patched Vite package,
 update the exact dependency and complete lockfile, then qualify an actual clean
 install, frontend contracts, lint/build and relevant served-file controls. Preserve

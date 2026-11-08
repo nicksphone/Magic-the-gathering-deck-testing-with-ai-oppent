@@ -74,6 +74,10 @@ That equality does not certify installed package contents or a clean install.
   reproduces the stall without application routes. A direct local socket-pair
   send raises `PermissionError(1)`; the captured thread stacks show the portal
   waiting on the event loop. HTTP tests remain unverified locally.
+  Subsequent [timer-adjusted ASGI qualification](asgi-timer-qualification-20261108.md)
+  runs named whole modules unchanged and supplies bounded current-source HTTP /
+  SQLite evidence. The original canonical invocation and its failure remain
+  distinct from that adjusted execution.
 - `npm ci --offline --ignore-scripts --no-audit --no-fund` fails with
   `ENOTCACHED` for `zod-4.6.7.tgz`. The shell cannot resolve the npm/GitHub
   hosts. No dependency versions were changed.
@@ -166,6 +170,16 @@ qualification remain outstanding. The existing build result uses 6.4.4 and is
 not remediation evidence. The full advisory gate remains open.
 
 ## Remaining Release Work
+
+The subsequent [ASGI timer qualification](asgi-timer-qualification-20261108.md)
+passes five whole modules in separate declared executions: 27 synthetic Forge
+route tests plus 98 subtests, four real SQLite collision cases, 46 API input
+cases, and one natural three-game human-controller BO3 with two cold restores.
+The BO3 records 780 accepted decision POSTs and a 2–1 result; sources, child shim
+hashes and process closure verify. Product/test sources and original bounds are
+unchanged. This is a test-loop scheduling adjustment, not browser/TCP/native Forge
+or canonical hosted qualification. Earlier guard-wrapper setup failures remain
+recorded and independent review findings were corrected before the natural run.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
