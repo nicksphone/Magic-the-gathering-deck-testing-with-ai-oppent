@@ -263,6 +263,16 @@ attachment source confirms reduced layer-four work across the saved decision,
 while total/planning state copies remain 945/917. Neither result closes strength,
 practical latency, the full schedule or an original release gate.
 
+The subsequent [sacrifice eligibility query scope](sacrifice-query-scope-20261108.md)
+passes fifteen whole cost/resource/layer modules and 456 ordinary tests, including
+fourteen ASGI cases. Eighty SQL connections to fifteen owned file targets, all
+5,123 frozen inputs and process closure verify. The complete captured decision
+and existing 998-action reconstruction match, and actual whole-choice scan work
+falls by 457,684 calls. Confounded/instrumented timings do not prove a wall-clock
+speedup. Full backend discovery still fails at an optional archive's eager
+availability check; its `PermissionError` and the preceding harness-admission
+failure remain recorded. No full-suite or release pass follows.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;

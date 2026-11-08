@@ -10,6 +10,7 @@ from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited, replace_die_zone
 from rules_engine.zone_actions import is_departed_token, put_into_graveyard
+from rules_engine.query_context import rule_query_scope
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
@@ -759,6 +760,12 @@ def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]
 
 
 def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature", *, payment_kind: str = 'spell') -> list[str]:
+    # All eligibility reads share one view; discard it before caller payment.
+    with rule_query_scope(state):
+        return _eligible_sacrifice_ids_query(state, player_id, kind, payment_kind=payment_kind)
+
+
+def _eligible_sacrifice_ids_query(state: MatchState, player_id: int, kind: str = "creature", *, payment_kind: str = 'spell') -> list[str]:
     from rules_engine.colors import card_color_names
     from rules_engine.library_permissions import creature_types
     eligible: list[str] = []

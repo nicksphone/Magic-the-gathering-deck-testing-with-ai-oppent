@@ -100,3 +100,14 @@ can be called strategic errors. Neither the zero counters nor the flagged
 counts establish strength. The same partial/unavailable exclusions apply. This
 audit starts no new games. The original matrix remains live
 on its original source, roster and limits; no coordinate is restarted.
+
+A read-only context triage of the 195-receipt snapshot locates its six block flags
+in five decisions from five natural games. The same 192 natural receipts and
+raw hashes verify, unavailable observations remain excluded and no AI or new
+game runs in this audit. Opponent-hand data is omitted from the private context
+extract. This is context indexing, not exact-state reconstruction or adjudication:
+the metric checks losing blockers against a bounded nonlethal no-block outcome,
+not complete racing, resource, trigger or whole-game utility. All six flags are
+retained; none is converted into an expert label, training example or zero count.
+The old compact traces still lack the complete replay envelope. Follow-up must
+preserve that limitation rather than synthesize missing execution operands.
