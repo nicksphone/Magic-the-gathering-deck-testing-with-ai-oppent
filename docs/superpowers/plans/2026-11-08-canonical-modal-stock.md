@@ -36,10 +36,10 @@
 - Consumes existing `raw_card(name)` returning the complete official object; `MatchFactory` reads its fields directly at the row's top level.
 - Preserves `position(seat)` returning the original prepared `(state, source)` pair.
 
-- [ ] Capture a failing private fidelity witness on the unchanged source: both actual Factory deck inputs and native Oracle/printed fields must equal the pinned Mountain facts. Stop no assertions or game setup to manufacture a pass.
-- [ ] Make the single fixture migration; add no permanent tests that merely mirror this low-impact expression.
-- [ ] Pass the same fidelity witness, then run all five complete original modules once under a declared pure-IO guard and bounded owned process group.
-- [ ] Verify source/input hashes, complete test identities/assertions and process closure; obtain independent read-only review, document the source boundary and export the committed patch.
+- [x] Capture a failing private fidelity witness on the unchanged source: both actual Factory deck inputs and native Oracle/retained physical fields must equal the pinned Mountain facts. Stop no assertions or game setup to manufacture a pass.
+- [x] Make the single fixture migration; add no permanent tests that merely mirror this low-impact expression.
+- [x] Pass the same corrected fidelity witness, then run all five complete original modules once under a declared pure-IO guard and bounded owned process group.
+- [x] Verify source/input hashes, complete test identities/assertions and process closure; obtain independent read-only review, document the source boundary and export the committed patch.
 
 ## Execution Ledger
 
@@ -47,4 +47,6 @@ Ruling: this is an authorized fixture-data correction within the existing RC/Tas
 
 Ruling: source inspection of `MatchFactory.from_decks` requires a direct RAW row. The initial proposed `deck_entry` wrapper is a hydration-service input; the Factory does not unpack `card_metadata`. Reuse the direct RAW pattern already used for the spell sample. No Factory behavior change is authorized by this fixture task.
 
-Current status: plan written before fixture implementation; no candidate source or qualification outcome yet.
+Ruling: the first witness's fourth assertion addressed the legacy restoration map `printed_characteristics`, which is normally empty at birth. The corrected witness checks `characteristic_record['physical']`; old baseline and candidate witness failures remain separate. It fails all four assertions on unchanged source and passes all four on the same candidate, without a further fixture or production change.
+
+Current status: corrected witness RED4fail/GREEN4pass; original whole five-module command345pass/0fail-error-skip. All source pins and normal process-group closure verify. Independent read-only review approves without findings. The committed source and exact-preimage patch exports are verified in the private `canonical-modal-stock/PATCH-VERIFICATION.json` record.

@@ -13,6 +13,7 @@ from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import _extract_modes, _infer_closed_damage_instruction
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.canonical_positive_fixtures import raw_card as canonical_raw
 
 
 FIXTURE = Path(__file__).parent / 'fixtures' / 'wheel_draw.json'
@@ -25,8 +26,7 @@ EXPECTED_KEYS = ['deal_damage', 'damage_each_creature', 'destroy_permanent',
 
 
 def position(seat):
-    deck = [{'card_name': 'Mountain', 'quantity': 32, 'type_line': 'Basic Land - Mountain',
-             'oracle_text': ''}]
+    deck = [{**canonical_raw('Mountain'), 'card_name': 'Mountain', 'quantity': 32}]
     state = MatchFactory.from_decks(deck, deck, seed=7134)
     state.pregame_pending = False
     state.kept_hands = {1, 2}

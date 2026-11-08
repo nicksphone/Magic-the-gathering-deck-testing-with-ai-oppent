@@ -307,6 +307,15 @@ parent/child SQL connections use disposable files; source, guard, child evidence
 native returns and normal group closure verify. This is a separate component
 qualification, with the earlier full-suite failure and release scope retained.
 
+The subsequent [canonical modal stock correction](canonical-modal-stock-20261108.md)
+replaces one handwritten positive Mountain row with its complete pinned official
+object at the actual Factory boundary. The corrected native-input/physical-facts
+witness fails four checks before the change and passes four afterward. All five
+whole affected modules then pass 345 tests with their original assertions and
+parameters preserved; source, pure-IO guards and normal group closure verify.
+The earlier witness's wrong legacy-field check is retained separately. This
+advances the literal fixture-data work without completing its remaining scope.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;
