@@ -129,6 +129,20 @@ before a socket is built, with zero scope-guard denials; the cold HTTP module
 remains unexecuted. The hint-copy module needs its own exact protocol for 22
 original serializer children. All original RC/AI/data scope remains open.
 
+The subsequent [hint-copy serializer qualification](docs/testing/hint-serializer-qualification-20261108.md)
+preserves the unchanged whole module, exact scripts and active native assertions:
+22 cases pass and all 22 original children return0 with independently matching
+early-guard/source/input-metadata receipts. Command/frame/I/O controls pass;
+receipt controls expose and correct five invalid matching-ticket acceptances.
+Parent/children admit zero SQL, network, AI choices or nested children. Source,
+harness, JUnit, output and normal group closure verify without verifier access
+to snapshot bodies. This qualifies controlled serializer processes, not a cold
+HTTP server or any broader RC/AI/data gate.
+Review also exposes a late optimization-environment admission gap in the private
+test protocol. Separate control-only v2 checks reject it before construction and
+retain checks under optimized bytecode; the actual v1 receipts stay unchanged,
+with all 22 children reporting active assertions. No application case is repeated.
+
 
 ## October 29 AI Iteration
 

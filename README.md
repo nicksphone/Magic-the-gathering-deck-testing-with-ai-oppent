@@ -30,6 +30,9 @@ The following [hand-land/raw-binding component](docs/testing/handland-raw-qualif
 passes 71 unchanged cases across two whole modules, including native SQLite
 reloads and actual paid actions. A separate allowed native TCP constructor
 returns EPERM before a socket is built, leaving cold-process HTTP unexecuted.
+The subsequent [hint-copy serializer qualification](docs/testing/hint-serializer-qualification-20261108.md)
+passes its unchanged 22-case whole module and verifies all 22 original native
+serializer children under exact admission. Cold HTTP and full RC scope remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

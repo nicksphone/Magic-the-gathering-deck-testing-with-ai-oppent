@@ -79,6 +79,13 @@ constructor returns EPERM before any socket is constructed, with zero scope-guar
 denials. Its cold-process HTTP module remains unexecuted; neither this failure
 nor the component passes close any original release gate.
 
+The next [hint-copy serializer component](hint-serializer-qualification-20261108.md)
+passes its unchanged whole module: 22 cases and 22 original native children,
+each with matching independent clean receipts and native exit0. Exact admission,
+active assertions, source/harness/input metadata and normal closure verify.
+Snapshot bodies stay private and unread by instrumentation/review. These codec
+roundtrips do not replace the unexecuted cold HTTP server or any release gate.
+
 
 ## Candidate And GitHub State
 
