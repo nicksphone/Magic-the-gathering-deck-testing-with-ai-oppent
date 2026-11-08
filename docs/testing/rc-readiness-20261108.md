@@ -211,6 +211,21 @@ with existing worker/thread/AST controls. All 79 observed connection targets,
 2,875 source hashes, runner pin and JUnit verify; independent review reports no
 findings. It is neither 48 natural games nor production-throughput qualification.
 
+The [current card-data acceptance cohort](current-card-data-acceptance-20261108.md)
+also passes all 833 tests across its original seventeen whole modules, renewing
+the canonical-record, rulings, repository, CLI and offline-hydration component
+checks on the current backend. All 2,875 source hashes match; 553 SQL connections
+use process-local memory or 236 distinct owned file targets. The single HTTP
+case uses the declared timer adjustment. This does not complete literal fixture
+cleanup, Phase 1, clean installation or a release gate.
+
+A separate [Control allocation profile](control-allocation-profile-20261108.md)
+reaches the original deadline after 998 actions. It attributes most instrumented
+time to AI choice, with substantial overlapping state-copy cost; trace building
+is a small share. Source, receipt and process closure verify. The retained partial
+is not a completed game, speedup or uninstrumented latency result, and its expired
+post-run budget check is not evidence of an API result-size defect.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;
