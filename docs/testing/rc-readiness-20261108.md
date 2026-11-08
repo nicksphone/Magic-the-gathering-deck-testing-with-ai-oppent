@@ -235,6 +235,15 @@ earlier ASGI/data/profile results retain their explicit `91fd0a04` boundary.
 The captured slow Master decision still takes about twenty-one seconds, so this
 bounded correction does not close practical latency or release acceptance.
 
+A subsequent [single-choice investigation](master-decision-investigation-20261108.md)
+identifies 945 state copies in the expensive captured Master choice. A ranking
+projection candidate passes its bounded regressions and preserves the complete
+fresh decision, but leaves those copy counts unchanged. It is rejected and the
+backend is restored exactly to `21f41aa8`; its 510-test experimental cohort is
+not transferred as a new current-source qualification. The larger matrix's
+146-receipt audit verifies 143 natural games, three deadline partials and all
+source/log bindings, while the original run remains live.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;

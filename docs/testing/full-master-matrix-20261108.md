@@ -62,3 +62,21 @@ and no-block combat outcomes; it does not prove a whole-game alternative was
 better. Partial games and unavailable metric observations remain excluded. The
 earlier zero counters applied only to the earlier snapshot. The full schedule,
 terminal producer/source result and process closure are still outstanding.
+
+At the independent **146-receipt observation**, 143 games resolve naturally and
+the same three partials remain deadline-limited. Every closed raw/normalized hash
+and trace/tick count verifies, and all 2,691 frozen source files still match.
+Available natural game-seat counters are:
+
+| Counter | Observed count | Available game-seat samples |
+| --- | --- | --- |
+| Missed land drops | 0 | 286 |
+| Passes with unused mana | 28 | 286 |
+| Lethal misses | 0 | 284 |
+| Flagged bad blocks | 2 | 274 |
+| Stall streaks | 0 | 286 |
+| Redundant removal casts | 0 | 281 |
+
+The same partial/unavailable exclusions and metric limits apply. These are 146
+individual receipts from a live run, not 146 series or a terminal acceptance
+result. The original producer/source/schedule remains unchanged.
