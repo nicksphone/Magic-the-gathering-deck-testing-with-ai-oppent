@@ -9,22 +9,23 @@ from game_state.state import CardInstance, MatchFactory, Zone
 from game_state.serializers import serialize_match, serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.continuous import effective_power, effective_toughness
 from tests.browser_positive83_canonical import entry as full_entry
-from tests.release_printed_fixture import glorious_anthem
+from tests.release_printed_fixture import cached_release_dfc, glorious_anthem
 from tests.static_layers_canonical_a32 import entry as canonical_entry
 
 
 def test_live_hydration_matches_diagnostic_faces_and_preserves_zero_stats():
     import main
-    faces = [{"name": "Brutal Cathar", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2"},
-             {"name": "Moonrage Brute", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3"}]
-    row = SimpleNamespace(name="Brutal Cathar", layout="transform", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power=0, toughness=2, loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
-    repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {"brutal cathar": row})
+    row = cached_release_dfc("Jace, Vryn's Prodigy // Jace, Telepath Unbound")
+    row.power, row.toughness = int(row.power), int(row.toughness)
+    faces = json.loads(row.card_faces_json)
+    repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {row.name.lower(): row})
     deck = [{"quantity": 60, "card_name": row.name}]
     live = main._hydrate_deck_cards(repo, deck)
     assert live == hydrate_deck_cards(repo, deck)
     assert live[0]["power"] == 0
     state = deserialize_match_snapshot(serialize_match_snapshot(MatchFactory.from_decks(live, live, seed=4)))
     view = serialize_match(state)["players"][1]["hand"][0]
+    assert (view["power"], view["base_power"]) == (0, 0)
     assert view["card_faces"] == faces
     assert view["selected_face_index"] is None
 
@@ -56,7 +57,7 @@ def test_public_card_view_matches_combat_and_preserves_base_after_reload():
 
 
 def test_characteristic_stats_and_unknown_stats_are_not_fabricated():
-    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
+    deck = [full_entry("Forest", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=1)
     cid = state.players[1].library.pop()
     state.players[1].graveyard.append(cid)
@@ -88,9 +89,8 @@ def test_http_start_exposes_cached_faces_and_transformed_snapshot(monkeypatch):
     import main
     from fastapi.testclient import TestClient
     from effects.handlers import transform_card
-    faces = [{"name": "Brutal Cathar", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2", "oracle_text": "Daybound"},
-             {"name": "Moonrage Brute", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3", "oracle_text": "First strike\nNightbound"}]
-    row = SimpleNamespace(name="Brutal Cathar", layout="transform", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power="2", toughness="2", loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
+    row = cached_release_dfc('Brutal Cathar // Moonrage Brute')
+    faces = json.loads(row.card_faces_json)
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {"brutal cathar": row})
     monkeypatch.setitem(main.app.dependency_overrides, main.get_repo, lambda: repo)
     monkeypatch.setattr(main, "_persist_active_match", lambda *args: None)

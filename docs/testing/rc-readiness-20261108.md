@@ -25,6 +25,13 @@ candidate commits ahead and no main-only commits at this observation.
 GitHub repository metadata reports zero forks; the outstanding work is in
 branches and PRs. The older `mtg-deck-testing-lab` checkout is not current.
 
+A fresh November 8 repository/open-PR read returns seventeen open PRs, numbers
+5--14 and 45--51. Every returned head exists locally and is an ancestor of the
+current candidate, including the older development stack. No returned open head
+needs a new merge at that observation. This verifies ancestry, not preservation
+of every historical file version or release qualification. Repository metadata
+still reports zero forks and its last push remains November 7.
+
 The connector independently reports all eight jobs successful in
 [PR51 run 42406261862](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/42406261862):
 frontend, browser, backend-reference, four backend workers and backend aggregate.
@@ -315,6 +322,15 @@ whole affected modules then pass 345 tests with their original assertions and
 parameters preserved; source, pure-IO guards and normal group closure verify.
 The earlier witness's wrong legacy-field check is retained separately. This
 advances the literal fixture-data work without completing its remaining scope.
+
+The later [release cache and native-zero correction](release-canonical-cache-20261108.md)
+uses genuine pinned DFC parents and complete Forest stock. The old zero fixture's
+public/native power was actually two despite its cache-zero assertion; the new
+real zero-power subject and durable public-view assertion now cover that boundary.
+All 62 original assertions remain, and the final three-whole-module command
+passes 22 tests with no failures, skips, SQL connections or AI choices. Versioned
+setup failures, source/RAW pins, adjusted ASGI scope and physical closure remain
+explicit. Remaining fixture and release acceptance is still unfinished.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration

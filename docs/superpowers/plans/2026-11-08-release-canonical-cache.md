@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Task 1.3's “zero hand-maintained oracle text in the repo; offline startup works from committed seed” remains the full requirement; this finite correction is not sign-off or a synthetic/negative-input waiver.
-- Preserve all original test names, assertion and parameter ASTs, quantities and seeds. The first zero-stat test may change its positive card subject to a genuine printed zero-power DFC.
+- Preserve all original test names, assertion and parameter ASTs, quantities and seeds. Add one explicit public/native-view zero assertion; no original assertion changes. The first zero-stat test may change its positive card subject to a genuine printed zero-power DFC.
 - Preserve integer `power=0` at the cache interface; convert only the correct printed numeric representation, without changing a fact. The original assertion remains `live[0]["power"] == 0`.
 - Preserve the HTTP case's Cathar request, 3/3 Moonrage Brute result, face order, snapshot round trip and cleanup.
 - Preserve the deliberate unknown-stat vector, token asset check, Bears/Anthem/Goyf fixtures, production code, shared normalizer and RAW/provenance bytes.
@@ -39,10 +39,10 @@
 - Builder returns a fresh `SimpleNamespace` containing the production normalizer's complete cached projection and a display-only URI. The zero test converts the correct printed 0/2 scalar strings to integers.
 - The three original test consumers continue to use genuine hydration, Factory and HTTP code; no product behavior changes.
 
-- [ ] Observe three failing private fidelity checks on unchanged source: the two actual cache setup rows and the actual Forest stock input. Intake witnesses may stop before their consumers; they are not original-test or HTTP qualification.
-- [ ] Add the finite helper and migrate the three positive inputs, without adding permanent tests that mirror these fixture expressions.
-- [ ] Pass the same witnesses, then run all three whole original modules under declared IO and process bounds; observe AI choice calls without changing their results.
-- [ ] Verify RAW/source hashes, original ASTs, complete outcomes and physical closure; obtain fresh read-only review, commit and export exact patches.
+- [x] Observe three failing private fidelity checks on unchanged source: the two actual cache setup rows and the actual Forest stock input. Intake witnesses may stop before their consumers; they are not original-test or HTTP qualification.
+- [x] Add the finite helper and migrate the three positive inputs, without adding permanent tests that mirror these fixture expressions.
+- [x] Pass the same witnesses, then run all three whole original modules under declared IO and process bounds; observe AI choice calls without changing their results.
+- [x] Verify RAW/source hashes, original ASTs, complete outcomes and physical closure; obtain fresh read-only review, commit and export exact patches.
 
 ## Execution Ledger
 
@@ -50,4 +50,6 @@ Ruling: the old zero cache supplies Cathar power 0 against a printed 2/2 front. 
 
 Ruling: no canonical data is fetched or edited. Jace file SHA-256 is `181985b1b21e065f153502df37dbea3654bf163b0b4030af30d4aac8779e134c`; Cathar reuses seed155 SHA-256 `194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732`.
 
-Current status: plan written before fixture implementation. No candidate outcome yet.
+Ruling: a separate native observation proves that the old zero fixture passes its existing assertions while its restored card, retained physical power and public/base power are all 2. Add one durable public-view zero assertion to the original test. This protects the actual human-facing contract, rather than merely duplicating the fixture expression. All original assertions remain unchanged. The earlier 22-pass fixture epoch stays separate; the stronger final source receives a fresh whole-module execution.
+
+Current status: intake witness RED3fail/GREEN3pass; native old-source observation fails on actual `(2, 2, 2, 2)` power values and the final source passes with true zeros. Final whole three-module command22pass/0fail-error-skip, zero SQL and observed AI choices; all source/version/closure checks pass. The earlier 22-pass epoch and two pytest capture/logging setup failures remain separate. Fresh read-only review approves without findings. Committed runtime blobs and exact-preimage patch exports are verified in the private `release-canonical-cache/COMMIT-BINDING.json` and `PATCH-VERIFICATION.json` records.
