@@ -4,7 +4,7 @@
 
 **Goal:** Replace the handwritten positive Mountain stock in the shared modal-spell fixture with its complete pinned official object.
 
-**Architecture:** Reuse `tests.canonical_positive_fixtures.deck_entry("Mountain", 32)` at the existing native `MatchFactory` boundary. Keep the shared helper's seeds, quantities, scene mutations and every gameplay assertion. Its four importing modules receive the same correction without changing their code.
+**Architecture:** Reuse `tests.canonical_positive_fixtures.raw_card("Mountain")` as direct top-level card fields at the existing native `MatchFactory` boundary, adding only `card_name` and `quantity`. Keep the shared helper's seeds, quantities, scene mutations and every gameplay assertion. Its four importing modules receive the same correction without changing their code.
 
 **Tech Stack:** Existing Python/pytest fixtures and pinned Scryfall JSONL; no new dependency, data intake or production code.
 
@@ -33,7 +33,7 @@
 - Qualify whole: that module plus `test_incendiary_modal_boundaries.py`, `test_incendiary_modal_lifecycle.py`, `test_mode_target_native_schema.py`, and `test_modal_targetless_announcement.py`.
 
 **Interfaces:**
-- Consumes existing `deck_entry(name, quantity)` returning the complete official object under `card_metadata`.
+- Consumes existing `raw_card(name)` returning the complete official object; `MatchFactory` reads its fields directly at the row's top level.
 - Preserves `position(seat)` returning the original prepared `(state, source)` pair.
 
 - [ ] Capture a failing private fidelity witness on the unchanged source: both actual Factory deck inputs and native Oracle/printed fields must equal the pinned Mountain facts. Stop no assertions or game setup to manufacture a pass.
@@ -44,5 +44,7 @@
 ## Execution Ledger
 
 Ruling: this is an authorized fixture-data correction within the existing RC/Task 1.3 objective. It requires no product design or publication approval. The direct-literal census is exploratory, not an exhaustive inventory or a waiver for the remaining sites.
+
+Ruling: source inspection of `MatchFactory.from_decks` requires a direct RAW row. The initial proposed `deck_entry` wrapper is a hydration-service input; the Factory does not unpack `card_metadata`. Reuse the direct RAW pattern already used for the spell sample. No Factory behavior change is authorized by this fixture task.
 
 Current status: plan written before fixture implementation; no candidate source or qualification outcome yet.
