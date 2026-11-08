@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-29 UTC. This is the execution index, not a release certificate.
+Updated: 2026-11-08 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -29,6 +29,25 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   passing characterization tests are not proof of correct gameplay.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
+
+## November 8 RC Resumption
+
+The isolated `rc/ready-20261108` candidate starts at published PR51 commit
+`bcfc73380d58c2e1ee039cd060e52b3ba151feb0`, including the UI, checkpoint and
+native-AI stack through PR45--51. GitHub main `8f03cafc` is its ancestor;
+the candidate contains 157 commits beyond main. GitHub reports no separate
+forks. The migrated dirty checkout and its private evidence remain preserved.
+
+All eight jobs of PR51's hosted CI run `42406261862` succeeded. Fresh local
+component checks pass for native-session ownership/checkpoints, checkpoint
+storage/replay, native UI contracts, profile construction, lint and build.
+Those checks do not qualify native games, full local HTTP/browser acceptance,
+clean installation or AI strength. The local sandbox prevents the original
+guarded native runtime from starting and blocks some test-runner IPC.
+
+See the [current RC audit](docs/testing/rc-readiness-20261108.md) for exact
+commands, separate cohort counts, environmental failures and the remaining
+Gates 1--3. No release gate or AI/data phase is closed by this resumption.
 
 ## October 29 AI Iteration
 
