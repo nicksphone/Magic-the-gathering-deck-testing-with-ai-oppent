@@ -137,6 +137,16 @@ pinned-binary tests with synthetic substitutes.
 
 ## Remaining Release Work
 
+The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
+prevents caller edits from changing the shared catalog seen by later hydration
+and match construction. Its complete eleven-module pure cohort passes562 tests;
+an independent review approves and reruns the overlapping385-case subset.
+The startup generator's finite source pin and typed-value consumer were adapted
+without changing seed data or any media entries. A separately declared old/new
+production-Python Tempo/Tribal comparison finishes both executions with all808
+raw log lines and346 checked actions identical. These bounded results leave
+full application, hosted new-head, AI-quality and release acceptance open.
+
 All three gates remain open. Existing dated evidence in the finish plan and
 acceptance ledger must be reconciled against the final chosen source; an old
 failure is not assumed current and an old pass does not automatically transfer.

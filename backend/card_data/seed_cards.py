@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -22,10 +23,11 @@ _NORMALIZED_SEED_CARD_DATA = {
 
 
 def seed_card_payload(name: str) -> dict[str, Any] | None:
+    """Return caller-owned metadata without exposing the shared offline catalog."""
     normalized = _normalize_card_name(name)
     payload = _NORMALIZED_SEED_CARD_DATA.get(normalized)
     if payload is not None:
-        return payload
+        return deepcopy(payload)
     if "//" in name:
-        return _NORMALIZED_SEED_CARD_DATA.get(_normalize_card_name(name.split("//", 1)[0]))
+        return deepcopy(_NORMALIZED_SEED_CARD_DATA.get(_normalize_card_name(name.split("//", 1)[0])))
     return None

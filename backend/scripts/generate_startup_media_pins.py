@@ -24,7 +24,7 @@ SOURCE_MODULE_PINS = {'backend/main.py': '97dd7e0c0629c01eaa546048470e292995e268
  'backend/card_data/hydration.py': '8497ed903beccf72deba05bf5f03b5342c223cd98eb7c68bc86633f8b2455cce',
  'backend/card_data/display.py': 'f7c584f6bccb22696bc3dfa83563248b6253e597ce87e493924088962c9765eb',
  'backend/card_data/placeholders.py': '44a0ba20815a7204ee2f0332bb5dbd30c648140e78b9cee004aca5ad57acf4df',
- 'backend/card_data/seed_cards.py': 'cb64ae85690d5239a24895b4ed6ac8a46b5f4c15de64d5bb67192eb187b72c71',
+ 'backend/card_data/seed_cards.py': 'ddd392f11ea66ccc440ba5b5d551576df1feb903025e8c80f116dd5c6ac121c5',
  'backend/decks/expansion_top_decks.py': 'df9d1667460859fc21be97ac07c8ae2a02b9980acd9391eb596f526d889b500b',
  'backend/persistence/capacity.py': 'fa0aa11cc1da4cdc13a646989fef86d2cda05b43dea9f1d10a1d4078cb5e4bf5'}
 PUBLIC_INPUT_PINS = {
@@ -129,7 +129,8 @@ def build_artifact(source_root: Path) -> dict:
                 or type(row.get("type_line")) is not str or not row["type_line"]):
             raise ValueError("Missing canonical seed name or type")
         for name in sorted({requested, row["name"]}):
-            if namespace["seed_card_payload"](name) is not row:
+            # Lookup returns caller-owned snapshots; retain every typed JSON fact.
+            if _structural(namespace["seed_card_payload"](name)) != _structural(row):
                 raise ValueError("Unknown or ambiguous canonical seed alias")
             type_line = row["type_line"]
             family = namespace["_family"](type_line=type_line, token=False)

@@ -147,6 +147,8 @@ to claim support.
   The original eight two-faced cards retain ten canonical and six
   provenance-backed derived color facts. Metadata admission is not rules support.
   Generic exact-printing loyalty recovery avoids named exceptions.
+  Seed lookups return independent metadata trees, so editing returned faces or
+  colors cannot change the canonical seed used by later hydration calls.
 - The offline exporter preserves all 155 records and the explicit 17-fact
   preservation ledger through validated cache/bulk and cache/knowledge routes.
   Repeated CLI outputs are byte-identical. Interrupted publication has explicit

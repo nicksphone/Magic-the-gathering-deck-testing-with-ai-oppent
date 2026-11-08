@@ -138,6 +138,40 @@ def test_all_public_startup_names_and_aliases_have_exact_seed_rows(generator):
         assert name not in entries
 
 
+@pytest.mark.parametrize("fault", ["wrong_text", "missing_field", "boolean_to_integer"])
+def test_projected_seed_lookup_must_preserve_every_typed_field(generator, monkeypatch, fault):
+    generator = generator()
+    project = generator._functions
+
+    def with_corrupted_lookup(tree, names, namespace):
+        project(tree, names, namespace)
+        if "seed_card_payload" not in names:
+            return
+        lookup = namespace["seed_card_payload"]
+
+        def corrupted(name):
+            from copy import deepcopy
+            payload = deepcopy(lookup(name))
+            target = "Breeding Pool" if fault == "boolean_to_integer" else "Lightning Bolt"
+            if name == target:
+                if fault == "wrong_text":
+                    payload["oracle_text"] = "CORRUPTED_PROJECTION"
+                elif fault == "missing_field":
+                    del payload["scryfall_id"]
+                else:
+                    assert payload["booster"] is False
+                    payload["booster"] = 0  # Equal under dict ==, different typed JSON fact.
+            return payload
+
+        namespace["seed_card_payload"] = corrupted
+
+    # Fault injection at the pure projection boundary; actual input pin checking,
+    # alias iteration and media generation remain the real implementation.
+    monkeypatch.setattr(generator, "_functions", with_corrupted_lookup)
+    with pytest.raises(ValueError, match="canonical seed alias"):
+        generator.build_artifact(SOURCE)
+
+
 @pytest.mark.parametrize("requested", sorted(SEED))
 def test_actual_seed_rows_and_readable_svg(generator, requested):
     generator = generator()
