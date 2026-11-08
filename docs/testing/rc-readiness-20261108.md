@@ -12,6 +12,15 @@ all 110 series are attempted, 106 resolve and four retain deadline partials. Its
 incomplete and exits 1; this frozen `a4f8df9` baseline does not qualify the later
 candidate, all thirteen styles or release readiness.
 
+The subsequent [block-flag triage](master-block-flag-triage-20261108.md) retains
+all fifteen flags across thirteen decisions. Actor-visible intake excludes
+opponent hands and eventual outcomes; the old compact traces remain unsuitable
+for exact replay. A separate canonical mixed-block fixture verifies the life and
+material trade in both seats, and two separately budgeted current Master choices
+select that allocation. These diagnostics identify a policy boundary, not proven
+historical mistakes or an AI improvement. No policy, original metric or release
+gate changes.
+
 
 ## Candidate And GitHub State
 

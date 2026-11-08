@@ -57,6 +57,15 @@ original close receipt records direct-worker reap but no explicit group-absence
 observation. This historical eight-label roster does not close current-source,
 thirteen-style, expert-strength or release acceptance. See the linked matrix.
 
+The [terminal block-flag triage](docs/testing/master-block-flag-triage-20261108.md)
+retains all fifteen flags across thirteen decisions, excludes hidden hands and
+eventual outcomes from the review contexts, and records the missing-state limit.
+A new canonical two-seat counterfactual and separately budgeted two Master
+choices expose a mixed-block life/material boundary. They do not establish
+historical mistakes, improve the policy or close AI acceptance. A tactical
+benchmark must distinguish useful chumps from wasteful ones before changing
+production scoring; all original matrix partials and broader requirements remain.
+
 
 ## October 29 AI Iteration
 
