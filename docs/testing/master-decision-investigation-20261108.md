@@ -74,3 +74,13 @@ Private evidence is under
 `/home/nick/mtg-rc-evidence-20261108/master-decision-profile-21f/` and
 `/home/nick/mtg-rc-evidence-20261108/ranking-projection-reuse/`. Raw game, action,
 agent and snapshot bodies remain private and are not public fixtures.
+
+## Adopted attachment preflight follow-up
+
+The later [attachment check preflight](attachment-check-preflight-20261108.md)
+finds and removes repeated classification work in the actual captured state:
+one helper invocation makes 32 battlefield-scan generator calls instead of 992.
+Its complete 317-test attachment/layer cohort, 998-action reconstruction and
+fresh complete-decision comparison pass with source and process closure checks.
+This leaves the rejected ranking experiment rejected. The single 19.54-second
+choice witness does not close practical latency or establish a general speedup.

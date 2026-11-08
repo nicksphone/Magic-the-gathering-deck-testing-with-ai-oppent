@@ -504,7 +504,16 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
     from rules_engine.replacement import select_graveyard_entry_plan
     from rules_engine.zone_actions import prepare_graveyard_entry_causes, execute_graveyard_entry
 
-    for cid, card in list(state.cards.items()):
+    cards = list(state.cards.items())
+    # Most boards have no attachment work. Classify that immutable batch once,
+    # then discard its queries before any departure or detachment can occur.
+    with rule_query_scope(state):
+        if not any(card.zone == Zone.BATTLEFIELD and (
+                attached_to(card) or is_aura(card, state) or is_equipment(card, state)
+                or is_fortification(card, state)) for _, card in cards):
+            return
+
+    for cid, card in cards:
         if card.zone != Zone.BATTLEFIELD:
             continue
         target_id = attached_to(card)
