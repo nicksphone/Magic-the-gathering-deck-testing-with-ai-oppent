@@ -290,6 +290,15 @@ boundary. All failures remain visible, assertions are unchanged and the complete
 suite is still unsuccessful. Frozen inputs, guard controls and worker closure
 verify; production code remains exactly the preceding cost-scope source.
 
+The subsequent [restore CLI component](restore-cli-qualification-20261108.md)
+passes all eleven tests in its whole unchanged module, including the four
+original Python CLI calls. Twenty-eight parent and four child SQLite connections
+use disposable file targets; all child reports independently verify clean guards,
+source pins and native returns. The worker and owned process group close normally.
+The first epoch's two temporary-directory matcher failures remain recorded. This
+qualifies that component on `8fecbcbe`, while the earlier full-suite failure and
+all release gates remain open.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;
