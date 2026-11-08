@@ -33,6 +33,9 @@ returns EPERM before a socket is built, leaving cold-process HTTP unexecuted.
 The subsequent [hint-copy serializer qualification](docs/testing/hint-serializer-qualification-20261108.md)
 passes its unchanged 22-case whole module and verifies all 22 original native
 serializer children under exact admission. Cold HTTP and full RC scope remain open.
+The following [activation selection/payment component](docs/testing/activation-selection-payments-20261108.md)
+passes 190 unchanged cases across five whole modules, including ten original
+Strong choices and eight in-process HTTP cases. All original release gates remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

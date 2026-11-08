@@ -143,6 +143,17 @@ test protocol. Separate control-only v2 checks reject it before construction and
 retain checks under optimized bytecode; the actual v1 receipts stay unchanged,
 with all 22 children reporting active assertions. No application case is repeated.
 
+The following [activation selection/payment qualification](docs/testing/activation-selection-payments-20261108.md)
+passes 190 unchanged cases across five whole modules: retained source references,
+private top-card inspection, activation modifiers and selected resources. Ten
+original Strong choices and eight same-process HTTP cases execute under unchanged
+caps/timer/native-SQL policy. All 52 native handles/authorized returns across nine
+owned files, eight metadata-preserving owner acquisitions, source/harness/JUnit and
+normal process closure verify. Twelve private reader files receive metadata-only
+checks; pytest's symlink alias initially miscounts thirteen paths, then the audit
+correctly counts twelve physical files without application repeats. No cold TCP,
+whole backend, Oracle/data, playing-strength or original RC gate closes.
+
 
 ## October 29 AI Iteration
 

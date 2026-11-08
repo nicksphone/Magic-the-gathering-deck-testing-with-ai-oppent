@@ -86,6 +86,13 @@ active assertions, source/harness/input metadata and normal closure verify.
 Snapshot bodies stay private and unread by instrumentation/review. These codec
 roundtrips do not replace the unexecuted cold HTTP server or any release gate.
 
+The following [activation selection/payment component](activation-selection-payments-20261108.md)
+passes all 190 unchanged cases across five whole modules, including ten original
+Strong choices and eight in-process HTTP payment/recovery cases. Native SQL,
+owner metadata, source/harness, private-file metadata and normal closure verify.
+The initial pytest-alias audit miscount is retained and corrected without another
+application run. All original backend, AI/data and release gates remain open.
+
 
 ## Candidate And GitHub State
 
