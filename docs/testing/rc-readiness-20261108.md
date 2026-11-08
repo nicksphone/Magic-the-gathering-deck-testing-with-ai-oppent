@@ -299,6 +299,14 @@ The first epoch's two temporary-directory matcher failures remain recorded. This
 qualifies that component on `8fecbcbe`, while the earlier full-suite failure and
 all release gates remain open.
 
+The later [retention and storage-safety cohort](retention-safety-qualification-20261108.md)
+passes both whole modules and all 34 tests on `0144789f`. It preserves the original
+partial-delete rollback injection, admits only its inspected test-local native
+SQLite subclass, and completes all three original pruning CLI calls. All 136
+parent/child SQL connections use disposable files; source, guard, child evidence,
+native returns and normal group closure verify. This is a separate component
+qualification, with the earlier full-suite failure and release scope retained.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;
