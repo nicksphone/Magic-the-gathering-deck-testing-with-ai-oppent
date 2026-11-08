@@ -4,6 +4,11 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+Current RC corrections and open checks are tracked in the
+[November 8 audit](docs/testing/rc-readiness-20261108.md). Custom evaluator traces
+now retain [complete actions for strict replay](docs/testing/action-reconstruction.md)
+alongside their quality measurements; older compact traces remain unsupported.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

@@ -197,10 +197,9 @@ class ResourceBudget:
                     walk.visit(value)
         walk.visit(state.players[pid].mana_pool)
         walk.visit(reasoning)
-        for key in ("type", "card_id", "card_name", "ability_index", "selected_face_index",
-                    "x_value", "attackers", "blocks", "targets", "cost_choice"):
-            if key in action:
-                walk.visit(action[key])
+        # Both callers supply complete_action output. Bound every execution
+        # operand before trace builders or lossless recording copy it.
+        walk.visit(action)
         for item in state.stack:
             payload = item.payload or {}
             for key, value in payload.items():

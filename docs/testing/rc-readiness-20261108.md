@@ -135,6 +135,24 @@ that invocation. That is not a passing config/TLS qualification. The missing
 binary setting and original error log remain recorded, without replacing the
 pinned-binary tests with synthetic substitutes.
 
+## Evaluator Replay And Live Matrix
+
+The [custom evaluator replay correction](evaluator-lossless-replay.md) records
+complete ordered execution evidence alongside the existing quality projection.
+Its final whole seventeen-module pure cohort passes 287 tests and 31 subtests,
+with zero SQL/network/child operations and all 22 named input hashes unchanged.
+An independent review's construction-before-copy finding is corrected and its
+59-case affected-module rerun passes. The default legacy trace is preserved;
+old compact quality records remain unsupported. This does not close an RC gate.
+
+The [full Master matrix](full-master-matrix-20261108.md) continues separately on
+frozen `a4f8df9`: eleven decks, 55 pairs, both seat orders, 110 BO3 series and
+unchanged caps. At the independent thirteen-receipt observation, twelve games
+resolve naturally and one reaches the shared series deadline. Receipt hashes,
+trace counts and all 2,691 bound source files verify at that observation. This is
+partial progress, not a completed or replay-qualified matrix. It was not restarted
+after the additive recording correction.
+
 ## Remaining Release Work
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
