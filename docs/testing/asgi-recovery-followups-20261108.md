@@ -67,6 +67,35 @@ connection metadata, with no findings. The audit observes connection targets; it
 is not a complete filesystem/SQL `ATTACH` fence. These results do not establish
 TCP/TLS, real browser execution, native Forge, expert AI or overall RC readiness.
 
+## Admission and job lifecycle
+
+A separate fresh cohort passes **48 tests** in 7.62 seconds across six complete
+modules, with zero failures, errors or skips:
+
+| Whole module | Passed |
+| --- | --- |
+| `test_simulation_admission.py` | 12 |
+| `test_simulation_job_quota.py` | 16 |
+| `test_simulation_job_cache.py` | 2 |
+| `test_simulation_shutdown.py` | 9 |
+| `test_simulation_engine_shutdown.py` | 3 |
+| `test_lifespan_native_cleanup_retention.py` | 6 |
+
+These checks combine actual owned SQLite/ASGI admission, replay, conflict, quota
+and cache operations with the existing parked-worker doubles, cancellation
+threads and lifecycle AST controls. They are 48 tests, not natural games or a
+production-throughput sample. Quota cases use the existing low test limit of two;
+the default 10,000-job constant has a separate assertion.
+
+All 79 recorded SQLite connection targets are within the new cohort's bootstrap
+or pytest roots. Children remain forbidden, zero denied events are recorded,
+and all 2,875 bound files match before/after. The source-only archive's additional
+lease marker truthfully names its canonical owned root; no hosted-CI environment
+is impersonated. Independent read-only review rehashes the source and checks
+lease markers, runner pin, connection targets and JUnit, with no findings. The
+two existing dependency deprecation warnings remain visible. The same timer and
+connection-observation limitations above apply.
+
 Declarations, original failures, controls, JUnit, separate readback verification
 and closure receipts remain private under
 `/home/nick/mtg-rc-evidence-20261108/http-current-4775/`. Raw hands, snapshots and

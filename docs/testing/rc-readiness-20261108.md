@@ -165,6 +165,12 @@ trace counts and all 2,691 bound source files verify at that observation. This i
 partial progress, not a completed or replay-qualified matrix. It was not restarted
 after the additive recording correction.
 
+The later 96-receipt independent observation verifies 93 natural games, three
+deadline-limited partials and all source/log bindings. Available natural-game
+metrics now include twenty unused-mana passes and two flagged blocks; their
+denominators and interpretation are recorded with the matrix. Earlier zero
+counts do not extend to this larger snapshot. The matrix remains live.
+
 A separate old/new production Master Tempo/Tribal coordinate completes naturally
 on both sources: Tempo wins on turn eleven, 321 actions, all 749 quality/event
 lines equal after removing the additive envelope. Candidate complete-action
@@ -198,6 +204,12 @@ cohort passes 46 cleanup, replacement, selection and browser-origin tests.
 Independent reviews approve both bounded results. The same tracked source stays
 unchanged; these are adjusted ASGI/SQLite executions, not browser/TCP/native Forge
 or hosted release qualification.
+
+A further six-module lifecycle cohort passes 48 tests covering admission, quota,
+cache, cancellation and shutdown. It combines actual owned SQL/ASGI operations
+with existing worker/thread/AST controls. All 79 observed connection targets,
+2,875 source hashes, runner pin and JUnit verify; independent review reports no
+findings. It is neither 48 natural games nor production-throughput qualification.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration

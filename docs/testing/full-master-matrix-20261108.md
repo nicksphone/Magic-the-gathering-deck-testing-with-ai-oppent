@@ -40,3 +40,25 @@ are excluded from quality sums. Existing six counters are zero where available,
 with per-metric game-seat denominators ranging from 46 to 48; unavailable values
 are not converted to zero. This remains a live incomplete matrix and is not a
 strategy or expert-strength certificate.
+
+At the independent **96-receipt observation**, 93 games have natural outcomes and
+three are deadline-limited. Raw/normalized hashes, trace/tick counts and all 2,691
+bound files verify again. The six quality counters over available natural
+game-seat samples are:
+
+| Counter | Observed count | Available game-seat samples |
+| --- | --- | --- |
+| Missed land drops | 0 | 186 |
+| Passes with unused mana | 20 | 186 |
+| Lethal misses | 0 | 185 |
+| Flagged bad blocks | 2 | 177 |
+| Stall streaks | 0 | 186 |
+| Redundant removal casts | 0 | 183 |
+
+These are the existing producer's observational metrics, not independently
+adjudicated strategic mistakes or expert-strength results. All twenty unused-mana
+passes occur in precombat main phases. The block metric compares bounded chosen
+and no-block combat outcomes; it does not prove a whole-game alternative was
+better. Partial games and unavailable metric observations remain excluded. The
+earlier zero counters applied only to the earlier snapshot. The full schedule,
+terminal producer/source result and process closure are still outstanding.
