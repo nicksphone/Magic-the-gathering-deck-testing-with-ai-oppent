@@ -84,3 +84,13 @@ Its complete 317-test attachment/layer cohort, 998-action reconstruction and
 fresh complete-decision comparison pass with source and process closure checks.
 This leaves the rejected ranking experiment rejected. The single 19.54-second
 choice witness does not close practical latency or establish a general speedup.
+
+A separately declared post-change profile on `68b9fffb` matches the complete
+fresh action/decision/agent-after and root/RNG, with all 2,695 source files and
+input hashes unchanged and normal supervised closure. Instrumented duration is
+47.56 seconds; total/planning copies remain 945/917. Layer-four scan-generator
+calls fall from 5,803,456 to 4,795,845 across the entire choice. Attachment-check
+calls remain 1,072, with less aggregate classification work. Profiler times overlap and are
+not an uninstrumented latency comparison. Remaining caller data is retained for
+choosing the next pure-query or allocation investigation; no speculative cache
+or weaker position key is adopted.

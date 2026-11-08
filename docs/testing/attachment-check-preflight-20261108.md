@@ -34,6 +34,15 @@ calls no AI and starts no new natural game. All 2,695 bound backend inputs and
 both retained input hashes match, no denied operations occur, and the supervised
 worker closes normally. The existing game remains resource-limited and partial.
 
+A separate post-change cProfile decision also matches those complete outputs,
+fresh-agent history and root/RNG, with all 2,695 source files and three declared
+input hashes unchanged and normal process closure. It takes 47.56 seconds under
+instrumentation. Across this entire choice, layer-four scan-generator calls
+fall from 5,803,456 to 4,795,845; attachment checks execute 1,072 times on both
+sources. Total state copies remain 945, including 917 planning copies. Cumulative
+profiler timings overlap and do not establish an uninstrumented speedup. The candidate evidence now contains two choices total: one uninstrumented
+comparison and one allocation profile. Neither starts a natural game.
+
 ## Whole-module qualification
 
 The declared nine-module cohort comprises the new preflight module plus Bestow,

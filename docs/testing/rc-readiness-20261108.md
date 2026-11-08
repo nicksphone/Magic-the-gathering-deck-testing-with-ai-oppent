@@ -254,6 +254,15 @@ first harness epoch's eight undeclared-child failures remain recorded. This is
 new component evidence on the preflight source, not a transfer of older ASGI
 cohorts or a practical latency, completed-game or release certificate.
 
+The later 195-receipt matrix audit verifies 192 natural games, the same three
+deadline partials and all frozen source/log bindings. Available observations now
+include forty unused-mana passes and six flagged blocks; these retain their
+metric-specific denominators and require strategic interpretation. The matrix
+is still live on its original source. A separate profile of the accepted
+attachment source confirms reduced layer-four work across the saved decision,
+while total/planning state copies remain 945/917. Neither result closes strength,
+practical latency, the full schedule or an original release gate.
+
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
 and match construction. Its complete eleven-module pure cohort passes562 tests;

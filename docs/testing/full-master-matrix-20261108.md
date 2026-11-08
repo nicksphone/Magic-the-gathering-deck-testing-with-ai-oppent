@@ -80,3 +80,23 @@ Available natural game-seat counters are:
 The same partial/unavailable exclusions and metric limits apply. These are 146
 individual receipts from a live run, not 146 series or a terminal acceptance
 result. The original producer/source/schedule remains unchanged.
+
+At the independent **195-receipt observation**, 192 games resolve naturally and
+the same three partials remain deadline-limited. All closed raw/normalized
+hashes, trace/tick counts and 2,691 frozen source files verify. No pending visible
+receipt write is included. Available natural game-seat counters are:
+
+| Counter | Observed count | Available game-seat samples |
+| --- | --- | --- |
+| Missed land drops | 0 | 384 |
+| Passes with unused mana | 40 | 384 |
+| Lethal misses | 0 | 382 |
+| Flagged bad blocks | 6 | 357 |
+| Stall streaks | 0 | 384 |
+| Redundant removal casts | 0 | 377 |
+
+The increase to six block flags requires decision-context review before these
+can be called strategic errors. Neither the zero counters nor the flagged
+counts establish strength. The same partial/unavailable exclusions apply. This
+audit starts no new games. The original matrix remains live
+on its original source, roster and limits; no coordinate is restarted.

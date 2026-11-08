@@ -68,3 +68,12 @@ preserving its order, fresh scopes, replacement preflight and events.
 
 - Final independent read-only review accepts source/tests/evidence with no blocker;
   pending-review wording and connection-versus-distinct-file wording corrected.
+
+- After commit68b9fffb, a separately declared one-choice allocation profile
+  preserves all complete outputs/root/RNG/pins and closes normally. Actual
+  whole-choice layer-four scan-generator calls fall5803456->4795845, while
+  total/planning copies remain945/917. Instrumented47.56s is not latency
+  acceptance. Actual candidate total:one uninstrumented qualification choice
+  plusone post-change profile;zero new natural games.
+- Both initial cumulative/per-fix patches apply to their exact preimages and
+  reproduce the68b9fffb committed tree; private PATCH-VERIFICATION.json retained.
