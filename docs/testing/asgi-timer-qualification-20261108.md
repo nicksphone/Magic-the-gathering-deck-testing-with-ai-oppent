@@ -22,6 +22,8 @@ browser, timing or native Forge qualification.
 | `test_manual_autoplay_collision_http.py` | 4 passed; 5.62 s | Both seats, revisioned/unversioned concurrent requests, original barrier/lock/checked actions, durable SQLite and restoration |
 | `test_api_input_contracts.py` | 46 passed; 41.82 s | Real application lifespan/SQLite; existing malformed, wrong-actor, atomic rejection, hydration and action contracts; authored positions are not full rules certification |
 | `test_human_bo3_interactive.py` | 1 passed; 227.20 s | One actual programmatically piloted human-controller BO3 and cold between-game restores |
+| `test_human_bo3_terminal_restore.py`, `test_human_bo3_native_swaps.py` | 2 passed; 479.86 s | Completed-series cold reads and actual different-card swaps; see follow-ups |
+| Four whole cleanup/replacement/selection/origin modules | 46 passed; 74.22 s | Actual ASGI/SQLite interactions; see follow-ups for exact module counts |
 
 The SQLite cohorts use a source-only archive of `4775d475` with all 2,875 tracked
 backend/audit inputs hashed before/after and unchanged. Source lease markers and
@@ -92,7 +94,8 @@ JUnit and process receipts are retained in
 `/home/nick/mtg-rc-evidence-20261108/asyncio-timer-probe/` and
 `/home/nick/mtg-rc-evidence-20261108/http-current-4775/`.
 
-Remaining work includes different-card sideboard swaps, completed-series cold
-restoration, broader current-source HTTP/rules interaction, browser/TCP/HTTPS,
-unchanged guarded native execution and hosted qualification. No release gate is
-closed by these runs.
+Subsequent [recovery and interaction follow-ups](asgi-recovery-followups-20261108.md)
+qualify the named different-card swap, completed-series cold-read and additional
+HTTP scenarios. Broader current-source rules/browser interactions, TCP/HTTPS,
+unchanged guarded native execution and hosted qualification remain open. No
+release gate is closed by these runs.

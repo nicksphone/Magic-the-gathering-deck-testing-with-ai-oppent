@@ -29,6 +29,11 @@ SHA-1 `8da9987120422f92e432b6d25535b82cee867dad`, but truncates the SHA-512 inte
 These primary-source checks establish publication, not possession of the package
 or installation of its fixed contents. Intake metadata remains private evidence.
 
+A scoped workspace metadata search finds twelve installed Vite packages, versions
+5.4.21, 6.4.3, 6.4.4 and 8.2.0; none is the required 6.4.5 package. Browser,
+credential and configuration stores are excluded. This does not establish global
+artifact absence or remediate the pin; the actual upgrade remains pending.
+
 Next work: obtain authoritative registry metadata and the patched Vite package,
 update the exact dependency and complete lockfile, then qualify an actual clean
 install, frontend contracts, lint/build and relevant served-file controls. Preserve

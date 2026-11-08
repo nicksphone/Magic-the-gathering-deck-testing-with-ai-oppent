@@ -139,6 +139,14 @@ that invocation. That is not a passing config/TLS qualification. The missing
 binary setting and original error log remain recorded, without replacing the
 pinned-binary tests with synthetic substitutes.
 
+The subsequent pinned-binary intake check finds its documented public build
+packet's `/mnt/rchfiles/.../caddy2117-security-build-20261010-bwDTVP` directory
+unreadable (`PermissionError(13)`). Scoped workspace metadata searches find
+neither an exact-size candidate executable nor the named build packet; the listed
+PR51 workflow artifacts contain no separately named Caddy build package. These
+lookup results are not a settings/TLS test pass. The exact binary input and its
+qualification remain outstanding.
+
 ## Evaluator Replay And Live Matrix
 
 The [custom evaluator replay correction](evaluator-lossless-replay.md) records
@@ -180,6 +188,16 @@ hashes and process closure verify. Product/test sources and original bounds are
 unchanged. This is a test-loop scheduling adjustment, not browser/TCP/native Forge
 or canonical hosted qualification. Earlier guard-wrapper setup failures remain
 recorded and independent review findings were corrected before the natural run.
+
+The later [recovery and interaction follow-ups](asgi-recovery-followups-20261108.md)
+pass both whole completed-series-restore and different-card-sideboard modules.
+Their two natural three-game scenarios use 780 and 790 accepted action POSTs;
+all six cold workers and the process group close normally, and inventory,
+rebuilt stocks and sixteen atomic rejection receipts verify. A separate four-module
+cohort passes 46 cleanup, replacement, selection and browser-origin tests.
+Independent reviews approve both bounded results. The same tracked source stays
+unchanged; these are adjusted ASGI/SQLite executions, not browser/TCP/native Forge
+or hosted release qualification.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
