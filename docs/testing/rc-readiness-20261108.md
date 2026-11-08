@@ -36,8 +36,17 @@ advances standard discovery to 174 passes before the first HTTP fixture's
 owner-lock open is denied at startup. All seven exact restore/prune CLI children,
 the inspected fault factory, 170 total native SQL returns and the source/guard/
 closure checks verify. No lock contents are read, no HTTP case completes and
-the full run remains incomplete with exit 1. A new disposable-lock protocol needs
-separate declaration; protected real operator files remain excluded.
+the full run remains incomplete with exit 1. That observation is preserved.
+
+The separately declared [synthetic-owner entry](current-backend-synthetic-owner-20261108.md)
+passes 230 cases, including eight HTTP cases, before a replay CLI command is
+denied before launch. The one new empty owner-lock fixture retains its exact
+metadata through eight native acquisitions; its body is never read/hashed/copied.
+All seven original children, 221 parent plus five child native SQL returns and
+source/harness/closure checks verify. The run retains one failure, exit 1 and
+incomplete status. HTTP restoration occurs within the same process; cold worker,
+browser, native runtime, full-suite and RC acceptance remain open. The next CLI
+requires a new exact protocol; real protected operator files remain excluded.
 
 
 ## Candidate And GitHub State

@@ -80,8 +80,17 @@ then passes 174 ordinary cases across eight complete modules, including the exac
 seven restore/prune CLI invocations and one inspected fault factory. The next HTTP
 fixture stops before startup at a protected owner-lock open; that error and the
 nonzero full-discovery result remain. All current backend hashes and owned-worker
-closure verify. A new disposable-lock fixture/admission protocol is needed before
-further HTTP qualification, with real protected operator files still excluded.
+closure verify. That stopped execution remains unchanged.
+
+The separately declared [synthetic-owner entry](docs/testing/current-backend-synthetic-owner-20261108.md)
+then passes 230 cases, including eight HTTP cases and twelve complete modules,
+with one new empty exact-path fixture whose body is never read, hashed or copied.
+All source/guard/native SQL/child/fixture metadata/closure checks verify. The
+next original replay CLI command is denied before launch outside the existing
+seven-child allowlist. Its one failure and nonzero incomplete status remain;
+the replay module is only partially tested. A separately reviewed exact replay
+CLI protocol is needed next. The HTTP evidence uses same-process SQL controller
+restoration; cold-worker/browser/native/hosted/full-suite acceptance remains open.
 
 
 ## October 29 AI Iteration

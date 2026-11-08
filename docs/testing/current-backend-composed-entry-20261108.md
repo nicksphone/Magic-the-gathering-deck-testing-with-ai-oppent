@@ -98,10 +98,11 @@ in `/home/nick/mtg-rc-evidence-20261108/current-backend-composed/` with
 `FINAL-VERIFICATION.json`. Database bodies, lock bodies and private snapshots are
 not included in the public change.
 
-The next step needs a separately declared new disposable owner-lock fixture and
-reviewed admission protocol. It must preserve the refusal of real operator locks,
-protected models and user databases; this stopped execution must not be relabelled
-green. The [Master correction](master-winning-death-block-20261108.md), historical
+The separately declared [synthetic-owner follow-up](current-backend-synthetic-owner-20261108.md)
+later advances through eight HTTP cases using one new empty exact-path fixture.
+This earlier stopped execution remains unchanged. The protocol preserves refusal
+of real operator locks, protected models and user databases. The
+[Master correction](master-winning-death-block-20261108.md), historical
 matrix partials/flags, thirteen-style/expert-AI requirements, clean installation,
 build inputs, hosted CI, browser and native-runtime gates retain their scopes.
 
