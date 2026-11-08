@@ -55,6 +55,13 @@ changing source asserts. All source/guard/receipt/output/closure checks verify.
 These component passes do not relabel the earlier full attempt green or qualify
 its unexecuted remainder. Real protected operator files remain excluded.
 
+The next [activation/snapshot component](activated-timing-qualification-20261108.md)
+passes 16 cases across two unchanged whole modules, including four original Master
+choices and one in-process HTTP payment case. Source/guard/native SQL/empty owner
+fixture metadata/output/closure checks verify, with no previous case repeated.
+The subsequent cold-restart archiver requires protected-file handling before
+its native-process/network module can run. No full-suite or RC gate closes.
+
 
 ## Candidate And GitHub State
 

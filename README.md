@@ -19,6 +19,9 @@ unadmitted replay CLI command launches. Full-suite and release gates remain open
 A separate [replay CLI qualification](docs/testing/current-replay-cli-qualification-20261108.md)
 then passes all ten original CLI cases with clean child receipts; it preserves
 the earlier incomplete run and leaves the remaining backend scope unqualified.
+The next [activation and legacy-snapshot component](docs/testing/activated-timing-qualification-20261108.md)
+passes both whole modules, including four original Master choices and one HTTP
+case. Cold-process restart and the full RC scope remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

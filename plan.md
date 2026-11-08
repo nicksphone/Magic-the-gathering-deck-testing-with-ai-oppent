@@ -100,6 +100,14 @@ All source/harness/receipt/closure checks pass with zero admitted SQL or AI
 choices. Earlier cases are not rerun or summed. This is a component result;
 the full backend and original RC/AI/data acceptance remain open.
 
+The next [activation/snapshot qualification](docs/testing/activated-timing-qualification-20261108.md)
+passes both unchanged whole modules (14 timing and 2 legacy cases), with four
+original Master choices and one HTTP payment case. Source/harness/native SQL/
+fixture metadata/output/closure checks verify under the unchanged reviewed
+policy. No previous case is repeated or summed. The following cold-restart module
+needs separately reviewed process/loopback resources and a correction to its
+archiver's unconditional protected owner-lock body reads. Full acceptance remains.
+
 
 ## October 29 AI Iteration
 
