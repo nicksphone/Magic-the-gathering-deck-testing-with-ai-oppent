@@ -91,6 +91,44 @@ Local logs, source reconciliation and the declared native invocation are
 retained privately in `/home/nick/mtg-rc-evidence-20261108/`. Raw private game
 traces, models, protected lock files and user databases were not published.
 
+## Operator Source-Artifact Correction
+
+Review found a content-read gap in the immutable-source check: root owner-lock
+and recognized capacity-backup files were hashed before preparation eventually
+rejected the mismatched copy. Inventory also read unexpected owner-lock names.
+The launcher now rejects those source artifacts and encountered unrecognized lock
+names before content reads. Recognized private-runtime artifacts and existing
+mutable runtime subtrees retain their ownership/type/link checks and content-free
+exemptions. No ignored path
+was broadened, and clean-source pins remain unchanged.
+
+Four new file-only unittest methods exercise real inventory/preparation and
+restart behavior with an audit hook denying opens of explicit synthetic artifact
+files. The corrected baseline fixture produced eight failing subtests and no
+errors; all four methods pass after the two validation changes. A fifth passing
+method separately checks content-free exemption of lock-suffixed files in each
+existing mutable runtime subtree. The initial
+test draft additionally had one umask setup error, preserved separately. No real
+owner file was opened. The original inventory program now passes 13 cases,
+including individual source-lock and source-backup rejection, with all original
+runtime/link/code controls retained. Eight existing dist-boundary and five
+read-only-runtime methods also pass in separate executions. The new module is
+wired into the hosted operator file-only stage; hosted qualification of this
+change remains outstanding.
+
+The existing supervisor cohort separately passes 20 tests, and hosted-clean
+control contracts separately pass 38 methods (including the five read-only
+runtime methods). These exercise inert children and controlled files, not native
+services or a clean install. Independent read-only review found no remaining
+issues in this correction and rechecked the new five-method module and original
+13-case inventory program. Overall RC acceptance remains open.
+
+A broader operator-neighbor attempt recorded 21 passes and 40 setup errors:
+the LAN/config modules require `MTG_CADDY_BINARY`, which was not supplied in
+that invocation. That is not a passing config/TLS qualification. The missing
+binary setting and original error log remain recorded, without replacing the
+pinned-binary tests with synthetic substitutes.
+
 ## Remaining Release Work
 
 All three gates remain open. Existing dated evidence in the finish plan and

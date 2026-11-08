@@ -53,11 +53,12 @@ def inventory(root, *, runtime=False):
             mutable = relative in SQL_FILES or owner_artifact or any(relative == p or relative.startswith(p + "/") for p in MUTABLE_DIRS)
             if runtime and mutable:
                 continue
+            require(not name.endswith("capacity-owner.lock"))
             if not runtime and (name in {"__pycache__", ".pytest_cache", "image_cache"} or name.endswith(".pyc")):
                 if name in dirs:
                     dirs.remove(name)
                 continue
-            require(runtime or relative not in SQL_FILES)
+            require(runtime or (relative not in SQL_FILES and not owner_artifact))
             result[relative] = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else "directory"
     return result
 

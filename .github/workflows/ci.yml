@@ -76,6 +76,8 @@ jobs:
           remaining=$(python .github/scripts/ci_backend_shards.py remaining)
           timeout --signal=TERM --kill-after=15s "${remaining}s" python ops/caddy/test_runtime_inventory.py
           remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python ops/caddy/test_runtime_source_artifacts.py
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
           timeout --signal=TERM --kill-after=15s "${remaining}s" python -m pytest -q -p no:cacheprovider ops/caddy/test_startup_diagnostic.py
       - name: Full unfiltered collection-only reference
         id: execution

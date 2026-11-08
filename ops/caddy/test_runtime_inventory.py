@@ -43,8 +43,11 @@ with tempfile.TemporaryDirectory(prefix='mtg-operator-inventory-') as td:
   denied('artifact symlink '+name,lambda:p.symlink_to(real/'fixture.json'),lambda:p.unlink())
   denied('artifact hardlink '+name,lambda:os.link(real/'fixture.json',p),lambda:p.unlink())
   p.write_bytes(original)
- before=m.inventory(backend)
- for name in artifact_names:(backend/name).write_bytes(b'source artifact is tracked, never ignored')
- assert m.inventory(backend)!=before,'Source inventory was relaxed'
- print('PASS source artifact inventory remains tracked')
-print('PASS 12 restart/inventory cases; no native SQL or server proof')
+ for name in artifact_names:
+  p=backend/name;p.write_bytes(b'explicit source artifact fixture, never ignored')
+  try:m.inventory(backend)
+  except ValueError:pass
+  else:raise AssertionError('Source runtime artifact was admitted: '+name)
+  finally:p.unlink()
+ print('PASS source runtime artifacts reject before inventory reads')
+print('PASS 13 restart/inventory cases; no native SQL or server proof')

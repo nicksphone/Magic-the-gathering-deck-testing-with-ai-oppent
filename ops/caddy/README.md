@@ -24,6 +24,14 @@ No live activation occurs by adding these files.
 - `verify-config.py`: native adaptation/provisioning and rejected-config checks
   with disposable material. It starts no HTTP server, SQL or TLS client.
 
+The immutable source backend must not contain runtime databases, owner locks or
+recognized capacity backups. Preparation rejects those artifacts before reading
+their contents. Encountered files ending in `capacity-owner.lock` outside existing
+inventory exemptions also reject before a content read. Existing private runtime
+owner locks, capacity backups and mutable data subtrees remain accepted after
+ownership, file-type and link checks; their contents are excluded from source attestation. This boundary
+does not remove, copy or modify an operator's existing data.
+
 Admin endpoint, config persistence, automatic HTTPS and global trust installation
 are off. TLS is mandatory, not an HTTP redirect. HTTP/1.1 and HTTP/2 only. Runtime
 and access logs are suppressed; failures deliberately contain no config values.
