@@ -269,9 +269,19 @@ fourteen ASGI cases. Eighty SQL connections to fifteen owned file targets, all
 5,123 frozen inputs and process closure verify. The complete captured decision
 and existing 998-action reconstruction match, and actual whole-choice scan work
 falls by 457,684 calls. Confounded/instrumented timings do not prove a wall-clock
-speedup. Full backend discovery still fails at an optional archive's eager
+speedup. The full backend attempt on that source fails at an optional archive's eager
 availability check; its `PermissionError` and the preceding harness-admission
 failure remain recorded. No full-suite or release pass follows.
+
+The later [optional archive collection correction](optional-archive-collection-20261108.md)
+defers that same metadata condition to archived-case setup, preserving the
+existing absence skip and permission failure. Four regression controls pass;
+the two-whole-module command runs 106 passes before the preserved archived setup
+error. Full backend discovery now proceeds: its strict epoch runs 72 passes
+before SQL denial, and its owned-SQL epoch runs 81 before the declared CLI-child
+boundary. All failures remain visible, assertions are unchanged and the complete
+suite is still unsuccessful. Frozen inputs, guard controls and worker closure
+verify; production code remains exactly the preceding cost-scope source.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration

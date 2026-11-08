@@ -333,7 +333,7 @@ def mirror_snapshot(snapshot):
     return visit(snapshot)
 
 
-@pytest.mark.skipif(not NATURAL.exists(), reason='Optional archived natural decision fixture')
+@pytest.mark.skipif('not NATURAL.exists()', reason='Optional archived natural decision fixture')
 @pytest.mark.parametrize('tick', [433, 446])
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('style', STYLES)

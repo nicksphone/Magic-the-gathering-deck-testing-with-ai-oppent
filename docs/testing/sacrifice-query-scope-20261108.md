@@ -76,8 +76,10 @@ without changing tests, assertions or IO policy. Collection then stops at
 `tests/test_ai_opaque_top_choose_horizon.py:336`: evaluating an optional archived
 fixture's `Path.exists()` raises `PermissionError(13)` beneath `/mnt/rchfiles`.
 The error occurs in the eager skip-condition expression before test bodies run.
-It remains unresolved; the archive is not bypassed or replaced, and no new skip
-or expected failure is introduced. Both epochs preserve all frozen input hashes
+At the source qualified here it remains unresolved; the archive is not bypassed
+or replaced, and no new skip or expected failure is introduced. The later
+[collection correction](optional-archive-collection-20261108.md) defers the same
+condition to the archived cases while preserving their visible permission error. Both epochs preserve all frozen input hashes
 and close their workers normally. The 456-case component is not a full-suite
 pass, clean install or hosted qualification.
 
