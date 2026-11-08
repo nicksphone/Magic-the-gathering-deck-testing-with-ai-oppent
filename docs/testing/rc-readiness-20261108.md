@@ -6,6 +6,13 @@ Status: **unfinished**. The requirements remain the three gates in
 [roadmap issue #2](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/issues/2).
 This audit does not reduce that scope to the checks executed below.
 
+The original [full Master matrix](full-master-matrix-20261108.md) is now terminal:
+all 110 series are attempted, 106 resolve and four retain deadline partials. Its
+271 receipts verify 267 natural games and four partials. The producer remains
+incomplete and exits 1; this frozen `a4f8df9` baseline does not qualify the later
+candidate, all thirteen styles or release readiness.
+
+
 ## Candidate And GitHub State
 
 The isolated branch `rc/ready-20261108` starts at
@@ -157,7 +164,7 @@ An independent review's construction-before-copy finding is corrected and its
 59-case affected-module rerun passes. The default legacy trace is preserved;
 old compact quality records remain unsupported. This does not close an RC gate.
 
-The [full Master matrix](full-master-matrix-20261108.md) continues separately on
+The [full Master matrix](full-master-matrix-20261108.md) ran separately on
 frozen `a4f8df9`: eleven decks, 55 pairs, both seat orders, 110 BO3 series and
 unchanged caps. At the independent thirteen-receipt observation, twelve games
 resolve naturally and one reaches the shared series deadline. Receipt hashes,
@@ -169,7 +176,7 @@ The later 96-receipt independent observation verifies 93 natural games, three
 deadline-limited partials and all source/log bindings. Available natural-game
 metrics now include twenty unused-mana passes and two flagged blocks; their
 denominators and interpretation are recorded with the matrix. Earlier zero
-counts do not extend to this larger snapshot. The matrix remains live.
+counts do not extend to this larger snapshot. The matrix was still live at that observation.
 
 A separate old/new production Master Tempo/Tribal coordinate completes naturally
 on both sources: Tempo wins on turn eleven, 321 actions, all 749 quality/event
@@ -242,7 +249,7 @@ fresh decision, but leaves those copy counts unchanged. It is rejected and the
 backend is restored exactly to `21f41aa8`; its 510-test experimental cohort is
 not transferred as a new current-source qualification. The larger matrix's
 146-receipt audit verifies 143 natural games, three deadline partials and all
-source/log bindings, while the original run remains live.
+source/log bindings, while the original run was still live.
 
 The subsequent [attachment preflight correction](attachment-check-preflight-20261108.md)
 reduces one actual captured helper invocation's battlefield-scan generator calls
@@ -258,7 +265,7 @@ The later 195-receipt matrix audit verifies 192 natural games, the same three
 deadline partials and all frozen source/log bindings. Available observations now
 include forty unused-mana passes and six flagged blocks; these retain their
 metric-specific denominators and require strategic interpretation. The matrix
-is still live on its original source. A separate profile of the accepted
+was still live on its original source at that observation. A separate profile of the accepted
 attachment source confirms reduced layer-four work across the saved decision,
 while total/planning state copies remain 945/917. Neither result closes strength,
 practical latency, the full schedule or an original release gate.

@@ -49,6 +49,15 @@ See the [current RC audit](docs/testing/rc-readiness-20261108.md) for exact
 commands, separate cohort counts, environmental failures and the remaining
 Gates 1--3. No release gate or AI/data phase is closed by this resumption.
 
+The original frozen `a4f8df9` Master matrix is now terminal after all 110 scheduled
+BO3 attempts: 106 resolved series, four deadline-limited series, 267 natural games
+and four partial receipts. The producer retains incomplete status and nonzero
+exit. Final source/log/schedule/metric checks verify its recorded scope; the
+original close receipt records direct-worker reap but no explicit group-absence
+observation. This historical eight-label roster does not close current-source,
+thirteen-style, expert-strength or release acceptance. See the linked matrix.
+
+
 ## October 29 AI Iteration
 
 Published `b4313031` passes the complete hosted workflow, including browser,
