@@ -75,6 +75,14 @@ seventeen-module execution plus its corrected whole audit-module follow-up.
 Full backend discovery still fails at a guarded SQLite restart test. None of
 these component results closes the original AI/data or release acceptance.
 
+The [composed current-backend entry](docs/testing/current-backend-composed-entry-20261108.md)
+then passes 174 ordinary cases across eight complete modules, including the exact
+seven restore/prune CLI invocations and one inspected fault factory. The next HTTP
+fixture stops before startup at a protected owner-lock open; that error and the
+nonzero full-discovery result remain. All current backend hashes and owned-worker
+closure verify. A new disposable-lock fixture/admission protocol is needed before
+further HTTP qualification, with real protected operator files still excluded.
+
 
 ## October 29 AI Iteration
 

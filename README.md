@@ -9,6 +9,14 @@ Current RC corrections and open checks are tracked in the
 now retain [complete actions for strict replay](docs/testing/action-reconstruction.md)
 alongside their quality measurements; older compact traces remain unsupported.
 
+The current [Master winning-block correction](docs/testing/master-winning-death-block-20261108.md)
+preserves a canonical immediate death-trigger win in both Master modes and seats;
+it is not a general AI-strength certificate. A subsequent
+[guarded backend entry](docs/testing/current-backend-composed-entry-20261108.md)
+passes 174 cases and verifies the seven original restore/prune CLI calls, then
+stops at an owner-lock guard during HTTP startup. Full-suite and release gates
+remain open; the run is not presented as green.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

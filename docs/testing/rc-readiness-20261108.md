@@ -31,6 +31,14 @@ Source, original assertions and process closure verify. This is a tactical
 correction with explicit component evidence, not a passing full suite, historical
 flag adjudication, AI-strength result or release gate.
 
+The following [composed current-backend entry](current-backend-composed-entry-20261108.md)
+advances standard discovery to 174 passes before the first HTTP fixture's
+owner-lock open is denied at startup. All seven exact restore/prune CLI children,
+the inspected fault factory, 170 total native SQL returns and the source/guard/
+closure checks verify. No lock contents are read, no HTTP case completes and
+the full run remains incomplete with exit 1. A new disposable-lock protocol needs
+separate declaration; protected real operator files remain excluded.
+
 
 ## Candidate And GitHub State
 
