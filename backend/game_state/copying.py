@@ -5,6 +5,18 @@ from types import GetSetDescriptorType
 from game_state.state import CardInstance, MatchState, Zone
 
 
+def _initialize_typing_reducers():
+    """Prime stdlib registrations without replacing a caller's existing reducer."""
+    previous = tuple(dispatch_table.items())
+    import typing
+    for cls, reducer in previous:
+        if cls is typing.ParamSpecArgs or cls is typing.ParamSpecKwargs:
+            dispatch_table[cls] = reducer
+
+
+_initialize_typing_reducers()
+
+
 _immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
 
 

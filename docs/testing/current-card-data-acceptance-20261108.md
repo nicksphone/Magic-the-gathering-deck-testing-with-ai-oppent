@@ -2,7 +2,8 @@
 
 The seventeen whole modules in the [original 833-case data declaration](phase1-final-data-acceptance833.md)
 pass again on the isolated `4775d475` backend/audit archive, whose tracked bytes
-remain identical to the current candidate's backend/audit tree. The current
+are identical to candidate `91fd0a04`'s backend/audit tree. Later backend changes
+need separate qualification. This
 execution passes **833 tests** in 43.21 seconds, with zero failures, errors or
 skips. Its ordered JUnit identities are unique and retained privately; this is a
 new execution, not a transfer of the October result.

@@ -7,7 +7,8 @@ partial game. This is a fresh diagnostic coordinate, separate from the original
 [full matrix](full-master-matrix-20261108.md); neither run is retried or extended.
 
 The backend archive is `71743f0d`, with 2,692 bound files, byte-identical to the
-current candidate's backend. Difficulty, 6,000-tick cap, full resource policy,
+`91fd0a04` candidate's backend. Later backend changes need separate qualification.
+Difficulty, 6,000-tick cap, full resource policy,
 heuristics, weights and rules remain unchanged. The worker uses the default
 heuristic environment without opt-in learned-policy overrides. Instrumentation
 is `cProfile` around the existing production `run_game`, its existing stage

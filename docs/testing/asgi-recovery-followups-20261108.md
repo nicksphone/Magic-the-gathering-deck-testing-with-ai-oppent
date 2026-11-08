@@ -2,8 +2,9 @@
 
 These follow the [test-loop timer qualification](asgi-timer-qualification-20261108.md)
 on the same source-only `4775d475` archive. Its 2,875 tracked backend/audit inputs
-match before/after and remain byte-identical to the current checkout's backend /
-audit tree. Product, fixture and test assertions are unchanged. The 10 ms test-loop
+match before/after and are byte-identical to candidate `91fd0a04`'s backend /
+audit tree. Later backend changes need separate qualification. Product, fixture
+and test assertions are unchanged in these executions. The 10 ms test-loop
 wakeup and its limitations remain explicit; this is ASGI/SQLite evidence.
 
 ## Completed-series restore and different-card swaps

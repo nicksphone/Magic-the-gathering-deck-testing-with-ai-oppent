@@ -214,7 +214,7 @@ findings. It is neither 48 natural games nor production-throughput qualification
 The [current card-data acceptance cohort](current-card-data-acceptance-20261108.md)
 also passes all 833 tests across its original seventeen whole modules, renewing
 the canonical-record, rulings, repository, CLI and offline-hydration component
-checks on the current backend. All 2,875 source hashes match; 553 SQL connections
+checks on the `91fd0a04` backend. All 2,875 source hashes match; 553 SQL connections
 use process-local memory or 236 distinct owned file targets. The single HTTP
 case uses the declared timer adjustment. This does not complete literal fixture
 cleanup, Phase 1, clean installation or a release gate.
@@ -225,6 +225,15 @@ time to AI choice, with substantial overlapping state-copy cost; trace building
 is a small share. Source, receipt and process closure verify. The retained partial
 is not a completed game, speedup or uninstrumented latency result, and its expired
 post-run budget check is not evidence of an API result-size defect.
+
+The subsequent [copy import-order correction](copy-import-order-20261108.md)
+keeps the existing metadata prefix available after ordinary `typing` imports,
+while preserving preexisting caller reducers and the exact registry guard.
+Five fresh-interpreter controls and 235 tests across ten whole copy/information
+modules pass on its final source. These are its new source qualifications; the
+earlier ASGI/data/profile results retain their explicit `91fd0a04` boundary.
+The captured slow Master decision still takes about twenty-one seconds, so this
+bounded correction does not close practical latency or release acceptance.
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)
 prevents caller edits from changing the shared catalog seen by later hydration
