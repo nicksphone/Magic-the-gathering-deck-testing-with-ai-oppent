@@ -123,6 +123,12 @@ services or a clean install. Independent read-only review found no remaining
 issues in this correction and rechecked the new five-method module and original
 13-case inventory program. Overall RC acceptance remains open.
 
+Publication through the GitHub connector was refused at tree creation because
+that mutation requires approval while this session's approval policy is `never`.
+No branch or PR was created by that attempt, so there is no hosted result for
+the correction. The reviewed local commits and an exportable patch are retained;
+the successful PR51 workflow remains evidence only for its original head.
+
 A broader operator-neighbor attempt recorded 21 passes and 40 setup errors:
 the LAN/config modules require `MTG_CADDY_BINARY`, which was not supplied in
 that invocation. That is not a passing config/TLS qualification. The missing
