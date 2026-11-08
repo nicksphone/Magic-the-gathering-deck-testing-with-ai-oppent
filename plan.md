@@ -88,9 +88,17 @@ with one new empty exact-path fixture whose body is never read, hashed or copied
 All source/guard/native SQL/child/fixture metadata/closure checks verify. The
 next original replay CLI command is denied before launch outside the existing
 seven-child allowlist. Its one failure and nonzero incomplete status remain;
-the replay module is only partially tested. A separately reviewed exact replay
-CLI protocol is needed next. The HTTP evidence uses same-process SQL controller
+the replay module is only partially tested in that execution. The HTTP evidence uses same-process SQL controller
 restoration; cold-worker/browser/native/hosted/full-suite acceptance remains open.
+
+The subsequent [exact replay CLI qualification](docs/testing/current-replay-cli-qualification-20261108.md)
+passes the ten original CLI cases in a fresh selected epoch, with independent
+clean receipts for all ten children including expected exit1/2. Prelaunch review
+identifies pytest assertion rewriting versus native caller signatures; explicit
+plain assertion mode preserves active source asserts and exact code checks.
+All source/harness/receipt/closure checks pass with zero admitted SQL or AI
+choices. Earlier cases are not rerun or summed. This is a component result;
+the full backend and original RC/AI/data acceptance remain open.
 
 
 ## October 29 AI Iteration

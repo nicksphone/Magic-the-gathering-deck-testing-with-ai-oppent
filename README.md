@@ -16,6 +16,9 @@ it is not a general AI-strength certificate. The latest
 passes 230 cases, including eight HTTP cases using a new empty synthetic owner
 fixture and the seven original restore/prune CLI calls. It stops before an
 unadmitted replay CLI command launches. Full-suite and release gates remain open.
+A separate [replay CLI qualification](docs/testing/current-replay-cli-qualification-20261108.md)
+then passes all ten original CLI cases with clean child receipts; it preserves
+the earlier incomplete run and leaves the remaining backend scope unqualified.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

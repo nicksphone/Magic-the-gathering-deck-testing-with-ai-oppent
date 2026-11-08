@@ -45,8 +45,15 @@ metadata through eight native acquisitions; its body is never read/hashed/copied
 All seven original children, 221 parent plus five child native SQL returns and
 source/harness/closure checks verify. The run retains one failure, exit 1 and
 incomplete status. HTTP restoration occurs within the same process; cold worker,
-browser, native runtime, full-suite and RC acceptance remain open. The next CLI
-requires a new exact protocol; real protected operator files remain excluded.
+browser, native runtime, full-suite and RC acceptance remain open.
+
+The later [exact replay CLI qualification](current-replay-cli-qualification-20261108.md)
+passes all ten original CLI cases in a separate selected execution, with ten
+independent clean receipts and zero admitted SQL or AI choices. Explicit plain
+assertion mode resolves the reviewed native-code/pytest rewrite mismatch without
+changing source asserts. All source/guard/receipt/output/closure checks verify.
+These component passes do not relabel the earlier full attempt green or qualify
+its unexecuted remainder. Real protected operator files remain excluded.
 
 
 ## Candidate And GitHub State

@@ -107,9 +107,10 @@ evidence or documentation. It verifies the receipt/harness/control pins, JUnit,
 native SQL/children, fixture metadata, closure and source comparisons without
 running application tests or reading protected bodies or private traces.
 
-The next replay CLI protocol needs its own exact source/frame/argument/path/
-count admission and independent clean-child receipts. This terminal execution
-must not be restarted or relabelled green. The historical fifteen block flags,
+The subsequent [replay CLI qualification](current-replay-cli-qualification-20261108.md)
+uses a separate exact source/frame/argument/path/count protocol and passes its
+ten original CLI cases with clean child receipts. This terminal full execution
+remains incomplete and is not restarted or relabelled green. The historical fifteen block flags,
 matrix partials, thirteen-style/expert-AI scope, clean installation, missing build
 inputs, hosted CI, browser, native-runtime and all original RC gates remain open.
 
