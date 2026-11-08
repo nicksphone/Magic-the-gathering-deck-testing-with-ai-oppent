@@ -119,6 +119,16 @@ final-source collection finds 36,708 nodes with no deselections or test executio
 These are separate source-bound checks, not a green full suite. Actual native
 cold-restart/process/loopback qualification and the full RC/AI/data scope remain.
 
+The following [hand-land/raw-binding qualification](docs/testing/handland-raw-qualification-20261108.md)
+passes both unchanged whole modules, 44 instruction and 27 raw-binding cases,
+with 56 matching native SQL handles/returns across 28 owned files and zero
+children, factories, owner acquisitions, HTTP loops or AI choice calls. Source,
+harness, controls, JUnit and normal group closure verify. No previous passed
+case is repeated. A separate permitted native TCP constructor returns EPERM
+before a socket is built, with zero scope-guard denials; the cold HTTP module
+remains unexecuted. The hint-copy module needs its own exact protocol for 22
+original serializer children. All original RC/AI/data scope remains open.
+
 
 ## October 29 AI Iteration
 

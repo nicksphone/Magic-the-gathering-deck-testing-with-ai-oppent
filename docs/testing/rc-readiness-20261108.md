@@ -71,6 +71,14 @@ The initial implementation's broad entry stops at the known replayCLI guard;
 final source collects 36,708 nodes without deselection but executes no tests there.
 No full backend, cold native-process/network, AI/data or RC acceptance follows.
 
+The later [hand-land/raw-binding component](handland-raw-qualification-20261108.md)
+passes 71 unchanged cases across two whole modules, including actual paid actions
+and native SQLite reloads. All source, guard, handle/return and closure checks
+verify, with no prior passed case repeated. A separately permitted native TCP
+constructor returns EPERM before any socket is constructed, with zero scope-guard
+denials. Its cold-process HTTP module remains unexecuted; neither this failure
+nor the component passes close any original release gate.
+
 
 ## Candidate And GitHub State
 

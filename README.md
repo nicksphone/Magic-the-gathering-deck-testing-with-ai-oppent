@@ -26,6 +26,10 @@ The [closed-runtime test archiver](docs/testing/closed-http-owner-metadata-20261
 now preserves owner-lock metadata without reading or copying its body, rejects
 protected/unlisted payloads, and passes both complete archive modules. Actual
 cold-process qualification and the full-suite/RC gates remain open.
+The following [hand-land/raw-binding component](docs/testing/handland-raw-qualification-20261108.md)
+passes 71 unchanged cases across two whole modules, including native SQLite
+reloads and actual paid actions. A separate allowed native TCP constructor
+returns EPERM before a socket is built, leaving cold-process HTTP unexecuted.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
