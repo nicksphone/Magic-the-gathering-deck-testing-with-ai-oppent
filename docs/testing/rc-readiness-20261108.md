@@ -153,6 +153,18 @@ trace counts and all 2,691 bound source files verify at that observation. This i
 partial progress, not a completed or replay-qualified matrix. It was not restarted
 after the additive recording correction.
 
+A separate old/new production Master Tempo/Tribal coordinate completes naturally
+on both sources: Tempo wins on turn eleven, 321 actions, all 749 quality/event
+lines equal after removing the additive envelope. Candidate complete-action
+reconstruction and independent receipt/source checks pass. This is one same-seat
+coordinate, not the pending full matrix or an AI-strength result.
+
+The [current dependency check](dependency-advisories-20261108.md) finds the pinned
+Vite 6.4.4 affected by a maintainer-published development-server advisory. The
+minimum patched version is 6.4.5; actual package/lockfile upgrade and clean-install
+qualification remain outstanding. The existing build result uses 6.4.4 and is
+not remediation evidence. The full advisory gate remains open.
+
 ## Remaining Release Work
 
 The subsequent [offline seed snapshot correction](offline-seed-snapshots.md)

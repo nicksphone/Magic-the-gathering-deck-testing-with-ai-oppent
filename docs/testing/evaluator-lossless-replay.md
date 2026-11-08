@@ -49,6 +49,22 @@ review approves the correction after its Important finding is fixed and reruns
 59 affected tests; its earlier overlapping 116 checks are not added to the total.
 No raw game traces, hidden hands or model data are committed.
 
+A separately declared production Master comparison uses one fresh Tempo/Tribal
+coordinate, physical seat one on play, on frozen old `a4f8df9` and candidate
+`705936b2` sources. Both games finish naturally with Tempo winning on turn eleven,
+321 checked actions and 749 normalized log lines. Removing only the additive
+`replay` object leaves every quality projection and event line equal. The
+candidate's complete recorded actions reconstruct successfully with matching
+roots, logs, hash and terminal metadata. This does not prove equality of old
+operands that the compact format never recorded.
+
+Independent receipt/hash/trace-count checks verify both games, every bound source
+file (2,691 old; 2,692 candidate), unchanged identical deck inputs, zero denied
+operations, result-size bounds and both reaped children. These are two actual
+games at one same-seat coordinate, not seat-balanced strength, BO3 or full-matrix
+acceptance. Private evidence is retained under
+`/home/nick/mtg-rc-evidence-20261108/lossless-replay-natural-comparison/`.
+
 The full matrix remains bound to its frozen earlier source and has its own
 [status and limitations](full-master-matrix-20261108.md). It was not restarted
 for this component change. All release gates remain open.
