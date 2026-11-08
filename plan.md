@@ -66,6 +66,15 @@ historical mistakes, improve the policy or close AI acceptance. A tactical
 benchmark must distinguish useful chumps from wasteful ones before changing
 production scoring; all original matrix partials and broader requirements remain.
 
+The [Master death-block correction](docs/testing/master-winning-death-block-20261108.md)
+then exposes and fixes a separate immediate-win defect: pre-projection chump
+pruning discarded a native winning death trigger in both Master modes/seats.
+The six focused cases pass after the two production deletions; all original
+assertions remain. Canonical combat coverage is recorded as an initial failed
+seventeen-module execution plus its corrected whole audit-module follow-up.
+Full backend discovery still fails at a guarded SQLite restart test. None of
+these component results closes the original AI/data or release acceptance.
+
 
 ## October 29 AI Iteration
 

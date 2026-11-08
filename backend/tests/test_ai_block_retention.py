@@ -70,11 +70,11 @@ def declare(state, seat, attackers):
     raise AssertionError('Checked declaration did not reach the blocker window')
 
 
-def decide_and_finish(state, seat, style):
+def decide_and_finish(state, seat, style, difficulty='strong'):
     before = serialize_match_snapshot(state)
     moves = RulesEngine().legal_moves(deepcopy(state), seat)
     old_moves = deepcopy(moves)
-    action = AIAgent(difficulty='strong', archetype=style).choose_action(state, moves, seat).action
+    action = AIAgent(difficulty=difficulty, archetype=style).choose_action(state, moves, seat).action
     assert serialize_match_snapshot(state) == before and moves == old_moves
     assert action['type'] in {'block', 'pass_priority'}
     result = checked_action(state, RulesEngine(), seat, action)
@@ -139,24 +139,51 @@ def test_actual_first_strike_trade_is_not_removed(seat):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_winning_genuine_death_trigger_keeps_the_chump(seat):
+@pytest.mark.parametrize('difficulty', ['strong', 'master', 'master_plus'])
+def test_winning_genuine_death_trigger_keeps_the_chump(seat, difficulty):
     state, attackers, blockers, _ = position(seat, ['Elvish Warmaster'],
         ['Zulaport Cutthroat'], ['Elvish Archdruid'], opponent_life=1)
     state = declare(state, seat, attackers)
-    _, result = decide_and_finish(state, seat, 'Drain')
+    _, result = decide_and_finish(state, seat, 'Drain', difficulty)
     assert result.cards[blockers[0]].zone == Zone.GRAVEYARD
     assert result.winner == seat
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_unblocked_hidden_draw_is_unknown_not_permission_to_remove_block(seat):
+@pytest.mark.parametrize('difficulty', ['strong', 'master', 'master_plus'])
+def test_unblocked_hidden_draw_is_unknown_not_permission_to_remove_block(seat, difficulty):
     state, attackers, blockers, _ = position(seat, ['Ninja of the Deep Hours'],
         ['Clarion Spirit'])
     state.cards[blockers[0]].counters['-1/-1'] = 1
     state = declare(state, seat, attackers)
-    _, result = decide_and_finish(state, seat, 'Tokens')
+    _, result = decide_and_finish(state, seat, 'Tokens', difficulty)
     assert result.cards[blockers[0]].zone == Zone.GRAVEYARD
     assert result.players[seat].life == 20
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+@pytest.mark.parametrize('difficulty', ['master', 'master_plus'])
+def test_nonwinning_death_trigger_keeps_nonlethal_material_retention(seat, difficulty):
+    state, attackers, blockers, _ = position(seat, ['Elvish Warmaster'],
+        ['Zulaport Cutthroat'], ['Elvish Archdruid'], opponent_life=2)
+    state = declare(state, seat, attackers)
+    _, result = decide_and_finish(state, seat, 'Drain', difficulty)
+    assert result.cards[blockers[0]].zone == Zone.BATTLEFIELD
+    assert result.players[seat].life == 17
+    assert result.players[3 - seat].life == 2 and result.winner is None
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+@pytest.mark.parametrize('difficulty', ['master', 'master_plus'])
+def test_suppressed_death_trigger_is_not_a_winning_block(seat, difficulty):
+    state, attackers, blockers, _ = position(seat, ['Elvish Warmaster'],
+        ['Zulaport Cutthroat'], ['Elvish Archdruid'], opponent_life=1)
+    add_keyword_effect(state, blockers[0], ['all abilities'], operation='remove')
+    state = declare(state, seat, attackers)
+    _, result = decide_and_finish(state, seat, 'Drain', difficulty)
+    assert result.cards[blockers[0]].zone == Zone.BATTLEFIELD
+    assert result.players[seat].life == 17
+    assert result.players[3 - seat].life == 1 and result.winner is None
 
 
 @pytest.mark.parametrize('seat', [1, 2])

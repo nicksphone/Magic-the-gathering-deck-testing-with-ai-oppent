@@ -5526,7 +5526,6 @@ class AIAgent:
             max(0, _effective_combat_stats(state, aid)[0])
             for aid in attacker_ids
         )
-        keyword_combat = self._combat_keyword_board(state, defender) or self._combat_keyword_board(state, opponent)
         face_only = all(state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}' for aid in attacker_ids)
 
         def project(assignment):
@@ -5559,23 +5558,8 @@ class AIAgent:
                 if require_complete:
                     return None
                 break
-            if not require_complete and face_only and initial_life > incoming_power and assignment and not keyword_combat:
-                chump_only = True
-                for aid, bids in assignment.items():
-                    attacker = state.cards[aid]
-                    assigned_blockers = [
-                        state.cards[bid]
-                        for bid in bids if bid in state.cards
-                    ]
-                    blocking_power = sum(
-                        max(0, _effective_combat_stats(state, blocker.id)[0])
-                        for blocker in assigned_blockers
-                    )
-                    if blocking_power >= max(0, _effective_combat_stats(state, attacker.id)[1]):
-                        chump_only = False
-                        break
-                if chump_only:
-                    continue
+            # Resolve before pricing a chump: its death or combat triggers can
+            # win even when its printed combat power cannot kill the attacker.
             sim = project(assignment)
             if sim is None:
                 if require_complete:

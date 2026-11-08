@@ -21,6 +21,16 @@ select that allocation. These diagnostics identify a policy boundary, not proven
 historical mistakes or an AI improvement. No policy, original metric or release
 gate changes.
 
+The later [Master winning death-block correction](master-winning-death-block-20261108.md)
+reproduces four missed canonical winning blocks in Master/Master Plus and makes
+all six Strong/Master/Master Plus seat cases pass. The original combined
+seventeen-module run retains 321 passes, six subtests and 120 artifact-path
+failures; the corrected failed whole module separately passes all 120 cases.
+Full discovery still stops after 72 passes at a SQLite-denied restart test.
+Source, original assertions and process closure verify. This is a tactical
+correction with explicit component evidence, not a passing full suite, historical
+flag adjudication, AI-strength result or release gate.
+
 
 ## Candidate And GitHub State
 
