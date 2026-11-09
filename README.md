@@ -4,6 +4,13 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native SQL-loading boundary](docs/testing/native-sql-loading-boundary-20261109.md)
+passes the previously blocked SQLite restart in a new full backend attempt.
+All 36,739 nodes collect; 77 calls pass before a CLI pipe descriptor is rejected.
+All 78 attempted setups/teardowns pass, with 25 authorized SQL request/handle
+events and normal process closure. Fourteen boundary audits pass. The full backend
+attempt remains failed/incomplete; all original RC and expert-AI work stays open.
+
 The [native backend execution boundary](docs/testing/native-backend-execution-boundary-20261109.md)
 attempts the unchanged full36,739-node backend declaration. Collection passes;
 68 calls pass before an unregistered native SQLAlchemy loading adapter rejects

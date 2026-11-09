@@ -1,5 +1,13 @@
 # RC Readiness: November 8, 2026
 
+The [native SQL-loading boundary](native-sql-loading-boundary-20261109.md)
+passes the earlier rejected restart in a new full attempt: exact 36,739-node
+collection, 77 passing calls, one PermissionError at CLI pipe-descriptor setup,
+and 78 passing setups/teardowns. All 25 SQL requests/handle events authorize;
+normal closure and fourteen boundary audits verify. The permanent template latch
+now has native execution evidence. Full backend acceptance and every original
+release/data/expert-strength requirement remain open.
+
 The [native backend execution boundary](native-backend-execution-boundary-20261109.md)
 attempts all36,739 unchanged backend nodes, collecting them exactly without
 deselection. It stops after68 passing calls at an unregistered native SQLAlchemy

@@ -32,6 +32,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native SQL-loading boundary](docs/testing/native-sql-loading-boundary-20261109.md)
+qualifies exact native ORM loading and executes the corrected permanent template
+latch in one new original full entry. All 36,739 nodes collect, 77 calls pass,
+and 78 setups/teardowns pass. The first new rejection is a CLI pipe descriptor;
+25 SQL requests/handle events authorize without SQL denials. Fourteen audits pass
+and closure is normal. Next work needs exact native pipe/child contracts, then
+complete backend acceptance. All original RC, AI/data and thirteen-style gates
+remain open, with every earlier partial and boundary violation retained.
+
 The [native backend execution boundary](docs/testing/native-backend-execution-boundary-20261109.md)
 retains exact full36,739-node collection, original ordering/assertions and fixed
 caps. Native phase/fixture/unittest, owned-input and SQL contracts pass twelve
