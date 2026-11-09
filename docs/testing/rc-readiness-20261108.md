@@ -109,6 +109,16 @@ fixture is used. Source/guards/private metadata and normal closure verify with
 zero AI choices or denials. Full backend, cold TCP, Oracle/data, AI strength and
 all original RC gates remain open.
 
+The next [affinity/Aftermath component](affinity-aftermath-qualification-20261109.md)
+passes99 unchanged cases across two whole modules. Both original Master/Control
+choices return natively and the selected graveyard half is actually cast under
+the original assertions. Exact caller/parameter/configuration admission, active
+assertions, source/harness/native-method identities and normal closure verify;
+zero SQL, sockets, HTTP, owner access, children or denials occur. Four-module
+collection independently records115cases/0execution after a public pool metadata
+formatter correction. Admission-composition and affinityHTTP remain unexecuted.
+Full backend, playing strength, Oracle/data and all original RC gates stay open.
+
 
 ## Candidate And GitHub State
 

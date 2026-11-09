@@ -174,6 +174,16 @@ is used. Private bodies remain uninspected by instrumentation and audit. These
 controlled rule/restart checks leave full backend, real TCP, Oracle/data, playing
 strength and all original RC gates open.
 
+The following [affinity/Aftermath qualification](docs/testing/affinity-aftermath-qualification-20261109.md)
+passes both unchanged whole modules:82affinity and17Aftermath cases. Exactly two
+original native Master/Control choices select and execute the available graveyard
+half; exact call/return metadata, source/native-method/harness identities and
+normal closure verify. No SQL, sockets, HTTP, owner fixture or children execute.
+Initial collection formatter failure/public-literal RED-to-GREEN correction and
+source-identical115-node collection remain separately recorded, with zero tests
+there. Admission-composition4 and affinityHTTP12 stay unexecuted. Full backend,
+Oracle/data, playing strength and original RC scope remain open.
+
 
 ## October 29 AI Iteration
 

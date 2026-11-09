@@ -42,6 +42,9 @@ with zero SQL, policy choices or child launches. Full RC scope remains open.
 The following [annihilator native restart component](docs/testing/annihilator-native-recovery-20261109.md)
 passes all 28 unchanged cases, with 60 verified original codec children and eight
 owned SQL repositories. Its in-process HTTP checks leave cold TCP and RC gates open.
+The next [affinity/Aftermath component](docs/testing/affinity-aftermath-qualification-20261109.md)
+passes 99 unchanged cases across two whole modules, including two original native
+Master choices. Full backend, playing-strength and release gates remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
