@@ -113,6 +113,12 @@ payload idempotence, both invalid-row controls and full155-card RAW/profile
 roundtrips. Four native memory-SQL closes and six profiler returns verify.
 This adds persistence evidence; complete knowledge, expert AI and RC gates remain open.
 
+The [knowledge-domain qualification](docs/testing/knowledge-domain-boundaries-qualification-20261109.md)
+passes all34 original cases, preserving nine assertions: invalid values reject
+before writes, valid domains roundtrip and legacy rows remain readable.
+All33 native memory-SQL lifecycles and selected installed-input pins verify.
+These schema controls leave complete knowledge, expert AI and RC gates open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

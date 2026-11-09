@@ -13,6 +13,13 @@ idempotence, both invalid-row controls and155-card canonical-data roundtrips.
 No backend source changes or AI choices occur. These preservation checks leave
 complete data, expert strength and all original release gates open.
 
+The [knowledge-domain component](knowledge-domain-boundaries-qualification-20261109.md)
+passes all34 unchanged cases/nine assertions: reject-before-write, valid domain
+roundtrips, declared schema and legacy-row compatibility. All33 native memory
+SQL lifecycles and selected523 installed-input pre/post pins verify. Exact
+before-body source validation rejects float receipt-marker aliases. No AI choices
+occur, and complete knowledge, full backend and release gates remain open.
+
 The original [full Master matrix](full-master-matrix-20261108.md) is now terminal:
 all 110 series are attempted, 106 resolve and four retain deadline partials. Its
 271 receipts verify 267 natural games and four partials. The producer remains

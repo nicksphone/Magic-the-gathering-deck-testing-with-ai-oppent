@@ -57,6 +57,13 @@ and155-card canonical-data roundtrips. Source, budgets, metadata receipts and
 normal closure verify; full backend, knowledge quality, expert AI and every
 original RC gate remain open.
 
+The [knowledge-domain component](docs/testing/knowledge-domain-boundaries-qualification-20261109.md)
+passes its whole unchanged34-case module/nine assertions, with33 native memory
+SQL lifecycles and one SQL-free schema case. Exact source float/NaN/infinity
+capture now rejects encoded-marker aliases before test bodies. Selected523
+installed inputs match pre/post pins; source, budgets and normal closure verify.
+These are schema/storage controls; full backend, data and all RC gates remain open.
+
 The original frozen `a4f8df9` Master matrix is now terminal after all 110 scheduled
 BO3 attempts: 106 resolved series, four deadline-limited series, 267 natural games
 and four partial receipts. The producer retains incomplete status and nonzero
