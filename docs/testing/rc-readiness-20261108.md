@@ -1,5 +1,14 @@
 # RC Readiness: November 8, 2026
 
+The [native fixture collection boundary](native-fixture-collection-boundary-20261109.md)
+collects all36,739 original backend nodes with zero deselections/denials and zero
+test phases. Exact native code/read-line/module/import/pytest roles admit original
+consumption;960 references stay metadata-only and1,818 public bodies verify.
+All owned processes close, loader/monitoring state restores and eight audits pass.
+Six failed epochs, historical body handling and the first direct public-auditor
+diagnostic remain nonconforming retained history. Full backend execution and every
+original release/AI-data/expert-strength requirement remain open.
+
 The [native fixture-consumer boundary](native-fixture-consumer-boundary-20261109.md)
 passes two unchanged whole modules:9 response and65 deployment cases, all222
 phases/21 original assertions, zero denials/exceptions and normal closure. Only

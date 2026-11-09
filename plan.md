@@ -32,6 +32,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native fixture collection boundary](docs/testing/native-fixture-collection-boundary-20261109.md)
+collects all36,739 original backend nodes with zero deselections/denials and zero
+test phases under unchanged caps. Exact native loader/source/import/pytest roles
+admit original consumers across960 metadata-only references and1,818 positively
+classified public bodies. Eight audits pass; six failed epochs and the direct
+public-auditor output-handling limit remain retained. Actual full backend tests,
+all original release gates and thirteen-style expert strength remain open.
+
 The [native original-fixture consumer boundary](docs/testing/native-fixture-consumer-boundary-20261109.md)
 passes unchanged whole9/65 modules, all222 phases and21 original assertions.
 Exact native reader/test/pytest-dispatcher code grants original test consumption;

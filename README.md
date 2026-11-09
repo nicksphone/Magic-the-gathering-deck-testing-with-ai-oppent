@@ -4,6 +4,13 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native fixture collection boundary](docs/testing/native-fixture-collection-boundary-20261109.md)
+now collects all36,739 backend nodes with zero deselections/denials and zero test
+phases. Exact native source/import/pytest identities admit original fixture reads;
+tooling uses1,818 public inputs and960 metadata-only references. Six failed
+admission epochs remain retained. Eight audits pass; full backend execution,
+expert AI and all original release gates remain open.
+
 The [native fixture-consumer boundary](docs/testing/native-fixture-consumer-boundary-20261109.md)
 passes separate unchanged whole9/65 AI modules. Original tests consume their own
 controlled snapshots through exact native reader/test/dispatcher identities;
