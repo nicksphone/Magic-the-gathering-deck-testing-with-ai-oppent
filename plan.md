@@ -2087,3 +2087,20 @@ General layered types/animation, complete graveyard inventory, hidden-response
 benchmarks, all thirteen expert styles, five-phase AI/data acceptance and every
 original release gate remain open. The frozen matrices and original full-backend
 failure are unchanged; native IPC still blocks HTTP progress.
+
+## 2026-11-09 Incomplete Block Search And Hidden Death Draws
+
+The native Grim Haruspex combat witness proves a legal block survives and draws,
+while no block loses. The first actual Master survival case fails before the
+correction. Search now marks unknown candidate projections incomplete, preserving
+the existing fallback when its best completed incumbent is a loss. It does not
+guess the drawn card or claim the unknown candidate wins. All eight current/
+restored Master/Master-plus cases pass afterward, along with known-safe and
+known-empty-library controls and unchanged terminal/quota tests. Six whole modules
+pass 79 collected tests/243 phase reports; 16 cases are new. See
+[exact source and outcome scope](docs/testing/unknown-block-survival-20261109.md).
+
+This is a bounded decision correction, not measured expertise across thirteen
+styles or a completed AI/data phase. Full rules/graveyard inventory and every
+original release/integration gate remain open. No original matrix or full
+backend/HTTP/TCP/Forge replay occurs while native IPC is unresolved.

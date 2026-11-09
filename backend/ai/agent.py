@@ -5604,10 +5604,12 @@ class AIAgent:
                 incoming_power = max(incoming_power, initial_life)
 
         followups = []
+        incomplete = False
         for assignment in assignments:
             if not combat_expansion_available():
                 if require_complete:
                     return None
+                incomplete = True
                 break
             # Resolve before pricing a chump: its death or combat triggers can
             # win even when its printed combat power cannot kill the attacker.
@@ -5615,6 +5617,7 @@ class AIAgent:
             if sim is None:
                 if require_complete:
                     return None
+                incomplete = True
                 continue
             score = evaluate_board(sim, defender)
             score += (sim.players[defender].life - initial_life) * 4.0
@@ -5662,9 +5665,9 @@ class AIAgent:
                     return candidate[3]
         if require_complete and not combat_expansion_available():
             return None
-        if best is not None and best[0] < 0 and not combat_expansion_available():
-            # A losing partial incumbent must not displace a legal fallback
-            # that may still block lethal damage without another projection.
+        if best is not None and best[0] < 0 and (incomplete or not combat_expansion_available()):
+            # Unknown candidates and exhausted quotas both leave a partial set.
+            # Its known loss must not displace a legal survival fallback.
             return None
         return best[3] if best is not None else None
 

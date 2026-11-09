@@ -1,5 +1,12 @@
 # RC Readiness: November 8, 2026
 
+The [incomplete block-search correction](unknown-block-survival-20261109.md)
+reproduces a native Master survival failure caused by an unknown death-draw
+candidate and preserves the existing fallback afterward. Six whole modules pass
+79 collected tests/243 phase reports, including 16 new cases. Known-safe and
+fully evaluated losing sets retain their behavior; limits and hidden-draw
+uncertainty remain unchanged. This does not close broader AI or release gates.
+
 The [native animated-blocker qualification](effective-blocker-types-20261109.md)
 passes99collected tests/303phase reports across six whole modules, including26new
 canonical paid-animation and actual restored AI combat cases. A separate source

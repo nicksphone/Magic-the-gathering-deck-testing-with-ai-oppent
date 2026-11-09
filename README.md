@@ -4,6 +4,12 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [incomplete block-search correction](docs/testing/unknown-block-survival-20261109.md)
+preserves a legal fallback when a hidden death-draw makes another block unknown,
+rather than selecting a completed losing line. The native failure reproduces
+before the fix; 79 collected tests pass afterward, including 16 new cases.
+Search limits and hidden-card guards stay intact. Full RC and expert-AI acceptance remain open.
+
 The [native animated-blocker qualification](docs/testing/effective-blocker-types-20261109.md)
 passes99collected tests across six whole modules, including26new paid-animation,
 restored AI combat and exclusion cases. An isolated source mutation demonstrates
