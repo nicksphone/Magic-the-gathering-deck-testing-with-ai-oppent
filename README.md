@@ -4,13 +4,20 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [positive fixture-input boundary](docs/testing/positive-fixture-input-admission-20261109.md)
+now passes the original whole28 and whole97 groups in separate guarded executions,
+with exact nodes, zero denials and normal closure. Public code/card inputs are
+explicitly admitted; excluded bodies remain omitted and bound by metadata only.
+The earlier observer breach remains nonconforming history. Full backend and every
+original release requirement remain open.
+
 The [Reanimator target correction](docs/testing/ai-reanimation-target-outcomes-20261109.md)
 uses native outcomes to avoid a proved-losing automatic target, retain uncertain
 alternatives and decline an all-losing line. Separate whole28/97 executions pass
 functionally, but their observers breached the required snapshot-body exclusion;
 the evidence is retained as nonconforming for that boundary. Future verification
 uses positive public inputs and metadata-only excluded-body bindings.
-the full-backend attempt hits its CPU bound with final counts unknown. All original
+The full-backend attempt hits its CPU bound with final counts unknown. All original
 release and expert-AI requirements remain open.
 
 The [card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)

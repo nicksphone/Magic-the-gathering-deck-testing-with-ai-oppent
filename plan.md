@@ -32,6 +32,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [positive fixture-input admission](docs/testing/positive-fixture-input-admission-20261109.md)
+qualifies the changed observer boundary on separate exact whole28/97 executions:
+all375 phases pass, zero denials/exceptions and normal owned-process closure.
+The catalogs admit71/72 public resources and omit3403/3402 bodies with metadata-only
+bindings; original production/tests and182 neighboring assertions remain exact.
+Prior nonconforming Reanimator evidence and all failed admission epochs remain
+preserved. This adds no unique gameplay coverage and closes no original RC gate.
+
 The [native Reanimator target correction](docs/testing/ai-reanimation-target-outcomes-20261109.md)
 reproduces fatal automatic targeting with real paid outcomes, preserves explicit
 targets and unknown continuations, and declines known-losing automatic lines.

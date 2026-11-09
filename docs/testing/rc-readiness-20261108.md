@@ -1,5 +1,15 @@
 # RC Readiness: November 8, 2026
 
+The [positive fixture-input boundary](positive-fixture-input-admission-20261109.md)
+passes separate exact whole28/97 executions under the corrected observer policy,
+with375 passing phases, zero denials/exceptions and normal cleanup. Only positively
+classified public code/card inputs are read/copied/hashed; excluded bodies are
+omitted and metadata-bound. The71/72-input catalogs stay distinct; all182 original
+neighboring assertions and production source remain unchanged. Earlier snapshot-
+body breach receipts remain nonconforming, and initial admission failures remain
+preserved. This is scoped observer qualification, with no new unique gameplay
+coverage, full-backend pass or original release/AI-data gate closed.
+
 The [November9 Reanimator correction](ai-reanimation-target-outcomes-20261109.md)
 passes separate whole28native-regression/97original-neighbor executions while
 retaining semantic REDs and the first guard-denied97 run. Complete payment precedes
