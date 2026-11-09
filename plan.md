@@ -32,6 +32,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native pipe/CLI-child boundary](docs/testing/native-pipe-child-boundary-20261109.md)
+admits exact native capture descriptors, metadata-bound pytest fixture directories
+and original CLI commands without frame-local or output inspection. A new exact
+36,739-node full entry passes 108 calls and all four restore children, with clean
+independent receipts. It stops at a SQL path/URI guard in the rollback fault test;
+109 setups/teardowns pass. The three original prune children remain unreached;
+all seven restore/prune commands pass separate inert controls. Twenty-four audits
+pass after a reviewed child-mutation correction. The original epoch stays
+unchanged; corrected mutation enforcement has inert qualification only.
+Next work needs an exact native URI-forwarding/fault-factory contract, with
+all original backend, RC, AI/data and thirteen-style requirements still open.
+
 The [native SQL-loading boundary](docs/testing/native-sql-loading-boundary-20261109.md)
 qualifies exact native ORM loading and executes the corrected permanent template
 latch in one new original full entry. All 36,739 nodes collect, 77 calls pass,

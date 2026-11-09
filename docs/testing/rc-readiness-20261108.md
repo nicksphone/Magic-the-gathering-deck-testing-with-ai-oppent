@@ -1,5 +1,15 @@
 # RC Readiness: November 8, 2026
 
+The [native pipe/child boundary](native-pipe-child-boundary-20261109.md)
+collects all 36,739 original nodes, passes 108 calls and four original restore
+CLI children with clean receipts, then rejects a SQL path/URI in the native
+rollback-fault test. All 109 attempted setups/teardowns pass and closure is normal.
+Seven separate inert restore/prune invocations and twenty-four boundary audits
+pass after a reviewed child-mutation correction, qualified by inert controls only.
+The original epoch is unchanged; original prune children are unreached. Parent isolation
+and ordinary child startup have separate guarantees. Full backend and every
+original release/data/expert-strength requirement remain open.
+
 The [native SQL-loading boundary](native-sql-loading-boundary-20261109.md)
 passes the earlier rejected restart in a new full attempt: exact 36,739-node
 collection, 77 passing calls, one PermissionError at CLI pipe-descriptor setup,

@@ -4,6 +4,15 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native pipe/child boundary](docs/testing/native-pipe-child-boundary-20261109.md)
+passes all four original restore CLI invocations in a new full backend attempt.
+All 36,739 nodes collect; 108 calls pass before a SQL path/URI rejection in the
+rollback fault test. All 109 attempted setups/teardowns pass, and four independent
+child receipts are clean. Seven restore/prune invocations also pass separate
+inert controls. Twenty-four boundary audits pass after a reviewed child-mutation
+correction; that correction is qualified by inert controls only. The original
+attempt stays unchanged, and full backend and RC acceptance remain open.
+
 The [native SQL-loading boundary](docs/testing/native-sql-loading-boundary-20261109.md)
 passes the previously blocked SQLite restart in a new full backend attempt.
 All 36,739 nodes collect; 77 calls pass before a CLI pipe descriptor is rejected.
