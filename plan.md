@@ -275,6 +275,20 @@ heads requiring source/evidence reconciliation; no missing-work inference or
 automatic merge. All fullRC/AI-data/13styleexpert/matrix constraints remain.
 
 
+A [GitHub branch reconciliation](docs/testing/github-branch-reconciliation-20261109.md)
+accounts for the four nonancestor heads in the returned88-branch inventory:
+documentation supersession, a retained equivalent fixture patch and represented
+milestone changes. No additional runtime patch is identified by the source audit;
+no merge or application test runs. All original release gates remain open.
+
+The milestone123paths classify as83exactcurrent,29exacthistoricalpostimages,
+eight evolved code/frontend files inspected by actual delta/caller path and
+three superseded summaries.24publicGit objects/22PythonASTrecords plus frontend
+script/control checks and pinned inverse recipes verify. This is source inclusion,
+not current runtime/Oracle/expert-strength acceptance. The three metadata-auditor
+failures remain recorded; no app/game/choice/SQL/privatebody operation occurs.
+
+
 ## October 29 AI Iteration
 
 Published `b4313031` passes the complete hosted workflow, including browser,

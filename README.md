@@ -78,6 +78,12 @@ and the original memory-SQL connection/native close verify, preserving private-
 view/reload assertions and paid Adventure/hybrid actions. No AI policy choice or
 private diagnostic trace occurs. All original release gates remain open.
 
+A [GitHub branch reconciliation](docs/testing/github-branch-reconciliation-20261109.md)
+accounts for the four nonancestor heads in the returned88-branch inventory:
+documentation supersession, a retained equivalent fixture patch and represented
+milestone changes. No additional runtime patch is identified by the source audit;
+no merge or application test runs. All original release gates remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

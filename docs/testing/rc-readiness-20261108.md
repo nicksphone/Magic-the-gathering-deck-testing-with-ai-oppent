@@ -470,6 +470,17 @@ close verifies; no DB/trace files or private-body reads occur. Source5173/curren
 GitHub inventory adds four nonancestor heads for careful reconciliation, including
 one patch-equivalent; ancestry alone does not imply missing work. FullRC stays open.
 
+A [GitHub branch reconciliation](github-branch-reconciliation-20261109.md)
+accounts for the four nonancestor heads in the returned88-branch inventory:
+documentation supersession, a retained equivalent fixture patch and represented
+milestone changes. No additional runtime patch is identified by the source audit;
+no merge or application test runs. All original release gates remain open.
+
+The four heads require no identified additional runtime merge after the bounded
+source/delta audit.83milestonefiles matchcurrent and29postimages are inhistory;
+eight evolved files and delegated color/trigger paths are source-inspected.
+No runtime regression evidence or unknown-fork coverage is inferred.
+
 The later [optional archive collection correction](optional-archive-collection-20261108.md)
 defers that same metadata condition to archived-case setup, preserving the
 existing absence skip and permission failure. Four regression controls pass;
