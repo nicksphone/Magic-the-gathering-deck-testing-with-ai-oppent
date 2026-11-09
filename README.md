@@ -36,6 +36,9 @@ serializer children under exact admission. Cold HTTP and full RC scope remain op
 The following [activation selection/payment component](docs/testing/activation-selection-payments-20261108.md)
 passes 190 unchanged cases across five whole modules, including ten original
 Strong choices and eight in-process HTTP cases. All original release gates remain open.
+The early-November9 [additional-cost/mana component](docs/testing/additional-costs-additive-mana-20261109.md)
+passes 233 unchanged cases across four whole modules under the corrected v2 guard,
+with zero SQL, policy choices or child launches. Full RC scope remains open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

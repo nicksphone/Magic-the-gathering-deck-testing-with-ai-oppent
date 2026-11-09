@@ -93,6 +93,13 @@ owner metadata, source/harness, private-file metadata and normal closure verify.
 The initial pytest-alias audit miscount is retained and corrected without another
 application run. All original backend, AI/data and release gates remain open.
 
+The early-November9 [additional-cost/mana component](additional-costs-additive-mana-20261109.md)
+passes 233 unchanged cases across four whole modules with zero SQL, policy choices,
+children or guard denials. Source/harness, 122 private ordering-file metadata
+records and normal closure verify; snapshot bodies remain unread by auditors.
+These in-memory rule checks do not qualify native codec/HTTP, playing strength,
+Oracle/data, the full backend or any original RC gate.
+
 
 ## Candidate And GitHub State
 

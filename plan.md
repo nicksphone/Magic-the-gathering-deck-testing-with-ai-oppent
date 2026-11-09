@@ -154,6 +154,16 @@ checks; pytest's symlink alias initially miscounts thirteen paths, then the audi
 correctly counts twelve physical files without application repeats. No cold TCP,
 whole backend, Oracle/data, playing-strength or original RC gate closes.
 
+The early-November9 [additional-cost/mana qualification](docs/testing/additional-costs-additive-mana-20261109.md)
+passes all 233 unchanged cases across four whole modules: ordered paid costs,
+draw/token bodies and additive mana. The byte-identical v2 guard admits zero SQL,
+policy choices or children, with active original assertions and in-memory JSON
+roundtrips only. All source/harness/receipt pins and normal closure verify.
+Original optional output retains 122 private ordering files, checked by metadata
+and node-ID filename correspondence only. No snapshot body is opened or hashed by
+instrumentation/auditors. Full backend, Oracle/data, AI strength and RC acceptance
+remain open; the native-codec/HTTP annihilator module stays separately pending.
+
 
 ## October 29 AI Iteration
 
