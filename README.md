@@ -4,6 +4,14 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native backend execution boundary](docs/testing/native-backend-execution-boundary-20261109.md)
+attempts the unchanged full36,739-node backend declaration. Collection passes;
+68 calls pass before an unregistered native SQLAlchemy loading adapter rejects
+the next SQL constructor. All69 attempted setups/teardowns pass and the owned
+process closes normally. Twelve boundary audits pass after a reviewed template
+admission fix; its qualification is inert-only. The retained full attempt remains
+failed/incomplete, with all original RC and expert-AI requirements open.
+
 The [native fixture collection boundary](docs/testing/native-fixture-collection-boundary-20261109.md)
 now collects all36,739 backend nodes with zero deselections/denials and zero test
 phases. Exact native source/import/pytest identities admit original fixture reads;

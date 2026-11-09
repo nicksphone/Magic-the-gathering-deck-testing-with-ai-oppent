@@ -1,5 +1,16 @@
 # RC Readiness: November 8, 2026
 
+The [native backend execution boundary](native-backend-execution-boundary-20261109.md)
+attempts all36,739 unchanged backend nodes, collecting them exactly without
+deselection. It stops after68 passing calls at an unregistered native SQLAlchemy
+loading adapter; the next connection is denied before construction. All69
+attempted setups/teardowns pass, one call fails, and process closure is normal.
+Twelve boundary audits pass after a reviewed template-admission correction,
+qualified with inert controls only. The unchanged epoch does not qualify that
+correction. The failed full attempt, earlier body-handling
+breaches and direct auditor diagnostic limit remain explicit; all original
+release, five-phase AI/data and thirteen-style expert requirements remain open.
+
 The [native fixture collection boundary](native-fixture-collection-boundary-20261109.md)
 collects all36,739 original backend nodes with zero deselections/denials and zero
 test phases. Exact native code/read-line/module/import/pytest roles admit original

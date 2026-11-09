@@ -32,6 +32,17 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native backend execution boundary](docs/testing/native-backend-execution-boundary-20261109.md)
+retains exact full36,739-node collection, original ordering/assertions and fixed
+caps. Native phase/fixture/unittest, owned-input and SQL contracts pass twelve
+audits. The full attempt stops after68 passing calls at unregistered native
+SQLAlchemy load_on_pk_identity, before the denied connection is constructed;
+69 setups/teardowns pass. Normal closure preserves the failure and opaque outputs.
+A reviewed between-phase template-admission gap is corrected with inert controls;
+the original epoch remains unchanged and does not qualify the corrected gate.
+Next work needs an explicit SQL-loading adapter contract, then original full
+acceptance. No backend, five-phase data, thirteen-style or RC gate closes here.
+
 The [native fixture collection boundary](docs/testing/native-fixture-collection-boundary-20261109.md)
 collects all36,739 original backend nodes with zero deselections/denials and zero
 test phases under unchanged caps. Exact native loader/source/import/pytest roles
