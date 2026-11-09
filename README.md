@@ -99,6 +99,14 @@ and forged-carrier assertions remain. A prior CPU-limited attempt stays
 unqualified; the indexed instrumentation run passes under the same caps.
 Repository/rulings, expert strength and every original RC gate remain open.
 
+The [real repository-pipeline qualification](docs/testing/ai-knowledge-repository-qualification-20261109.md) passes all three
+original cases:155 canonical seed cards persist through native memory SQL and
+hydrate310 Factory carriers; both paid Strong choices return after database
+disposal with the original connect forbidders intact. Three native SQL closes,
+161 ingestion/mock-response pairs and three profiler returns verify. This is an
+offline committed-corpus integration check; complete data, expert strength and
+all original release gates remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),
