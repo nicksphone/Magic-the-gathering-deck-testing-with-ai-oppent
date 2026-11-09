@@ -4,6 +4,12 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)
+finds the earlier833 suite's seventeen test modules unchanged, but four production
+dependencies changed. Their component evidence stays separate; there is no current
+833-case or full-suite pass claim. The next intake maps actual evidence to the
+still-open thirteen-style AI requirement.
+
 Current RC corrections and open checks are tracked in the
 [November 8 audit](docs/testing/rc-readiness-20261108.md). Custom evaluator traces
 now retain [complete actions for strict replay](docs/testing/action-reconstruction.md)

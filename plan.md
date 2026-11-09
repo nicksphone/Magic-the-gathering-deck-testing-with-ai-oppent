@@ -32,6 +32,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [November9 card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)
+binds the earlier833 declaration's seventeen unchanged test blobs and four changed
+production postimages to their separate recorded component checks. Conservative
+imports reach239 files on each source; reachability does not prove execution or
+transfer833 passes. No application/tests/SQL/AI run in this audit. Next source
+intake maps canonical admission and actual decision evidence to all13 required
+styles; template/label counts are not strength coverage. All original gates remain open.
+
 The isolated `rc/ready-20261108` candidate starts at published PR51 commit
 `bcfc73380d58c2e1ee039cd060e52b3ba151feb0`, including the UI, checkpoint and
 native-AI stack through PR45--51. GitHub main `8f03cafc` is its ancestor;
@@ -1322,8 +1330,10 @@ authorized by these scoped repairs.
    characteristics, including summoning sickness, cleanup and source incarnation.
    Product and real Cloudshift reentry execute. Complete single-target
    nontoken-permanent Flicker now passes 78 core/HTTP cases in the current
-   whole30 composition. Ghostly Flicker's two-target body remains unsupported;
-   old exile-only and empty-pool characterizations require separate reconciliation.
+   whole30 composition. The older Ghostly two-target unsupported note is superseded
+   by the later [363-case composition](docs/testing/ghostly-flicker-batch-current.md);
+   general animation and final-source integration remain open. Historical exile-only
+   and empty-pool ledgers retain their original source boundaries.
    [Current scope](docs/testing/animation-strategic-current-composition.md).
 3. [ ] Verify targeted search source departure/reentry and partial target loss
    through actual response spells, private choices and cold restart.
