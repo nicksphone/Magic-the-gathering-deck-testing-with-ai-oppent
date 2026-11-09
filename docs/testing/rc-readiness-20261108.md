@@ -476,6 +476,14 @@ documentation supersession, a retained equivalent fixture patch and represented
 milestone changes. No additional runtime patch is identified by the source audit;
 no merge or application test runs. All original release gates remain open.
 
+A [canonical controller-entry fixture correction](canonical-controller-etb-20261109.md) replaces the
+wrong Soul Warden/controller-only Oracle pairing with pinned full RAW Ajani's
+Welcome born through MatchFactory. All47 cases pass across four complete affected
+modules, including both-seat native trigger resolution and exact inert source
+inverse checks. Original86 APNAP assertions, golden inputs and production code
+remain unchanged. This fixes one fixture; fullRC and literal global Task1.3
+acceptance remain open.
+
 The four heads require no identified additional runtime merge after the bounded
 source/delta audit.83milestonefiles matchcurrent and29postimages are inhistory;
 eight evolved files and delegated color/trigger paths are source-inspected.

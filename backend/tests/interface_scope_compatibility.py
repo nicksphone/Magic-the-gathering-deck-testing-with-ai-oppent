@@ -166,6 +166,30 @@ SMOTHERING_INVERSE = {
 assert SMOTHERING_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[SMOTHERING_IDENTITY]
 
 
+CONTROLLER_ETB_IDENTITY = (
+    'test_events_apnap.py:'
+    'test_controller_scoped_etb_trigger_does_not_fire_for_opponent_creature')
+# Exact source-hash reconstruction only; the historical constructor stays inert.
+CONTROLLER_ETB_INVERSE = {
+    'old_sha256': '0b88c9de7bf599b7c2c181464d9a65079214c7a3500cdee117f66563cfbe4080',
+    'new_sha256': 'a8349da5504a270a632e4d2ee94bfafb61f652b1838d6194bcb30bd667cb5a3b',
+    'hunks': [{
+        'start': 7, 'end': 8,
+        'new': '    state.cards["p1"] = _controller_etb_card(1)\n',
+        'old': ('    state.cards["p1"] = CardInstance(\n'
+                '        id="p1",\n'
+                '        name="Soul Warden",\n'
+                '        owner=1,\n'
+                '        controller=1,\n'
+                '        zone=Zone.BATTLEFIELD,\n'
+                '        types=["Creature"],\n'
+                '        oracle_text="Whenever a creature enters the battlefield under your control, you gain 1 life.",\n'
+                '    )\n'),
+    }],
+}
+assert CONTROLLER_ETB_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[CONTROLLER_ETB_IDENTITY]
+
+
 # Public38389136 changed only this assertion after the canonical fixture inverse.
 # The obsolete turn-number assertion is inert reconstruction text, never executed.
 CONTROLLER_NEXT_TURN_IDENTITY = (
@@ -262,7 +286,8 @@ def restore_printed_protocol_source(module, text):
     assert module in {identity.split(':')[0] for identity in EXPECTED_FUNCTIONS}, 'Unknown protected module'
     nodes = ast.parse(text).body
     recipes = {**FINITE['functions'], **FIXTURE_INVERSES,
-               SMOTHERING_IDENTITY: SMOTHERING_INVERSE}
+               SMOTHERING_IDENTITY: SMOTHERING_INVERSE,
+               CONTROLLER_ETB_IDENTITY: CONTROLLER_ETB_INVERSE}
     for identity, recipe in recipes.items():
         filename, name = identity.split(':')
         if filename != module:

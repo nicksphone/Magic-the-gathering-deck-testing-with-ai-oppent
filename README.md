@@ -84,6 +84,14 @@ documentation supersession, a retained equivalent fixture patch and represented
 milestone changes. No additional runtime patch is identified by the source audit;
 no merge or application test runs. All original release gates remain open.
 
+A [canonical controller-entry fixture correction](docs/testing/canonical-controller-etb-20261109.md) replaces the
+wrong Soul Warden/controller-only Oracle pairing with pinned full RAW Ajani's
+Welcome born through MatchFactory. All47 cases pass across four complete affected
+modules, including both-seat native trigger resolution and exact inert source
+inverse checks. Original86 APNAP assertions, golden inputs and production code
+remain unchanged. This fixes one fixture; fullRC and literal global Task1.3
+acceptance remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

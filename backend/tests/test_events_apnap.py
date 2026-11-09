@@ -24,6 +24,24 @@ from game_state.state import Step
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 
 
+def _controller_etb_card(seat, *, identifier="p1"):
+    encoded = (Path(__file__).parent / 'fixtures/entry_observers_S2/canonical.jsonl').read_bytes()
+    assert hashlib.sha256(encoded).hexdigest() == '8f337660b08660748a0b47d9590a40e106303e578bff37277bbda05dd89018ba'
+    raw = json.loads(encoded.splitlines()[1])
+    assert (raw['object'], raw['name'], raw['id'], raw['oracle_id'], len(raw)) == (
+        'card', "Ajani's Welcome", 'c9045fcb-b633-4c35-8058-6234311551ae',
+        '4a782bf9-4051-4613-8852-33b0d85a0edd', 63)
+    assert hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest() == '141ed7e918fa87c9c22ab6213a865acf4de0bc800f16b518cc2765c689cb589c'
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:controller-etb-fixture-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id=identifier, owner=seat, controller=seat, zone=Zone.BATTLEFIELD,
+                   instance_order=0, summoning_sick=True)
+
+
 def _seal_of_removal_card(seat):
     encoded = (Path(__file__).parent / 'fixtures/task13_seal_of_removal/seal-of-removal.raw.json').read_bytes()
     assert hashlib.sha256(encoded).hexdigest() == '6b02efedebb98eebb89bb16b9fdcb80305623dc29cf74de4a5fbf571cdc7b793'
@@ -716,15 +734,7 @@ def test_controller_scoped_etb_trigger_does_not_fire_for_opponent_creature() -> 
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["p1"]
-    state.cards["p1"] = CardInstance(
-        id="p1",
-        name="Soul Warden",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever a creature enters the battlefield under your control, you gain 1 life.",
-    )
+    state.cards["p1"] = _controller_etb_card(1)
     state.cards["opponent-creature"] = CardInstance(
         id="opponent-creature",
         name="Opponent Creature",
