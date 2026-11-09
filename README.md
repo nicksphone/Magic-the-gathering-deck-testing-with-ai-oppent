@@ -4,6 +4,13 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native fixture-consumer boundary](docs/testing/native-fixture-consumer-boundary-20261109.md)
+passes separate unchanged whole9/65 AI modules. Original tests consume their own
+controlled snapshots through exact native reader/test/dispatcher identities;
+tooling binds metadata without reading, hashing or copying those bodies. All222
+phases and twelve audits pass under unchanged caps. The CPU-limited partial and
+intermediate gates remain preserved; full RC and expert-strength work stay open.
+
 The [positive fixture-input boundary](docs/testing/positive-fixture-input-admission-20261109.md)
 now passes the original whole28 and whole97 groups in separate guarded executions,
 with exact nodes, zero denials and normal closure. Public code/card inputs are

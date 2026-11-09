@@ -1,5 +1,15 @@
 # RC Readiness: November 8, 2026
 
+The [native fixture-consumer boundary](native-fixture-consumer-boundary-20261109.md)
+passes two unchanged whole modules:9 response and65 deployment cases, all222
+phases/21 original assertions, zero denials/exceptions and normal closure. Only
+the original native tests read their controlled snapshots; tooling uses two
+metadata-only references and1795 public inputs. Exact native reader/test/dispatcher
+roles and a lower-overhead code-event observer preserve the fixed caps. The
+CPU-24 partial, intermediate gates and older pinning breach remain preserved.
+Twelve pure audits pass; no full backend, canonical-captured-fact, expert-strength
+or release certificate follows.
+
 The [positive fixture-input boundary](positive-fixture-input-admission-20261109.md)
 passes separate exact whole28/97 executions under the corrected observer policy,
 with375 passing phases, zero denials/exceptions and normal cleanup. Only positively

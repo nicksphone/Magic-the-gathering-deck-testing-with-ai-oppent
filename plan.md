@@ -32,6 +32,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native original-fixture consumer boundary](docs/testing/native-fixture-consumer-boundary-20261109.md)
+passes unchanged whole9/65 modules, all222 phases and21 original assertions.
+Exact native reader/test/pytest-dispatcher code grants original test consumption;
+observers/preparers/auditors never read/hash/copy the referenced snapshot bodies.
+All1795 public code/card inputs and reference metadata verify. Local native code
+events remove measured global-observer amplification; caps/source/tests remain
+unchanged and the first CPU-limited partial stays retained. Twelve audits pass.
+This is selected boundary integration; all original release/AI-data gates remain open.
+
 The [positive fixture-input admission](docs/testing/positive-fixture-input-admission-20261109.md)
 qualifies the changed observer boundary on separate exact whole28/97 executions:
 all375 phases pass, zero denials/exceptions and normal owned-process closure.
