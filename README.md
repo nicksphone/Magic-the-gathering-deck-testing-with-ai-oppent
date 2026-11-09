@@ -4,6 +4,13 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native fault-factory URI boundary](docs/testing/native-fault-uri-boundary-20261109.md)
+passes the original rollback test and all seven restore/prune CLI invocations
+with clean receipts. A new whole backend attempt collects all36,739 nodes and
+passes170 calls before a socket guard denies HTTP integration setup. All171
+attempted teardowns pass and closure is normal;27 boundary audits pass. The full
+backend and all original RC, AI/data and thirteen-style requirements remain open.
+
 The [native pipe/child boundary](docs/testing/native-pipe-child-boundary-20261109.md)
 passes all four original restore CLI invocations in a new full backend attempt.
 All 36,739 nodes collect; 108 calls pass before a SQL path/URI rejection in the

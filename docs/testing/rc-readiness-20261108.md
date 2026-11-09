@@ -1,5 +1,14 @@
 # RC Readiness: November 8, 2026
 
+The [native fault-factory URI boundary](native-fault-uri-boundary-20261109.md)
+passes the original rollback and prune-path/CLI tests with all seven original
+children independently clean. A new exact36,739-node entry has170 passing calls,
+170 passing setups, one HTTP-integration setup PermissionError at socket.__new__,
+and171 passing teardowns. Parent165/165 and child5/5 SQL requests/handle events
+have no SQL denials. Normal closure and27 boundary audits verify. Socket authority,
+complete backend and every original release/data/expert-strength requirement
+remain open; historical and current diagnostic-handling violations are retained.
+
 The [native pipe/child boundary](native-pipe-child-boundary-20261109.md)
 collects all 36,739 original nodes, passes 108 calls and four original restore
 CLI children with clean receipts, then rejects a SQL path/URI in the native

@@ -32,6 +32,16 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native fault-factory URI boundary](docs/testing/native-fault-uri-boundary-20261109.md)
+qualifies only the exact public transparent factory-wrapper chain. The new whole
+36,739-node entry passes170 calls, including rollback and prune CLI assertions;
+all seven original children have clean receipts. Parent165/165 and child5/5 SQL
+request/handle events authorize without SQL denials. The next setup fails at the
+socket guard in HTTP cost integration;170 setups and171 teardowns pass, and the
+owned group closes normally. Twenty-seven boundary audits pass. Next work needs
+an exact native HTTP/event-loop resource contract; full backend, all three RC
+gates, five-phase AI/data and thirteen expert styles remain unfinished.
+
 The [native pipe/CLI-child boundary](docs/testing/native-pipe-child-boundary-20261109.md)
 admits exact native capture descriptors, metadata-bound pytest fixture directories
 and original CLI commands without frame-local or output inspection. A new exact

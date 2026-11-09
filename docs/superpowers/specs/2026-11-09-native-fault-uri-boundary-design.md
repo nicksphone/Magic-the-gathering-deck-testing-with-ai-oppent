@@ -1,0 +1,11 @@
+# Native fault URI boundary design
+
+Continue the full MTG RC scope from608b238581a9df23843f65c18fb3673b0794388e, backend95df5186a5c229cfcde8b092afc9c1ec0e24a0ec. The previous whole entry stopped with108passing calls at the rollback test's SQL path/URI guard. The actual rejected arguments and diagnostics remain opaque; public source suggests the transparent factory wrapper loses direct literal-URI evidence.
+
+Use a narrow source-proven forwarding contract. Intake pins the complete original test and pruning source, verifies the exact lambda forwards *a/**k unchanged with only factory=FailingConnection, and verifies its direct native caller has literal uri=True and no keyword expansion. Runtime requires loader-bound exact wrapper/caller/root CodeTypes, exact lines, native dispatcher, active original test call phase and thread. No callable/closure/frame-value/actual kwargs/SQL handle or result inspection. The native SQLite audit is the pre-constructor observation; ordinary source integrity is assumed, not arbitrary hostile monkeypatch resistance.
+
+Alternatives considered: admit any ancestor literal flag (too broad); inspect live kwargs/closure/callable or handles (violates body boundary); pin this one source chain (chosen by implementer under standing authorization). No general alias/forwarder allowance.
+
+All previous gates remain:1818positive public inputs and960metadata-only reference links; exact36739ordered nodes; original tests/assertions/argv; parent-I-S-B/plainassertions/noautoload/nocache; CPU120/125,inner180/outer210seconds,4GiB,128MiB,retries0,maxfail1. Child normal startup is separate, original argv, CPU30/35, inner30, same owned PG, corrected mutation restrictions. Never inspect/hash/copy actual outputs/state/SQL/owner/model/reference/failed-stream bodies or waive historical breaches.
+
+Prove RED/GREEN with authored inert native SQLite rollback fixtures and metadata traps before one new original whole entry. Retain first new rejection/partial. One fresh final review, one Important/Critical fix pass, exact public-only local delivery; no original replay for review/delivery. Full RC remains false until every original3gate/five-phase AI-data/thirteen-style and backend/native/browser/build/deploy acceptance passes.
