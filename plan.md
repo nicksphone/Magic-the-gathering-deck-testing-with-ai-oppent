@@ -243,6 +243,21 @@ verify. No SQL/socket/HTTP/owner/provider/child/denial occurs. Full backend,
 Oracle/data, expert strength and all original release gates stay open.
 
 
+The following [counterability/cast-surface component](docs/testing/ai-counter-surface-qualification-20261109.md)
+passes all47 unchanged cases across both whole modules, with32 original choices
+and105 verified native call/return spans. Original counter repetitions,
+reservation privacy/reload checks and genuine selected-face payments remain.
+Full backend, Oracle/data, expert strength and original RC gates stay open.
+
+Source5171/current2697backend,47 original entries and105 native roots verify:
+32 choices,13 materializations, two threat,42 reservation, eight matchup, four
+actorless tag and four actorless selected-surface queries. Source factory/class/
+configuration and original helper/instance/loop/callsite/return metadata bind
+without inspecting private bodies. Collection19runner18receipts and runtime
+28runner19receipts close normally; no SQL/socket/HTTP/owner/provider/child/denial.
+The previous factory callback receiver-identity limitation remains disclosed.
+
+
 ## October 29 AI Iteration
 
 Published `b4313031` passes the complete hosted workflow, including browser,

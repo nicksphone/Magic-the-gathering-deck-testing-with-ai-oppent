@@ -66,6 +66,12 @@ passes all63 original cases across three whole modules, including72 native
 call/return spans. Parameter capture before test bodies preserves legitimate
 branch rebinding without inspecting later state-derived values. RC remains open.
 
+The following [counterability/cast-surface component](docs/testing/ai-counter-surface-qualification-20261109.md)
+passes all47 unchanged cases across both whole modules, with32 original choices
+and105 verified native call/return spans. Original counter repetitions,
+reservation privacy/reload checks and genuine selected-face payments remain.
+Full backend, Oracle/data, expert strength and original RC gates stay open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

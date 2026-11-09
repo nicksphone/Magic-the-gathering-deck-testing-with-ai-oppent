@@ -444,6 +444,18 @@ speedup. The full backend attempt on that source fails at an optional archive's 
 availability check; its `PermissionError` and the preceding harness-admission
 failure remain recorded. No full-suite or release pass follows.
 
+The following [counterability/cast-surface component](ai-counter-surface-qualification-20261109.md)
+passes all47 unchanged cases across both whole modules, with32 original choices
+and105 verified native call/return spans. Original counter repetitions,
+reservation privacy/reload checks and genuine selected-face payments remain.
+Full backend, Oracle/data, expert strength and original RC gates stay open.
+
+The47 entry/returns and105 native roots verify on7690e151+initialplan, with
+all5171publicSHA/Git and2697backend files bound. Runtime28runner19receipt pins,
+zero I/O/children/denials and normal bounded closure verify. Actorless calls
+retain only their real context/arguments; native factory configuration is bound.
+Historical supervisor-label and factory-callback receiver Minors remain disclosed.
+
 The later [optional archive collection correction](optional-archive-collection-20261108.md)
 defers that same metadata condition to archived-case setup, preserving the
 existing absence skip and permission failure. Four regression controls pass;
