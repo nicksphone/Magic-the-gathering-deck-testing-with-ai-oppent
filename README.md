@@ -72,6 +72,12 @@ and105 verified native call/return spans. Original counter repetitions,
 reservation privacy/reload checks and genuine selected-face payments remain.
 Full backend, Oracle/data, expert strength and original RC gates stay open.
 
+The following [canonical knowledge-consumer component](docs/testing/ai-knowledge-consumer-qualification-20261109.md)
+passes its entire unchanged23-case module. All102 direct native/helper returns
+and the original memory-SQL connection/native close verify, preserving private-
+view/reload assertions and paid Adventure/hybrid actions. No AI policy choice or
+private diagnostic trace occurs. All original release gates remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

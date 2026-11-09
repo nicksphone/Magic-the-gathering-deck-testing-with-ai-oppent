@@ -456,6 +456,20 @@ zero I/O/children/denials and normal bounded closure verify. Actorless calls
 retain only their real context/arguments; native factory configuration is bound.
 Historical supervisor-label and factory-callback receiver Minors remain disclosed.
 
+The following [canonical knowledge-consumer component](ai-knowledge-consumer-qualification-20261109.md)
+passes its entire unchanged23-case module. All102 direct native/helper returns
+and the original memory-SQL connection/native close verify, preserving private-
+view/reload assertions and paid Adventure/hybrid actions. No AI policy choice or
+private diagnostic trace occurs. All original release gates remain open.
+
+The23 original entries and102 roots/helper returns bind to968d45a0+initialplan.
+The twelve receipt helpers stay opaque to instrumentation; original three-way
+observations and all assertions remain. One memorySQL constructor/return/native
+close verifies; no DB/trace files or private-body reads occur. Source5173/current
+2697backend/33runner22receipts and normal bounded closure verify. The new88branch
+GitHub inventory adds four nonancestor heads for careful reconciliation, including
+one patch-equivalent; ancestry alone does not imply missing work. FullRC stays open.
+
 The later [optional archive collection correction](optional-archive-collection-20261108.md)
 defers that same metadata condition to archived-case setup, preserving the
 existing absence skip and permission failure. Four regression controls pass;

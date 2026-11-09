@@ -258,6 +258,23 @@ without inspecting private bodies. Collection19runner18receipts and runtime
 The previous factory callback receiver-identity limitation remains disclosed.
 
 
+The following [canonical knowledge-consumer component](docs/testing/ai-knowledge-consumer-qualification-20261109.md)
+passes its entire unchanged23-case module. All102 direct native/helper returns
+and the original memory-SQL connection/native close verify, preserving private-
+view/reload assertions and paid Adventure/hybrid actions. No AI policy choice or
+private diagnostic trace occurs. All original release gates remain open.
+
+The102 roots include12 original opaque receipt helpers, preserving three
+observations in four cases; dynamic private legal-move loops are not counted.
+All23 test entries, one real native memorySQL handle/close and5173public/2697
+backend inputs verify with33runner22receipt pins and normal bounded closure.
+Original optional emit remains inactive by absent environment; no traces are
+generated. The prior factory-receiver limit remains. GitHub now also records
+88branches:84ancestors, one nonancestor patch-equivalent and three nonancestor
+heads requiring source/evidence reconciliation; no missing-work inference or
+automatic merge. All fullRC/AI-data/13styleexpert/matrix constraints remain.
+
+
 ## October 29 AI Iteration
 
 Published `b4313031` passes the complete hosted workflow, including browser,
