@@ -2070,3 +2070,20 @@ The complete graveyard clause/zone/permission inventory remains unchecked. No ne
 original full-backend/HTTP/TCP/Forge entry runs while independent native IPC is
 denied. All original three RC gates, five-phase AI/data work, thirteen expert
 styles and full integration/build/install/deploy acceptance remain open.
+
+## 2026-11-09 Native Animated-Blocker Qualification
+
+The unchanged production enumerator retains paid Mutavault/Celestial Colonnade
+animation through actual checked blocking and restored Master/Master-plus
+decisions. The initial stored-type omission hypothesis does not reproduce:
+native type additions already update a compatibility view while preserving
+copiable land facts. Six whole modules pass99collected tests/303phase reports,
+including26new canonical native outcome and exclusion cases. An isolated source
+mutation excluding land creatures passes four legal-block witnesses and then
+fails the first AI survival case. This is test sensitivity, not a production
+bug fix or before/after AI quality measurement. See [scope and evidence](docs/testing/effective-blocker-types-20261109.md).
+
+General layered types/animation, complete graveyard inventory, hidden-response
+benchmarks, all thirteen expert styles, five-phase AI/data acceptance and every
+original release gate remain open. The frozen matrices and original full-backend
+failure are unchanged; native IPC still blocks HTTP progress.

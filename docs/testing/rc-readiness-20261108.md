@@ -1,5 +1,12 @@
 # RC Readiness: November 8, 2026
 
+The [native animated-blocker qualification](effective-blocker-types-20261109.md)
+passes99collected tests/303phase reports across six whole modules, including26new
+canonical paid-animation and actual restored AI combat cases. A separate source
+mutation is detected after four passing native witnesses. Production remains
+unchanged; this establishes bounded existing behavior, not a fixed production
+defect, measured improvement, general animation support or RC acceptance.
+
 The [bounded graveyard destruction extension](graveyard-destruction-coverage-20261109.md)
 passes167cases across four whole component modules, including42new canonical
 payment, targeting, actual attack and conservative-boundary cases. It preserves

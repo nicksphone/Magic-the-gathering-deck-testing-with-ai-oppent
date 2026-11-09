@@ -4,6 +4,12 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native animated-blocker qualification](docs/testing/effective-blocker-types-20261109.md)
+passes99collected tests across six whole modules, including26new paid-animation,
+restored AI combat and exclusion cases. An isolated source mutation demonstrates
+test sensitivity. Production is unchanged; the suspected blocker omission does
+not reproduce for these two families. Full RC and expert-AI requirements remain open.
+
 The [bounded graveyard destruction extension](docs/testing/graveyard-destruction-coverage-20261109.md)
 adds complete creature-destruction clauses while preserving unknown-text and
 permission vetoes. All167cases across four whole component modules pass, including
