@@ -4,6 +4,15 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [native HTTP wake-up prerequisite](docs/testing/native-http-resource-boundary-20261109.md) now has an independent
+negative result: a native Unix socketpair one-byte send raises PermissionError
+without guard or monitor. Plain TestClient/AnyIO controls stall; all seven
+supervised control groups close. Thirty-one preflight commands and a pure
+evidence audit pass, including a foreign native-socketpair guard correction.
+HTTP lifecycle and original-worker integration remain unqualified, and no new
+original backend entry runs. The prior170-pass entry remains the latest original
+evidence; all release/AI/data/thirteen-style requirements stay open.
+
 The [native fault-factory URI boundary](docs/testing/native-fault-uri-boundary-20261109.md)
 passes the original rollback test and all seven restore/prune CLI invocations
 with clean receipts. A new whole backend attempt collects all36,739 nodes and

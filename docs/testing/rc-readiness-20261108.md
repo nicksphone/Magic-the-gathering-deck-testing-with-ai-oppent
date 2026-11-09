@@ -1,5 +1,14 @@
 # RC Readiness: November 8, 2026
 
+The [native HTTP wake-up prerequisite](native-http-resource-boundary-20261109.md) now has an independent
+negative result: a native Unix socketpair one-byte send raises PermissionError
+without guard or monitor. Plain TestClient/AnyIO controls stall; all seven
+supervised control groups close. Thirty-one preflight commands and a pure
+evidence audit pass, including a foreign native-socketpair guard correction.
+HTTP lifecycle and original-worker integration remain unqualified, and no new
+original backend entry runs. The prior170-pass entry remains the latest original
+evidence; all release/AI/data/thirteen-style requirements stay open.
+
 The [native fault-factory URI boundary](native-fault-uri-boundary-20261109.md)
 passes the original rollback and prune-path/CLI tests with all seven original
 children independently clean. A new exact36,739-node entry has170 passing calls,
