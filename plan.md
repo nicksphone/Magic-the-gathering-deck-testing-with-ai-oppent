@@ -195,6 +195,17 @@ review use file metadata only. Native thread/profile/source/harness/JUnit/normal
 closure verify with no AI, external network, children or denials. Full backend,
 real TCP, Oracle/data, playing strength and all original release gates remain open.
 
+The following [AI affinity, contracts and horizon qualification](docs/testing/ai-affinity-contract-horizon-qualification-20261109.md)
+passes five entire unchanged modules in two separately declared epochs: 89
+contract/affinity/allocation/attachment cases, then all six horizon cases. The
+73 original native choices, 76 external materializations, four explicit combat
+completions and four forecasts retain their original assertions and budgets.
+Source, exact call/return metadata, guards and normal closure verify, with no
+SQL, socket, owner, provider, child or caught denial. The earlier action-contract
+pass is preserved; current model-binding changes justify its regression check.
+Ten-style affordability checks do not establish thirteen-style playing strength.
+No natural game, full-suite, Oracle/data or original RC gate closes.
+
 
 ## October 29 AI Iteration
 

@@ -48,6 +48,11 @@ Master choices. Full backend, playing-strength and release gates remain open.
 The following [admission/affinity HTTP component](docs/testing/admission-affinity-http-qualification-20261109.md)
 passes 16 unchanged cases with native lifecycle/shutdown, five metadata-only owner
 fixtures and 88 authorized SQL returns. Cold TCP and all RC gates remain open.
+The following [AI affinity, contracts and horizon component](docs/testing/ai-affinity-contract-horizon-qualification-20261109.md)
+passes 95 unchanged cases across five whole modules in two separate runs of 89
+and six cases. All 73 original native AI choices and 84 other direct native calls
+return under the original assertions and budgets. Full backend, Oracle/data,
+playing strength and release gates remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
