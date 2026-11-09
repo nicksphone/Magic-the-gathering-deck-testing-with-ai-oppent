@@ -20,6 +20,14 @@ SQL lifecycles and selected523 installed-input pre/post pins verify. Exact
 before-body source validation rejects float receipt-marker aliases. No AI choices
 occur, and complete knowledge, full backend and release gates remain open.
 
+The [JSON-boundary component](knowledge-json-boundaries-qualification-20261109.md)
+passes all254 unchanged cases/34 assertions, with111 memory and111 owned file
+SQL lifecycles plus32 SQL-free cases. Original reject-before-query, exact JSON
+bytes and legacy checks remain. A preserved CPU-limited attempt is followed by
+an instrumentation-only correction and whole-module success under the same caps.
+Source/selected libraries/762 phase receipts/normal closure verify. No full
+backend, knowledge-quality, AI-strength or release acceptance follows.
+
 The original [full Master matrix](full-master-matrix-20261108.md) is now terminal:
 all 110 series are attempted, 106 resolve and four retain deadline partials. Its
 271 receipts verify 267 natural games and four partials. The producer remains

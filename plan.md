@@ -64,6 +64,15 @@ capture now rejects encoded-marker aliases before test bodies. Selected523
 installed inputs match pre/post pins; source, budgets and normal closure verify.
 These are schema/storage controls; full backend, data and all RC gates remain open.
 
+The [JSON-boundary component](docs/testing/knowledge-json-boundaries-qualification-20261109.md)
+passes the whole unchanged254-case module/34 assertions, with222 native fixture
+and SQL lifecycles split111 memory/111 file and32 SQL-free cases. Exact JSON
+bytes, typed admission and legacy compatibility retain their original checks.
+Before-body fixture metadata avoids private Repository/late parameter inspection.
+The first CPU-limited epoch is preserved; indexed routing and compact atomic
+progress pass meaningful inert controls before the same module/caps succeed.
+Full backend, canonical knowledge, expert strength and original RC gates remain open.
+
 The original frozen `a4f8df9` Master matrix is now terminal after all 110 scheduled
 BO3 attempts: 106 resolved series, four deadline-limited series, 267 natural games
 and four partial receipts. The producer retains incomplete status and nonzero

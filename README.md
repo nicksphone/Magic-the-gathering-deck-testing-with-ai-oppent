@@ -119,6 +119,13 @@ before writes, valid domains roundtrip and legacy rows remain readable.
 All33 native memory-SQL lifecycles and selected installed-input pins verify.
 These schema controls leave complete knowledge, expert AI and RC gates open.
 
+The [JSON-boundary qualification](docs/testing/knowledge-json-boundaries-qualification-20261109.md)
+passes all254 original cases, preserving34 assertions and all raises/forbidder
+checks. Native fixture lifecycles verify111 memory and111 file databases, plus32
+SQL-free cases and exact JSON text/legacy compatibility. A CPU-limited attempt
+stays unqualified; corrected metadata instrumentation passes under the same caps.
+Complete data, expert AI and every original RC gate remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),
