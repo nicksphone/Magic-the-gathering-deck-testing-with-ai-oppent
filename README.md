@@ -61,6 +61,10 @@ The following [Burn sequence/diagnostic component](docs/testing/ai-burn-sequence
 passes all20 original sequence cases and10 diagnostic cases in separate runs,
 including96 native Master choices and26 direct damage-plan calls. Original
 continuation/search limits remain; all original RC gates stay open.
+The next [casting-resource component](docs/testing/ai-cast-resource-qualification-20261109.md)
+passes all63 original cases across three whole modules, including72 native
+call/return spans. Parameter capture before test bodies preserves legitimate
+branch rebinding without inspecting later state-derived values. RC remains open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

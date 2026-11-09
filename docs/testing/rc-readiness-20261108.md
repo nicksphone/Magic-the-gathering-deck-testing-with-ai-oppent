@@ -159,6 +159,16 @@ I/O, child, caught denial or private fixture file occurs. A preserved diagnostic
 preworker metadata-reference failure executes zero tests; its corrected launch
 runs whole10 once. Full backend, Oracle/data, expert strength and RC remain open.
 
+The next [casting-resource component](ai-cast-resource-qualification-20261109.md)
+passes63 unchanged cases across three entire modules in one run. All63 original
+test entries/returns and72 native calls return under exact code/helper/callsite/
+configuration/instance binding. Public parameters are captured before bodies;
+four rows legitimately rebind a branch to fixture IDs, and late parameters stay
+uninspected. Original payments, hidden-view/purity assertions and64/70/30 native
+search budgets remain. Source5169/current2697backend,29 runner19 receipt pins and
+normal closure verify, with no prohibited activity/private fixture files. Full
+backend, Oracle/data, playing strength and all original release gates stay open.
+
 
 ## Candidate And GitHub State
 

@@ -230,6 +230,18 @@ worker; its actual expression RED/GREEN correction repeats no test or choice.
 The prior95/96 components remain untouched. No natural game, strength, Oracle/
 data, full backend or original release gate closes.
 
+The next [casting-resource qualification](docs/testing/ai-cast-resource-qualification-20261109.md)
+passes all63 unchanged cases across three whole modules:23 resource-policy,
+20 joint-cost and20 budget cases. All63 original test entries/returns and72
+native spans verify:42 materializations, two Master/Drain choices, two direct
+payability queries,20 fixed-cost completions and six resource-payment queries.
+Entry-time public parameter capture preserves conditional branch rebinding;
+later parameters/actions/states remain opaque to instrumentation. Original
+64/70/30 subset/validation/rank bounds, C(30,15), paid actions and source assertions
+remain. Source5169/current2697backend,29 runner19 receipt pins and normal closure
+verify. No SQL/socket/HTTP/owner/provider/child/denial occurs. Full backend,
+Oracle/data, expert strength and all original release gates stay open.
+
 
 ## October 29 AI Iteration
 
