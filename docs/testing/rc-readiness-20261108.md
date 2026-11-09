@@ -100,6 +100,15 @@ records and normal closure verify; snapshot bodies remain unread by auditors.
 These in-memory rule checks do not qualify native codec/HTTP, playing strength,
 Oracle/data, the full backend or any original RC gate.
 
+The following [annihilator native restart component](annihilator-native-recovery-20261109.md)
+passes the entire unchanged 28-case module, including its memory/file fixtures,
+60 original codec children and eight owned native SQL repositories. Child
+receipts bind 44 physical snapshot paths and 16 ordered overwrites. Original
+HTTP views and no-startup/default-DB/remote-sync prohibitions hold; no owner
+fixture is used. Source/guards/private metadata and normal closure verify with
+zero AI choices or denials. Full backend, cold TCP, Oracle/data, AI strength and
+all original RC gates remain open.
+
 
 ## Candidate And GitHub State
 

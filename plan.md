@@ -162,7 +162,17 @@ roundtrips only. All source/harness/receipt pins and normal closure verify.
 Original optional output retains 122 private ordering files, checked by metadata
 and node-ID filename correspondence only. No snapshot body is opened or hashed by
 instrumentation/auditors. Full backend, Oracle/data, AI strength and RC acceptance
-remain open; the native-codec/HTTP annihilator module stays separately pending.
+remain open.
+
+The following [annihilator native restart qualification](docs/testing/annihilator-native-recovery-20261109.md)
+passes all 28 original cases after authoritative memory/file fixture collection.
+All 60 original codec children have clean independently matched receipts across
+44 snapshot paths and 16 ordered overwrites. Eight native SQL handles/authorized
+returns, original private HTTP views, source/harness/metadata and normal closure
+verify. The client still forbids startup/default DB/remote sync; no owner fixture
+is used. Private bodies remain uninspected by instrumentation and audit. These
+controlled rule/restart checks leave full backend, real TCP, Oracle/data, playing
+strength and all original RC gates open.
 
 
 ## October 29 AI Iteration

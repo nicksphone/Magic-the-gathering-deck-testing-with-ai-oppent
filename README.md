@@ -39,6 +39,9 @@ Strong choices and eight in-process HTTP cases. All original release gates remai
 The early-November9 [additional-cost/mana component](docs/testing/additional-costs-additive-mana-20261109.md)
 passes 233 unchanged cases across four whole modules under the corrected v2 guard,
 with zero SQL, policy choices or child launches. Full RC scope remains open.
+The following [annihilator native restart component](docs/testing/annihilator-native-recovery-20261109.md)
+passes all 28 unchanged cases, with 60 verified original codec children and eight
+owned SQL repositories. Its in-process HTTP checks leave cold TCP and RC gates open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
