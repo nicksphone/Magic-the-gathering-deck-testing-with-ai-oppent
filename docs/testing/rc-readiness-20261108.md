@@ -119,6 +119,16 @@ collection independently records115cases/0execution after a public pool metadata
 formatter correction. Admission-composition and affinityHTTP remain unexecuted.
 Full backend, playing strength, Oracle/data and all original RC gates stay open.
 
+The following [admission/affinity HTTP component](admission-affinity-http-qualification-20261109.md)
+passes16 unchanged cases across both entire modules. All16 native acquire/close
+pairs, five exclusively created metadata-preserving empty owner fixtures and88
+authorized SQL returns across five primary files/16backups verify. Original
+lifespan, shutdown error, Event-thread release/join, alias restoration, checked
+payment and private SQL restores remain. All27 native threads carry the profile
+guard; no live owner/non-main thread, AI choice, external network, child or denial
+remains. Source/pins/JUnit/private metadata and normal closure verify. Original
+full backend, cold TCP, Oracle/data, strength and RC gates remain open.
+
 
 ## Candidate And GitHub State
 

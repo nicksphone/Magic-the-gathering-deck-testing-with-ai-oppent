@@ -45,6 +45,9 @@ owned SQL repositories. Its in-process HTTP checks leave cold TCP and RC gates o
 The next [affinity/Aftermath component](docs/testing/affinity-aftermath-qualification-20261109.md)
 passes 99 unchanged cases across two whole modules, including two original native
 Master choices. Full backend, playing-strength and release gates remain open.
+The following [admission/affinity HTTP component](docs/testing/admission-affinity-http-qualification-20261109.md)
+passes 16 unchanged cases with native lifecycle/shutdown, five metadata-only owner
+fixtures and 88 authorized SQL returns. Cold TCP and all RC gates remain open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the

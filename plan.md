@@ -184,6 +184,17 @@ source-identical115-node collection remain separately recorded, with zero tests
 there. Admission-composition4 and affinityHTTP12 stay unexecuted. Full backend,
 Oracle/data, playing strength and original RC scope remain open.
 
+The following [admission/affinity HTTP qualification](docs/testing/admission-affinity-http-qualification-20261109.md)
+passes both entire unchanged modules: four admission-composition and twelve HTTP
+cases. Original lifespan, engine-alias/shutdown/Event-thread behavior, discounted
+payment, direct SQL snapshot and persisted restores remain. All16 native owners
+return/close, five exclusively created empty owner fixtures retain metadata, and
+88 native SQL handles match authorized returns across five primaries/16backups.
+Original backup/fingerprint code processes its generated databases; guards/audit/
+review use file metadata only. Native thread/profile/source/harness/JUnit/normal
+closure verify with no AI, external network, children or denials. Full backend,
+real TCP, Oracle/data, playing strength and all original release gates remain open.
+
 
 ## October 29 AI Iteration
 
