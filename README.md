@@ -107,6 +107,12 @@ disposal with the original connect forbidders intact. Three native SQL closes,
 offline committed-corpus integration check; complete data, expert strength and
 all original release gates remain open.
 
+The [profile-repository qualification](docs/testing/knowledge-profile-repository-qualification-20261109.md)
+passes all four original cases, preserving26 assertions: two-card timestamp/
+payload idempotence, both invalid-row controls and full155-card RAW/profile
+roundtrips. Four native memory-SQL closes and six profiler returns verify.
+This adds persistence evidence; complete knowledge, expert AI and RC gates remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

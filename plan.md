@@ -49,6 +49,14 @@ See the [current RC audit](docs/testing/rc-readiness-20261108.md) for exact
 commands, separate cohort counts, environmental failures and the remaining
 Gates 1--3. No release gate or AI/data phase is closed by this resumption.
 
+The [profile repository component](docs/testing/knowledge-profile-repository-qualification-20261109.md)
+passes its whole unchanged four-case module with26 assertions, four native
+memory-SQL constructor/close pairs and six native profiler returns. It proves
+controlled persistence/invalid-row preservation, two-card timestamp idempotence
+and155-card canonical-data roundtrips. Source, budgets, metadata receipts and
+normal closure verify; full backend, knowledge quality, expert AI and every
+original RC gate remain open.
+
 The original frozen `a4f8df9` Master matrix is now terminal after all 110 scheduled
 BO3 attempts: 106 resolved series, four deadline-limited series, 267 natural games
 and four partial receipts. The producer retains incomplete status and nonzero
