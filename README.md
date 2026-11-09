@@ -53,6 +53,10 @@ passes 95 unchanged cases across five whole modules in two separate runs of 89
 and six cases. All 73 original native AI choices and 84 other direct native calls
 return under the original assertions and budgets. Full backend, Oracle/data,
 playing strength and release gates remain open.
+The next [beneficiary/Burn efficiency component](docs/testing/ai-beneficiary-burn-qualification-20261109.md)
+passes both entire unchanged modules:68 recipient/copy cases and28 Burn cases,
+including60 original native choices and52 direct materializations. This remains
+controlled component evidence; all original release gates stay open.
 
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
