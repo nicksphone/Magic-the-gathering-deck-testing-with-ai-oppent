@@ -2055,3 +2055,18 @@ selected animation/protection/blink seams are controlled rather than certified
 paid spell episodes. These component results do not close whole-backend CI,
 strategic AI quality or any remaining original release gate.
 See [exact scope](docs/testing/vraska-full-current-acceptance.md).
+
+## 2026-11-09 Bounded Graveyard Destruction Coverage
+
+Complete creature and nonartifact-creature destruction clauses now have positive
+stack-only coverage, with original-text matching and unchanged native target,
+payment and resolution rules. Four whole component modules pass167cases,
+including42new canonical native payment/targeting, actual checked attack,
+restore and conservative-boundary cases. The existing pureguard canary remains
+unchanged; a source-bound external adapter preserves its native denials without
+permitting DNS or SQL. See [scope and evidence](docs/testing/graveyard-destruction-coverage-20261109.md).
+
+The complete graveyard clause/zone/permission inventory remains unchecked. No new
+original full-backend/HTTP/TCP/Forge entry runs while independent native IPC is
+denied. All original three RC gates, five-phase AI/data work, thirteen expert
+styles and full integration/build/install/deploy acceptance remain open.

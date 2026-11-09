@@ -3017,6 +3017,14 @@ def complete_stack_instruction_coverage(card):
         return {'instruction': body, 'source_zone': 'stack', 'effect_key': 'deal_damage',
                 'payload': {'amount': int(damage[1])},
                 'target_domain': damage[2].lower(), 'residual': ''}
+    # These complete clauses have no reminder text. Match the original text so
+    # a functional parenthetical tail cannot disappear before coverage review.
+    destruction = re.fullmatch(r'Destroy (target (?:nonartifact )?creature)\.',
+                               card.oracle_text.strip(), re.I)
+    if destruction:
+        return {'instruction': card.oracle_text.strip(), 'source_zone': 'stack',
+                'effect_key': 'destroy_permanent', 'payload': {},
+                'target_domain': destruction[1].lower(), 'residual': ''}
     return None
 
 

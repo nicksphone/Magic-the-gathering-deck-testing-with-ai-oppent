@@ -4,6 +4,12 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [bounded graveyard destruction extension](docs/testing/graveyard-destruction-coverage-20261109.md)
+adds complete creature-destruction clauses while preserving unknown-text and
+permission vetoes. All167cases across four whole component modules pass, including
+42new canonical payment, targeting, attack and conservative-boundary cases.
+The full backend, general inventory and all RC/expert-AI requirements remain open.
+
 The [native HTTP wake-up prerequisite](docs/testing/native-http-resource-boundary-20261109.md) now has an independent
 negative result: a native Unix socketpair one-byte send raises PermissionError
 without guard or monitor. Plain TestClient/AnyIO controls stall; all seven

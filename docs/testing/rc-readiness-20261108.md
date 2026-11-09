@@ -1,5 +1,12 @@
 # RC Readiness: November 8, 2026
 
+The [bounded graveyard destruction extension](graveyard-destruction-coverage-20261109.md)
+passes167cases across four whole component modules, including42new canonical
+payment, targeting, actual attack and conservative-boundary cases. It preserves
+unknown clauses and graveyard permission vetoes. This does not complete the
+general inventory, change the failed original full-backend result, or establish
+expert strength. All original release, AI/data and thirteen-style requirements stay open.
+
 The [native HTTP wake-up prerequisite](native-http-resource-boundary-20261109.md) now has an independent
 negative result: a native Unix socketpair one-byte send raises PermissionError
 without guard or monitor. Plain TestClient/AnyIO controls stall; all seven
