@@ -4336,6 +4336,8 @@ class AIAgent:
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         action = choose_resource_payment(self, state, action, player_id)
         action = complete_cast_hybrid_choices(self, state, action, player_id)
+        action = self._prefer_nonlosing_graveyard_target(state, move, action, player_id,
+            allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         if self._empty_duplicate_legend_cast(state, action, player_id):
             return {**action, '_invalid_ai_choice': True}
         if not self._harmful_friendly_removal(state, action, player_id):
@@ -4363,6 +4365,55 @@ class AIAgent:
                     continue
                 return redirected
         return {**action, '_invalid_ai_choice': True}
+
+    def _prefer_nonlosing_graveyard_target(self, state, move, action, player_id, *,
+                                         allow_friendly_target=False, allow_zero_x=False):
+        """Keep explicit/unknown choices; replace only a proven losing default."""
+        declared = move.get('targets') or {}
+        targets = action.get('targets') or {}
+        target_id = targets.get('target_card_id')
+        if (not isinstance(state, MatchState) or action.get('type') != 'cast_spell'
+                or action.get('_invalid_ai_choice') or declared.get('target_card_id')
+                or declared.get('target_card_ids') or targets.get('target_card_ids')
+                or target_id not in state.cards or state.cards[target_id].zone != Zone.GRAVEYARD
+                or not combat_expansion_available()):
+            return action
+        card = _card_for_move(state, action)
+        if card is None:
+            return action
+        from rules_engine.cast_choice import build_cast_hints
+        hints = build_cast_hints(state, card, player_id, targets)
+        candidates = hints.get('graveyard_creature_targets') or hints.get('graveyard_card_targets') or []
+        if not any(target.get('id') == target_id for target in candidates):
+            return action
+        from ai.pending_effects import _unanswered_action_outcome
+        if _unanswered_action_outcome(state, player_id, action) != 'loss':
+            return action
+        ordered = sorted(candidates, key=lambda target: (
+            self._graveyard_creature_reanimation_score(state, target.get('id'), player_id),
+            str(target.get('name') or target.get('label') or '')), reverse=True)
+        seen = {target_id}
+        uncertain = None
+        for target in ordered:
+            cid = target.get('id')
+            if cid in seen:
+                continue
+            seen.add(cid)
+            if not combat_expansion_available():
+                return action
+            candidate = self._materialize_action(state, {**action,
+                'targets': {**targets, 'target_card_id': cid}}, player_id,
+                allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
+            if candidate.get('_invalid_ai_choice'):
+                continue
+            outcome = _unanswered_action_outcome(state, player_id, candidate)
+            if outcome in {'neutral', 'win'}:
+                return candidate
+            if outcome is None and uncertain is None:
+                uncertain = candidate
+        # A private continuation remains unknown, but need not restore a
+        # default already proved losing. Rejected candidates are never safe.
+        return uncertain if uncertain is not None else {**action, '_invalid_ai_choice': True}
 
     def _empty_duplicate_legend_cast(self, state, action, player_id):
         """Local no-progress preference; unknown continuations keep the option."""

@@ -1,5 +1,17 @@
 # RC Readiness: November 8, 2026
 
+The [November9 Reanimator correction](ai-reanimation-target-outcomes-20261109.md)
+passes separate whole28native-regression/97original-neighbor executions while
+retaining semantic REDs and the first guard-denied97 run. Complete payment precedes
+native outcome-based target preference; explicit choices and uncertainty remain.
+Full-backend execution reachesCPU-24 with actual final counts unknown. All original
+release, five-phase data and thirteen-style expert-AI requirements remain open.
+The Reanimator observer's broad pinning hashes actual tracked match snapshots,
+breaching the required body-exclusion boundary. Its functional passes remain
+nonconforming for privacy qualification. Future verification uses positive public
+inputs and metadata-only excluded-body bindings. Earlier blanket source-hash
+claims likewise do not prove body exclusion without an input-policy audit.
+
 The [November9 source-continuity audit](card-data-source-continuity-20261109.md)
 finds seventeen old833 test modules and named data paths unchanged, with four
 changed production dependencies in a conservative239-file import closure. Exact

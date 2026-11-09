@@ -32,6 +32,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## November 8 RC Resumption
 
+The [native Reanimator target correction](docs/testing/ai-reanimation-target-outcomes-20261109.md)
+reproduces fatal automatic targeting with real paid outcomes, preserves explicit
+targets and unknown continuations, and declines known-losing automatic lines.
+Separate whole28new/97original executions pass on identical final production
+source; all182 original neighboring assertions remain. The full-backend attempt
+endsCPU-24 before final counts, which stay unknown. This closes neither the
+thirteen-style strength requirement nor any original RC gate.
+The observer's broad source pinning also hashes actual tracked match snapshots,
+violating the required body boundary. Those receipts retain functional scope but
+are not privacy-qualified. The breach is preserved explicitly; future pinning
+admits positive public inputs and binds excluded bodies by metadata only.
+
 The [November9 card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)
 binds the earlier833 declaration's seventeen unchanged test blobs and four changed
 production postimages to their separate recorded component checks. Conservative

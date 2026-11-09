@@ -4,6 +4,15 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [Reanimator target correction](docs/testing/ai-reanimation-target-outcomes-20261109.md)
+uses native outcomes to avoid a proved-losing automatic target, retain uncertain
+alternatives and decline an all-losing line. Separate whole28/97 executions pass
+functionally, but their observers breached the required snapshot-body exclusion;
+the evidence is retained as nonconforming for that boundary. Future verification
+uses positive public inputs and metadata-only excluded-body bindings.
+the full-backend attempt hits its CPU bound with final counts unknown. All original
+release and expert-AI requirements remain open.
+
 The [card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)
 finds the earlier833 suite's seventeen test modules unchanged, but four production
 dependencies changed. Their component evidence stays separate; there is no current
