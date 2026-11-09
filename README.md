@@ -92,6 +92,13 @@ inverse checks. Original86 APNAP assertions, golden inputs and production code
 remain unchanged. This fixes one fixture; fullRC and literal global Task1.3
 acceptance remain open.
 
+The [knowledge-carrier qualification](docs/testing/ai-knowledge-carrier-qualification-20261109.md) passes all41 original cases
+across three complete unchanged modules, including16 Strong choices and63 native
+returns through the original instance wrappers. Paid actions, modal/private-view
+and forged-carrier assertions remain. A prior CPU-limited attempt stays
+unqualified; the indexed instrumentation run passes under the same caps.
+Repository/rulings, expert strength and every original RC gate remain open.
+
 External engine evaluation credits the **Forge Team/Card-Forge contributors** and
 **XMage contributors** for their card/rules implementations. See the
 [comparison](docs/testing/external-engine-card-knowledge.md),

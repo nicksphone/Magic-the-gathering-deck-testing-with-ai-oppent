@@ -484,6 +484,13 @@ inverse checks. Original86 APNAP assertions, golden inputs and production code
 remain unchanged. This fixes one fixture; fullRC and literal global Task1.3
 acceptance remain open.
 
+The [knowledge-carrier qualification](ai-knowledge-carrier-qualification-20261109.md) passes all41 original cases
+across three complete unchanged modules, including16 Strong choices and63 native
+returns through the original instance wrappers. Paid actions, modal/private-view
+and forged-carrier assertions remain. A prior CPU-limited attempt stays
+unqualified; the indexed instrumentation run passes under the same caps.
+Repository/rulings, expert strength and every original RC gate remain open.
+
 The four heads require no identified additional runtime merge after the bounded
 source/delta audit.83milestonefiles matchcurrent and29postimages are inhistory;
 eight evolved files and delegated color/trigger paths are source-inspected.
