@@ -1,5 +1,12 @@
 # RC Readiness: November 8, 2026
 
+The [target mana-value correction](target-mana-value-20261110.md) replaces a
+payment estimate with existing rules mana value in the common target predicate.
+A native missing legal counter target reproduces before the fix;183tests across
+seven whole modules pass after, including50new hybrid/snow/target-X cases.
+The initial test-setup failure remains retained. Payment and target-stack X stay
+unchanged; full backend, AI strength and every original release gate remain open.
+
 The [incomplete block-search correction](unknown-block-survival-20261109.md)
 reproduces a native Master survival failure caused by an unknown death-draw
 candidate and preserves the existing fallback afterward. Six whole modules pass

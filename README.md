@@ -4,6 +4,12 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+The [target mana-value correction](docs/testing/target-mana-value-20261110.md)
+uses rules mana value for hybrid and snow target restrictions. A missing legal
+counter target reproduces before the fix; all183tests across seven whole modules
+pass afterward, including50new native cases. Payment and target-stack X stay intact.
+Full RC and expert-AI acceptance remain open.
+
 The [incomplete block-search correction](docs/testing/unknown-block-survival-20261109.md)
 preserves a legal fallback when a hidden death-draw makes another block unknown,
 rather than selecting a completed losing line. The native failure reproduces

@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab Finish Plan
 
+November10 component: [target mana-value correction](docs/testing/target-mana-value-20261110.md)
+reproduces a missing legal native counter target and reuses rules mana value
+instead of a payment estimate. All183tests across seven whole modules pass,
+including50new native cases; the initial test-setup failure is retained.
+Payment/stack-X contracts remain intact. All original full RC and expert-AI work stays open.
+
 Updated: 2026-11-08 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass

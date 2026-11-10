@@ -6,7 +6,7 @@ from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone, object_incarnation
 from card_data.token_definitions import named_artifact_token
-from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
+from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost, mana_value as printed_mana_value
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind, stack_source_card, validate_hexproof_shroud_targets, validate_protection_targets
 
@@ -2059,9 +2059,7 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
     min_value = restrictions.get("mana_value_min")
     exact_value = restrictions.get("mana_value_exact")
     if max_value is not None or min_value is not None or exact_value is not None:
-        cost = parse_mana_cost(card.mana_cost or "", x_value=x_value)
-        mana_value = int(cost.get("generic", 0) or 0) + int(cost.get("C", 0) or 0)
-        mana_value += sum(int(cost.get(color, 0) or 0) for color in "WUBRG")
+        mana_value = printed_mana_value(card.mana_cost or "", x_value=x_value)
         if ((max_value is not None and mana_value > int(max_value))
                 or (min_value is not None and mana_value < int(min_value))
                 or (exact_value is not None and mana_value != int(exact_value))):
