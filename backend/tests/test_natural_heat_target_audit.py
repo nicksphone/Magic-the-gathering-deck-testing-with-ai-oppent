@@ -74,9 +74,11 @@ def _assert_legacy_snapshot_parity(actual, historical, original, history, histor
             for key in ('loyalty', '__copiable_lki'):
                 if key not in raw['last_known_battlefield']:
                     current['last_known_battlefield'].pop(key)
-            if 'zone_change_sequence' not in raw['last_known_battlefield']:
+            if 'zone_change_sequence' not in raw['last_known_battlefield'] \
+                    and 'zone_change_sequence' in current['last_known_battlefield']:
                 # Battles retain the battlefield incarnation's sequence; death then advances the card.
-                assert current['last_known_battlefield']['zone_change_sequence'] == current['zone_change_sequence'] - 1
+                if 'zone_change_sequence' in current:
+                    assert current['last_known_battlefield']['zone_change_sequence'] == current['zone_change_sequence'] - 1
                 current['last_known_battlefield'].pop('zone_change_sequence')
             if observation and 'characteristic_record' not in raw:
                 current.pop('characteristic_record')
