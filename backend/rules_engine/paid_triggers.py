@@ -40,7 +40,7 @@ def resolution_mana_ability_allowed(state, card, spec):
             and state.active_player == payer)
 
 
-def compile_paid_instruction(state, source, controller, instruction, event_payload):
+def compile_paid_instruction(state, source, controller, instruction, event_payload, *, referred_activation=False):
     """Compile only complete supported bodies from the caller's matched clause."""
     if len(instruction) > 8192:
         return None
@@ -66,6 +66,8 @@ def compile_paid_instruction(state, source, controller, instruction, event_paylo
             return None
         data['keywords'] = [keyword.title() for keyword in data.get('keywords', [])]
     else:
+        if referred_activation is not True:
+            return None
         from rules_engine.activation_copy import paid_copy_body
         copy_body = paid_copy_body(body, event_payload)
         if copy_body is None:
