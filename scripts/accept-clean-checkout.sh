@@ -9,6 +9,8 @@ command -v node >/dev/null
 command -v npm >/dev/null
 command -v timeout >/dev/null
 browser=${MTG_CHROME:-$(command -v google-chrome || command -v chromium || true)}
+sandbox_flag=${MTG_BROWSER_NO_SANDBOX:-0}
+[[ "$sandbox_flag" = 0 || "$sandbox_flag" = 1 ]] || exit 2
 [[ -x "$browser" ]] || { echo 'Set MTG_CHROME to a supported browser executable.' >&2; exit 2; }
 work=$(mktemp -d "${TMPDIR:-/tmp}/mtg-clean-acceptance-XXXXXX")
 mkdir "$work/source" "$work/logs" "$work/npm-cache" "$work/xdg-cache"
@@ -55,6 +57,6 @@ stage frontend-build timeout 180s npm --prefix frontend run build
 # No program selection: run the entire configured cohort, including fallback UI.
 # The browser harness takes another fresh source/DB/cache/profile copy and only
 # consumes the dependencies freshly installed above.
-stage browser timeout 14400s env MTG_TEST_PYTHON="$py" MTG_FRONTEND_DEPS="$PWD/frontend/node_modules" MTG_CHROME="$browser" bash frontend/tests/run-browser-ci.sh
+stage browser timeout 14400s env MTG_TEST_PYTHON="$py" MTG_FRONTEND_DEPS="$PWD/frontend/node_modules" MTG_CHROME="$browser" MTG_BROWSER_NO_SANDBOX="$sandbox_flag" bash frontend/tests/run-browser-ci.sh
 printf 'PASS\t%s\n' "$revision" > "$work/ACCEPTED.tsv"
 echo "All configured stages passed: $work/results.tsv"

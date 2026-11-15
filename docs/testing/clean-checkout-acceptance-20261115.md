@@ -56,3 +56,24 @@ cached-dependency build or focused PR #61 run for this full command.
 
 This run covers the declared Gate 1 #7 checks. Passing it does not establish
 complete rules support, AI strength, backup/restore or overall RC readiness.
+
+## Hosted execution
+
+After this branch and PR #61 are merged, dispatch **Clean Checkout Acceptance**
+(`.github/workflows/clean-checkout-acceptance.yml`) on main in GitHub Actions.
+The job provisions CI's exact Python/Node and current signed Chrome, then runs
+the command against `GITHUB_SHA`. It deliberately uses no setup-node npm cache;
+the script installs dependencies into its fresh workspace. CI explicitly uses
+`MTG_BROWSER_NO_SANDBOX=1`, matching the existing browser CI job; the result does
+not certify the Chrome OS sandbox. Local runs default to sandbox enabled.
+
+The artifact includes revision, stage exits, runtime identity, JUnit and stage
+logs, including browser episode output, even after failure. It excludes profiles,
+DBs and package caches. Record the run ID and exact results after it finishes.
+A dispatch that fails provisioning or a stage leaves #7 open. The workflow has
+not been dispatched from this sandbox.
+
+The host attempt at `dd8c988a` passed platform and Node checks, then failed venv
+creation because that host lacked ensurepip/python3.12-venv. No downstream tests
+ran. The hosted setup-python step supplies venv support without requiring host
+sudo or reusing an existing environment.
