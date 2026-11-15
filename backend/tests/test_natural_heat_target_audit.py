@@ -74,6 +74,10 @@ def _assert_legacy_snapshot_parity(actual, historical, original, history, histor
             for key in ('loyalty', '__copiable_lki'):
                 if key not in raw['last_known_battlefield']:
                     current['last_known_battlefield'].pop(key)
+            if 'zone_change_sequence' not in raw['last_known_battlefield']:
+                # Battles retain the battlefield incarnation's sequence; death then advances the card.
+                assert current['last_known_battlefield']['zone_change_sequence'] == current['zone_change_sequence'] - 1
+                current['last_known_battlefield'].pop('zone_change_sequence')
             if observation and 'characteristic_record' not in raw:
                 current.pop('characteristic_record')
     for seat, observations in actual['card_observations'].items():
@@ -86,6 +90,10 @@ def _assert_legacy_snapshot_parity(actual, historical, original, history, histor
             if cid in departed_lki or not raw:
                 assert all(key in current for key in ('control_effect_base', 'control_effects', 'kicker_count',
                                                      'activated_ability_effects'))
+            for key in ('printed_defense', 'battle_protector'):
+                if key not in raw and key in current:
+                    assert current[key] is None  # Defaults added with Battles.
+                    current.pop(key)
             for key, value in {'control_effect_base': None, 'control_effects': [],
                                'kicker_count': None, 'activated_ability_effects': []}.items():
                 if key not in raw and key in current:
