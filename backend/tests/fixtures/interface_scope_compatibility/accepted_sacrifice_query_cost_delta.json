@@ -1,0 +1,23 @@
+{
+  "accepted_public_commit": "cc29147b4a62e405f6315d1be2509ed24605f6a8",
+  "previous_accepted_public_commit": "3d691056ba34b9f578f6d038b871c233a41fe869",
+  "source": "rules_engine/costs.py",
+  "accepted_delta": {
+    "old_sha256": "08a45918b5adfd2f09fb8d762e6a6019e064fb77794cdb991399aa8c845516b8",
+    "new_sha256": "205f021cd371f0a95c1e15d5efa2311a93bb3e37888072ec71a96825ffa77841",
+    "hunks": [
+      {
+        "start": 12,
+        "end": 13,
+        "old": "",
+        "new": "from rules_engine.query_context import rule_query_scope\n"
+      },
+      {
+        "start": 762,
+        "end": 768,
+        "old": "",
+        "new": "    # All eligibility reads share one view; discard it before caller payment.\n    with rule_query_scope(state):\n        return _eligible_sacrifice_ids_query(state, player_id, kind, payment_kind=payment_kind)\n\n\ndef _eligible_sacrifice_ids_query(state: MatchState, player_id: int, kind: str = \"creature\", *, payment_kind: str = 'spell') -> list[str]:\n"
+      }
+    ]
+  }
+}

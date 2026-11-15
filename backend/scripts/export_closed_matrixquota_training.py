@@ -16,7 +16,7 @@ import tempfile
 
 _PRODUCERS = {
     'scripts/matchup_round_robin.py': 'ad2c1c1df3e9204152f16ac579ab2b870a33f04d5a5ccce43010b8f22a518f4f',
-    'scripts/regression_matrix_replay.py': 'd29588861eb7a471ae3616fd79a4591c4b56050cc4ef9d1fe9db0e7ee3228b10',
+    'scripts/regression_matrix_replay.py': '2966c40f05063e00a3fd7b2865d8f3ac711ca4684ecbbd8369cf0037cb5aaf0d',
     'scripts/build_ai_log_priors.py': '5142857efe9051889a91b5b4e7db40a199d37afd1afb066b1a779d1d073d2e4c',
 }
 _CHECKS = (
