@@ -544,6 +544,10 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
             from rules_engine.retained_counter_prohibition import current
             if not current(state, item.payload.get('__counter_source_ref')):
                 proxy._retained_source_lki = lki
+    else:
+        from rules_engine.colors import card_color_symbols
+        # A trigger clause is not the source's printed characteristics.
+        proxy.colors = sorted(card_color_symbols(source, state))
     proxy.oracle_text = clause
     source_kind = stack_object_kind(state, item)
     hints = inspect_target_hints(state, proxy, item.controller, source_kind=source_kind)

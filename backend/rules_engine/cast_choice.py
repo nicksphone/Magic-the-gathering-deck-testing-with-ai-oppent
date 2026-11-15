@@ -107,6 +107,9 @@ def build_cast_hints(
         aura = is_aura(card)
         card = copy(card)
         if aura:
+            from rules_engine.colors import card_color_symbols
+            # Targeting text must not replace the Aura's source characteristics.
+            card.colors = sorted(card_color_symbols(card, state))
             enchant = re.search(r"^enchant [^.\n]+", without_reminder_text(card.oracle_text or ""), re.I | re.M)
             from rules_engine.bestow import is_bestowed
             card.oracle_text = 'Enchant creature' if is_bestowed(card) else enchant.group(0) if enchant else ""

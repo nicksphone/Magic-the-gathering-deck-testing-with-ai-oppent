@@ -316,6 +316,10 @@ def _resolve_top_of_stack(state: MatchState) -> bool:
             target_source.card_faces = []
             # Nested hint filters must also use this receipt, never new-object layers.
             target_source._retained_source_lki = source_lki
+        else:
+            from rules_engine.colors import card_color_symbols
+            # Hints parse ability text, but protection tests the real source.
+            target_source.colors = sorted(card_color_symbols(card, state))
     targeted_frame = card is not None and (stack_object_kind(state, item) == 'spell'
                                            or bool(item.payload.get('__ability_target_text')))
     if card and item.payload.get("__ability_target_text") and target_count == 1:
