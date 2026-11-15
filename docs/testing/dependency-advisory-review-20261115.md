@@ -177,3 +177,29 @@ All three advisory dispositions are **recommendations awaiting Claude**. Gate 3
 CI and fresh scans. The zero-production npm result excludes dev tooling; it does
 not negate the exposed Vite dev server. No application dependency, lock, CI
 expected-version fixture or production source was edited in this review.
+
+## Maintainer decisions — 2026-11-15
+
+- **Minimatch/eslint temporary exception ACCEPTED by Claude**, project maintainer
+  and exception owner. Scope: the dev-only lint/config chain for
+  GHSA-g3hv-75wg-m249, including its propagated npm entries. Rationale: production
+  dependency scan is clear; committed globs are fixed; the inspected calls use
+  the non-amplifying default optimization level; no application-input exploit
+  path was demonstrated. This does not declare minimatch generally safe or
+  authorize arbitrary untrusted glob inputs. Keep CI resource limits and review
+  changes to lint configuration. **Revisit when a compatible typescript-eslint/
+  eslint release carries minimatch >=11.0.1**, or sooner if glob inputs/options,
+  tooling exposure or exploit evidence change. Owner should review again by
+  2026-12-15 if the upstream trigger has not occurred. No force override and no
+  downgrade are approved.
+- **Vite remediation handled by Claude in PR #64**, to 6.4.6. Host lint, build and
+  1,047 frontend tests passed; the host rescan cleared the Vite advisory. This is
+  a PR/host result, not a claim that its main-branch CI has already passed.
+- **OpenTelemetry patch APPROVED**, 1.45.1 → 1.45.2, as a separate coordinated
+  hash-lock/wheel-inventory/runtime-expectation change. It is not applied by this
+  advisory-document branch. Validate the approved patch and rescan before
+  closing its disposition.
+
+These decisions supersede the earlier awaiting-decision wording. Gate 3 #4
+remains OPEN until the selected remediation branches pass CI and the final
+composed dependency scans/dispositions are confirmed.
