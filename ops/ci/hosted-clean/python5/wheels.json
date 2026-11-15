@@ -190,15 +190,15 @@
       "version": "2.3.1"
     },
     "opentelemetry-api": {
-      "bytes": 60256,
-      "filename": "opentelemetry_api-1.45.1-py3-none-any.whl",
-      "metadata_sha256": "5bc71e90cb421be92a43bf5ad5b0f25dccfa2a24ddceaa2877779879962a4c9e",
+      "bytes": 60335,
+      "filename": "opentelemetry_api-1.45.2-py3-none-any.whl",
+      "metadata_sha256": "aa93f63be0d6d1f662966e67b22a77c0d9966752e3a32ad87c1347f595cea7cb",
       "requires_dist": [
         "typing-extensions>=4.5.0"
       ],
       "requires_python": ">=3.10",
-      "sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb",
-      "version": "1.45.1"
+      "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+      "version": "1.45.2"
     },
     "packaging": {
       "bytes": 129956,

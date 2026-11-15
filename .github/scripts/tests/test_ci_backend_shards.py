@@ -17,7 +17,7 @@ VERSIONS = {
     'annotated-doc': '0.0.5', 'annotated-types': '0.8.0', 'anyio': '4.15.1',
     'certifi': '2026.10.19', 'click': '8.5.0', 'fastapi': '0.142.2',
     'greenlet': '3.5.6', 'h11': '0.16.0', 'httpcore': '1.0.9', 'httpx': '0.27.2',
-    'idna': '3.20', 'iniconfig': '2.3.1', 'opentelemetry-api': '1.45.1',
+    'idna': '3.20', 'iniconfig': '2.3.1', 'opentelemetry-api': '1.45.2',
     'packaging': '26.3', 'pluggy': '1.6.0', 'pydantic-core': '2.23.4',
     'pydantic': '2.9.2', 'pygments': '2.21.0', 'pytest': '9.0.3',
     'python-multipart': '0.0.31', 'rapidfuzz': '3.9.7', 'sniffio': '1.3.1',
