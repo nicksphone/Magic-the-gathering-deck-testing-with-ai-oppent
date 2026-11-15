@@ -1,8 +1,8 @@
-# Dependency advisory review — scans currently blocked
+# Dependency advisory review
 
 No application dependency was installed, upgraded, removed or automatically
 fixed. Package manifests and lockfiles remain unchanged. This is not a clean
-security result and does not close Gate 3 #4.
+security result. Completed host scans and proposed dispositions are recorded below; Gate 3 #4 remains open pending decisions and CI.
 
 ## Inputs and actual local results
 
@@ -68,3 +68,112 @@ application dependency or lock**. Any accepted exception needs explicit scope,
 reason, owner and review date. Rerun both scans and relevant tests after an
 approved upgrade. Until a completed scan and disposition exist, the advisory
 review remains open; there is no accepted risk or upgrade decision in this PR.
+
+## Completed host scans — 2026-11-15, approximately 23:3x
+
+Claude supplied the full JSON reports from the committed PR #61 frontend lock
+on Node 24.22.0 and from pip-audit 2.10.1 against the 28-entry backend hash lock.
+I read the reports directly; these completed scans supersede the local query
+failures above. The frontend dependency files match the inputs listed above.
+The host npm version was not supplied. These are dated database observations,
+not permanent assurances; there were no upgrades or auto-fixes.
+
+| Completed scan | Result |
+| --- | --- |
+| npm audit, all 214 lock entries | 10 moderate package entries; 0 low/high/critical |
+| npm audit, `--omit=dev` | 0 vulnerabilities |
+| pip-audit `--disable-pip --no-deps --require-hashes` | 28 dependencies, 1 affected package/advisory; 27 without reported advisories |
+
+Report SHA256s: npm-all `840311a4add09d382be36284ad610b2601cf782499f15cbd326fe55b0931d431`;
+npm-production `bafc863409e129d17894a6ca81b8943a49b4e0d535a84668f255666c128c10e5`;
+pip-audit `846e16b4b8a8d4684d3b45f610b5c1e05db4c6e16f96250ebedb3ea6f7154c3c`.
+The npm ten are **two distinct advisories**, not ten independent defects:
+
+| Affected locked packages | Advisory identity | Proposed disposition (Claude to decide) |
+| --- | --- | --- |
+| minimatch 10.2.6 | [GHSA-g3hv-75wg-m249 / CVE-2026-118764](https://github.com/advisories/GHSA-g3hv-75wg-m249), npm source **1244623** | Dev/CI glob processing; investigate compatible parent updates, otherwise a narrowly scoped, dated dev-tool exception pending a tested fix |
+| eslint 10.11.0; @eslint/config-array 0.23.5; typescript-eslint 8.70.1; @typescript-eslint/eslint-plugin, parser, type-utils, typescript-estree and utils, each 8.70.1 | Same minimatch advisory, propagated through eight dependent package entries; no additional GHSA in their `via` chains | Same disposition; do not count these as independent advisories or blindly apply npm's suggested forced resolution |
+| vite 6.4.4 | [GHSA-8g5g-mxqh-grgj / CVE-2026-118662](https://github.com/vitejs/vite/security/advisories/GHSA-8g5g-mxqh-grgj), npm source **1243858** | Recommend a separate approved 6.4.x patch update; advisory minimum 6.4.5, npm report proposes 6.4.6 |
+| opentelemetry-api 1.45.1 | [CVE-2026-126360 / GHSA-mf5v-w3w3-f6cg](https://github.com/open-telemetry/opentelemetry-python/security/advisories/GHSA-mf5v-w3w3-f6cg) | Recommend a separate approved patch to 1.45.2 with a new wheel hash and full locked-runtime validation |
+
+### Reachability and remediation review
+
+**Vite — actionable developer-server exposure.** The advisory concerns denied
+file reads through crafted queries when a dev server is network-exposed and a
+sensitive denied file lies within its allowed tree. The built static bundle is
+not that server. This repo nevertheless enables the relevant network exposure:
+`frontend/vite.config.ts` binds `0.0.0.0`, and README's dev command repeats
+`--host 0.0.0.0`. Thus “devDependency” is not sufficient dismissal. The presence
+of sensitive files and an exploitable request was not tested. In contrast,
+`ops/caddy/run.py` starts Uvicorn and serves a prebuilt dist through the operator
+proxy; it does not launch Vite. Recommendation: approve the patch update first;
+until then keep dev servers loopback-only/trusted and keep secrets out of the
+served workspace. This is a recommendation, not a configuration change here.
+Revalidate Vite dev/proxy behavior, lint/typecheck/build, the full browser runner
+and clean-checkout acceptance after any approved update.
+
+**Minimatch/eslint chain — build/lint exposure, not shipped gameplay.** The
+advisory's amplification requires attacker-supplied glob patterns with
+`optimizationLevel >= 2`. The locked paths are eslint → minimatch,
+eslint → @eslint/config-array → minimatch, and typescript-eslint → parser/
+typescript-estree → minimatch. All flagged nodes have `dev: true`; none is a
+React runtime dependency. `npm run lint` executes `eslint src`; the committed
+`frontend/eslint.config.mjs` uses fixed `src/**/*.{ts,tsx}` and `dist/**` patterns.
+Static inspection of matching installed package versions found `{dot: true}`
+options in eslint/config-array and typescript-estree's inspected call site;
+minimatch defaults to optimization level 1. Exploitation is therefore **not
+established in these inspected paths**, not proved impossible in all tooling.
+Untrusted PRs can change config/patterns and execute tooling in CI, so trust and
+resource bounds still matter; no remote app-input-to-glob path was found.
+
+The upstream fix starts at minimatch 11.0.1, outside these parents' declared
+`^10.2.x` ranges. npm reports a semver-major/force-style proposed change to
+typescript-eslint 8.36.0 despite our locked 8.70.1; that is not evidence of a safe
+upgrade. Prefer compatible parent releases that adopt the fix. If unavailable,
+Claude can choose a time-bounded trusted-config/CI-only exception or approve a
+separate targeted minimatch-major override experiment. Such an override needs
+API/Node-engine compatibility review, lint/TypeScript rule parity and full
+frontend checks; do not use `npm audit fix --force` indiscriminately. No exception
+is accepted by this document.
+
+**OpenTelemetry — transitive production import, conditional vulnerable path.**
+FastAPI 0.142.2 metadata requires `opentelemetry-api>=1.44.0`; FastAPI's
+`applications.py` imports its telemetry modules, which import OpenTelemetry.
+It is not an unused random lock entry. The vulnerability is ReDoS in
+`TraceContextTextMapPropagator.extract()` for an untrusted carrier preserving
+embedded newlines. Ordinary conforming HTTP headers cannot contain them;
+JSON-carrier integrations need separate assessment.
+
+`backend/main.py` creates `FastAPI(...)` without telemetry providers or middleware
+instrumentation. No direct OpenTelemetry/traceparent extraction, provider setup
+or MCP JSON carrier was found in application/operator source. The complete lock
+contains no OpenTelemetry SDK/exporter/instrumentation package. FastAPI's
+telemetry **configuration defaults to tracing true**, but `NativeTelemetry.enabled()`
+checks that a real provider is configured; the default deferred providers do not
+activate it. Its enabled tracing path calls `propagate.extract()` on ASGI headers,
+not arbitrary request JSON. This supports **no demonstrated reachable vulnerable
+carrier in the default checked deployment**, not unconditional immunity if an
+operator adds instrumentation/providers or another integration.
+
+A fresh constructor-only probe corroborated enabled=false with no OTEL settings
+or providers, without importing main or starting services. That local interpreter
+already has opentelemetry-api **1.45.2** (not changed by this work), so the probe is
+not execution evidence for the locked vulnerable 1.45.1. The reachability judgment
+rests on source/configuration and the closed lock, not that patched probe.
+
+Prefer the small 1.45.2 patch despite the limited demonstrated exposure. It
+satisfies FastAPI's lower bound. Changing only the version without its exact wheel
+SHA256 breaks `--require-hashes` installation. Regenerate the approved Linux/
+CPython wheel pin, verify all 28 resolved versions and `pip check`, rerun the
+advisory query and backend/frontend/browser checks. Update the synthetic expected
+version in `.github/scripts/tests/test_ci_backend_shards.py` in that upgrade PR
+while preserving the runtime's strict lock equality; do not weaken metadata
+checks. No telemetry disabling or HTTP validation workaround is implemented here.
+
+### Decision status
+
+All three advisory dispositions are **recommendations awaiting Claude**. Gate 3
+#4 remains OPEN until risks/exceptions are decided and any chosen upgrades pass
+CI and fresh scans. The zero-production npm result excludes dev tooling; it does
+not negate the exposed Vite dev server. No application dependency, lock, CI
+expected-version fixture or production source was edited in this review.
