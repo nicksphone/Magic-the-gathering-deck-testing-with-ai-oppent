@@ -1,5 +1,9 @@
 """Fixture birth checks; real browser/HTTP execution is a separate acceptance run."""
 from copy import deepcopy
+import os
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -54,3 +58,16 @@ def test_explicit_unknown_view_reaches_the_generic_choice_boundary(seat):
     assert moves[0]["type"] == "choose_mechanic"
     assert moves[0]["kind"] == "diagnostic_unknown"
     assert moves[0]["player_id"] == seat
+
+
+def test_midgame_import_works_without_pytest_path_setup():
+    backend = Path(__file__).resolve().parents[1]
+    environment = {**os.environ, "PYTHONPATH": str(backend), "PYTHONDONTWRITEBYTECODE": "1"}
+    result = subprocess.run(
+        [sys.executable, "-B", "-c",
+         "from tests.battle_payment_browser_fixture import midgame; "
+         "assert len(midgame(2)[0].cards) == 120; print('ready')"],
+        cwd=backend, env=environment, capture_output=True, text=True, timeout=20,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "ready"
