@@ -60,3 +60,17 @@ def test_bootstrap():
 ])
 def test_first_difference(left,right,expected):
     assert first_divergence(left,right)==expected
+
+def test_health_and_resource_policy_predeclared(plan):
+    p=plan['policy']
+    assert (p['workers'],p['cpu_cores_per_worker'],p['max_memory_bytes_per_worker'],p['max_cpu_seconds_per_game']) == (2,1,2147483648,90)
+    assert p['health_gate']['max_resource_limit_fraction']==0.01
+    assert p['health_gate']['accepts_ai_strength'] is False
+    assert p['shuffle_policy']=='engine_seed_with_seats_swapped_not_deck_fixed'
+
+def test_actual_seed_only_admission_screen():
+    from scripts.archetype_matrix_plan import admission_report
+    r=admission_report()
+    assert len(r['decks'])==11 and r['matrix_runnable'] is False
+    assert all(not d['canonical_missing'] for d in r['decks'])
+    assert {d['deck'] for d in r['decks'] if d['screen']=='stop'}=={'Burn','Mono Red Aggro'}

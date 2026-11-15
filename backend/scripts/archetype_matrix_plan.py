@@ -37,11 +37,51 @@ def build_plan(revision, builtin_source):
             "decks": decks, "seeds": SEEDS.copy(), "cells": cells,
             "policy": {"unit": "single_game", "difficulty": "master", "sideboard": "none",
                        "max_seconds": 120, "max_ticks": 10000, "max_turns": 100,
+                       "workers": 2, "cpu_cores_per_worker": 1, "max_cpu_seconds_per_game": 90,
+                       "max_memory_bytes_per_worker": 2147483648,
+                       "shuffle_policy": "engine_seed_with_seats_swapped_not_deck_fixed",
+                       "crash_or_host_sleep": "invalidate_run_new_id_no_resume",
+                       "health_gate": {"crashes": 0, "illegal_accepted_actions": 0,
+                                       "replay_divergences": 0, "parity_divergences": 0,
+                                       "missing_traces": 0, "missing_cells": 0,
+                                       "max_resource_limit_fraction": 0.01,
+                                       "all_decks_admitted": True, "accepts_ai_strength": False},
                        "timeout_score": None, "draw_score": 0.5, "deck_out": "engine_rules",
                        "resume": False, "retries": 0, "legacy_results": "forbidden",
                        "ci": "paired_seed_cluster_percentile_bootstrap_95", "bootstrap_replicates": 2000,
                        "bootstrap_seed": 271828}, "execution_implemented": False}
     return plan
+
+
+def admission_report():
+    """Committed seed-only readiness/known-gap screen, no DB/network/game run."""
+    from decks.builtin_decks import BUILTIN_DECKS
+    from scripts.matchup_round_robin import _template_inventory, admit_execution_rows
+    from card_data.seed_cards import SEED_CARD_DATA, seed_card_payload
+    from card_data.hydration import ready_for_match
+    from rules_engine.coverage import deck_pair_coverage
+    results = []
+    for name, text in sorted(BUILTIN_DECKS.items()):
+        boards, missing = {}, []
+        for board, inventory in _template_inventory(text).items():
+            rows = []
+            for card, count in inventory.items():
+                if card not in SEED_CARD_DATA:
+                    missing.append(card)
+                    continue
+                row = {**seed_card_payload(card), "card_name": card, "quantity": count}
+                rows.append(row)
+                if not ready_for_match(row):
+                    missing.append(card)
+            boards[board] = rows
+        if not missing:
+            admit_execution_rows([{"name": name, **boards}])
+        gaps = deck_pair_coverage(boards["mainboard"] + boards["sideboard"], [])["known_unsupported_cards"]
+        results.append({"deck": name, "canonical_missing": sorted(set(missing)),
+                        "known_gaps": [{"card": g["card_name"], "reasons": g["mechanics"]} for g in gaps],
+                        "screen": "stop" if missing or gaps else "pass_known_gap_screen"})
+    return {"scope": "seed-only canonical readiness and exploratory known-gap screen; not runtime certification",
+            "decks": results, "matrix_runnable": all(row["screen"] == "pass_known_gap_screen" for row in results)}
 
 
 def paired_interval(scores, seed):
@@ -129,9 +169,12 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("plan"); p.add_argument("revision"); p.add_argument("output", type=Path)
     p = sub.add_parser("analyze"); p.add_argument("plan", type=Path); p.add_argument("results", type=Path); p.add_argument("output", type=Path)
+    p = sub.add_parser("admission"); p.add_argument("output", type=Path)
     args = parser.parse_args()
     if args.command == "plan":
         result = build_plan(args.revision, (Path(__file__).parents[1]/"decks/builtin_decks.py").read_text())
+    elif args.command == "admission":
+        result = admission_report()
     else:
         result = summarize(json.loads(args.plan.read_text()), json.loads(args.results.read_text()))
     with args.output.open("x") as stream:
