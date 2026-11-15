@@ -49,6 +49,8 @@ def _attachment_characteristics(card, state):
 
 
 def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool:
+    if 'Battle' in effective_types(state, attachment):
+        return False
     aura = is_aura(attachment, state)
     equipment = is_equipment(attachment, state)
     fortification = is_fortification(attachment, state)

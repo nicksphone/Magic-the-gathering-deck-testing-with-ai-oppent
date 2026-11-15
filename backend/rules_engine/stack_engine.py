@@ -190,6 +190,14 @@ def _validate_damage_activation_source(state: MatchState, item: StackItem) -> No
 
 
 def resolve_top_of_stack(state: MatchState) -> bool:
+    from rules_engine.battles import trigger_resolution_scope
+    if not state.stack:
+        return False
+    with trigger_resolution_scope(state, state.stack[-1]):
+        return _resolve_top_of_stack(state)
+
+
+def _resolve_top_of_stack(state: MatchState) -> bool:
     if state.pending_mechanic_choice:
         return False
     if not state.stack:
@@ -521,6 +529,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    from rules_engine.events import trigger_source_reference
+    payload.setdefault('__stack_source_reference', trigger_source_reference(state, item.source_card_id, payload))
+    item.payload.setdefault('__stack_source_reference', payload['__stack_source_reference'])
     if legal_return_targets is not None:
         payload['target_card_ids'] = legal_return_targets
     if item.effect_key == 'linked_landfall_damage':
@@ -592,6 +603,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
 
 
 def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -> bool:
+    from rules_engine.battles import trigger_left_stack
+    trigger_left_stack(state, item)
     entry_staged_here = False
     from rules_engine.ward import mark_stack_targets
     for copied in list(state.stack):
@@ -611,9 +624,11 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if payload.get("__failed_to_resolve") else f"{item.label} resolves."
         )
         return True
-    is_trigger = bool(payload.get("__trigger_event"))
+    from rules_engine.targeting import stack_object_kind
+    # Unannounced frames from earlier snapshots keep their original non-trigger spell route.
+    is_spell = stack_object_kind(state, item) in {'spell', 'legacy_unknown'}
     card = state.cards.get(item.source_card_id)
-    if card and card.zone == Zone.STACK and not is_trigger:
+    if card and card.zone == Zone.STACK and is_spell:
         owner = state.players[getattr(card, "owner", card.controller)]
         if "Instant" in effective_types(state, card) or "Sorcery" in effective_types(state, card) or payload.get("__failed_to_resolve"):
             if payload.get("__flashback") or payload.get("__aftermath"):

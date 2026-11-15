@@ -16,8 +16,8 @@ def implementation():
              if (isinstance(node, ast.Assign) and any(isinstance(t, ast.Name)
                  and t.id == '_automatic_effect_cost_context' for t in node.targets))
              or (isinstance(node, ast.FunctionDef) and node.name in {
-                 '_automatic_effect_cost_scope', '_materialization_without_mana'})]
-    assert len(nodes) == 3
+                 '_automatic_effect_cost_scope', '_automatic_effect_permission', '_materialization_without_mana'})]
+    assert len(nodes) == 4
     namespace = {'ContextVar': ContextVar, 'contextmanager': contextmanager}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), str(path), 'exec'), namespace)
     return namespace['_automatic_effect_cost_scope'], namespace['_materialization_without_mana']

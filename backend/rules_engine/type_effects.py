@@ -6,6 +6,23 @@ from game_state.state import Zone, allocate_effect_timestamp, object_incarnation
 
 
 @lru_cache(maxsize=4096)
+def battlefield_additional_type(oracle_text, name):
+    """Recognize a complete printed self-only type addition."""
+    from rules_engine.card_types import CARD_TYPES
+    subjects = {'this creature', 'this permanent', 'this land', 'this artifact',
+                'this enchantment', 'this battle', 'this planeswalker',
+                name.lower(), name.split(',', 1)[0].lower()}
+    kinds = {kind.lower(): kind for kind in CARD_TYPES}
+    for line in (oracle_text or '').lower().splitlines():
+        match = re.fullmatch(
+            r"as long as (.+) is on the battlefield, it(?:'s| is) an? ([a-z]+) in addition to its other types\.",
+            line.strip())
+        if match and match[1] in subjects and match[2] in kinds:
+            return kinds[match[2]]
+    return None
+
+
+@lru_cache(maxsize=4096)
 def devotion_type_condition(oracle_text, name):
     """Recognize the complete self-only type instruction, not a card name."""
     from rules_engine.devotion import COLORS

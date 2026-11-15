@@ -11,6 +11,11 @@ from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_en
 from rules_engine.graveyard_batch_entry import resolve as resolve_graveyard_batch
 from rules_engine.activation_copy import resolve_copy_referred_ability
 from rules_engine.activated_grants import resolve_grant as resolve_activated_grant
+from rules_engine.conditional_player_draw import resolve_instruction as resolve_conditional_player_draw
+from rules_engine.deferred_upkeep_payment import schedule as schedule_upkeep_payment, resolve as resolve_upkeep_payment
+from rules_engine.conditional_self_copy import resolve as resolve_conditional_self_copy
+from rules_engine.counter_removal import resolve_remove as resolve_remove_counters, resolve_move as resolve_move_counters
+from rules_engine.battles import resolve_defeat
 
 from collections.abc import Callable
 
@@ -22,6 +27,13 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'remove_counters': resolve_remove_counters,
+    'move_counters': resolve_move_counters,
+    'battle_defeat': resolve_defeat,
+    'copy_self_from_graveyard': resolve_conditional_self_copy,
+    'schedule_upkeep_payment': schedule_upkeep_payment,
+    'deferred_upkeep_payment': resolve_upkeep_payment,
+    'conditional_player_draw': resolve_conditional_player_draw,
     'grant_activated_ability': resolve_activated_grant,
     'return_graveyard_permanents_batch': resolve_graveyard_batch,
     'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
@@ -248,6 +260,9 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         from rules_engine.damage_results import validate_hand_payload, HAND_CONTEXT_KEYS
         validate_hand_payload(state, payload)
         retained = {key: payload[key] for key in HAND_CONTEXT_KEYS if key in payload}
+        retained.update({key: payload[key] for key in (
+            '__trigger_source_reference','__activation_source_reference','__stack_source_reference',
+            '__announced_stack_kind','__stack_copy_kind') if key in payload})
         source_card_id = payload.get("__source_card_id")
         source_lki = payload.get("__source_lki")
         snow_mana_spent = payload.get("snow_mana_spent")
@@ -300,9 +315,10 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
                 return
         return
     handler = EFFECT_HANDLERS.get(effect_key)
-    if effect_key in {"ninjutsu", "annihilator"}:
-        from rules_engine.keyword_actions import resolve_ninjutsu, resolve_annihilator
-        handler = {"ninjutsu": resolve_ninjutsu, "annihilator": resolve_annihilator}[effect_key]
+    if effect_key in {"ninjutsu", "annihilator", "creature_sacrifice"}:
+        from rules_engine.keyword_actions import resolve_ninjutsu, resolve_annihilator, resolve_creature_sacrifice
+        handler = {"ninjutsu": resolve_ninjutsu, "annihilator": resolve_annihilator,
+                   "creature_sacrifice": resolve_creature_sacrifice}[effect_key]
     if effect_key == "dredge":
         from rules_engine.dredge import resolve_dredge
         handler = resolve_dredge

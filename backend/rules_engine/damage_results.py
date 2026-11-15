@@ -280,3 +280,24 @@ def apply_creature_damage(state, card_id: str, amount: int, source_id: str | Non
                                                'amount': amount, '__counter_is_effect': counter_is_effect})
     else:
         card.counters['__damage_marked'] = int(card.counters.get('__damage_marked', 0)) + amount
+
+
+def apply_permanent_damage(state, card_id: str, amount: int, source_id: str | None,
+                           *, source_lki: dict | None = None, controller=None,
+                           counter_is_effect=False, source_context=None) -> None:
+    """Apply each relevant type's consequences to post-replacement damage."""
+    from game_state.state import Zone
+    from rules_engine.type_effects import effective_types
+    from rules_engine.counter_removal import remove_counters
+    card = state.cards.get(card_id)
+    if amount <= 0 or card is None or card.zone != Zone.BATTLEFIELD:
+        return
+    types = set(effective_types(state, card))
+    if 'Creature' in types:
+        apply_creature_damage(state, card_id, amount, source_id, source_lki=source_lki,
+                              controller=controller, counter_is_effect=counter_is_effect,
+                              source_context=source_context)
+    if 'Planeswalker' in types:
+        remove_counters(state, card_id, 'loyalty', amount)
+    if 'Battle' in types:
+        remove_counters(state, card_id, 'defense', amount)

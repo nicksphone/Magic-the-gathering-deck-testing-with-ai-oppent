@@ -1,0 +1,192 @@
+{
+  "object": "card",
+  "id": "ba09360a-067e-48a5-bdc5-a19fd066a785",
+  "oracle_id": "0b299983-9f0f-404a-acd1-8f142572b1f1",
+  "multiverse_ids": [
+    516912,
+    516913
+  ],
+  "mtgo_id": 88779,
+  "arena_id": 76544,
+  "tcgplayer_id": 235673,
+  "cardmarket_id": 557492,
+  "name": "Extus, Oriq Overlord // Awaken the Blood Avatar",
+  "lang": "en",
+  "released_at": "2021-04-23",
+  "uri": "https://api.scryfall.com/cards/ba09360a-067e-48a5-bdc5-a19fd066a785",
+  "scryfall_uri": "https://scryfall.com/card/stx/149/extus-oriq-overlord-awaken-the-blood-avatar?utm_source=api",
+  "layout": "modal_dfc",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "cmc": 4,
+  "type_line": "Legendary Creature — Human Warlock // Sorcery",
+  "color_identity": [
+    "B",
+    "R",
+    "W"
+  ],
+  "keywords": [
+    "Magecraft",
+    "Double strike"
+  ],
+  "card_faces": [
+    {
+      "object": "card_face",
+      "name": "Extus, Oriq Overlord",
+      "mana_cost": "{1}{W}{B}{B}",
+      "type_line": "Legendary Creature — Human Warlock",
+      "oracle_text": "Double strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, return target nonlegendary creature card from your graveyard to your hand.",
+      "colors": [
+        "B",
+        "W"
+      ],
+      "power": "2",
+      "toughness": "4",
+      "flavor_text": "\"Join me for the dawn of a new age.\"",
+      "artist": "Chase Stone",
+      "artist_id": "2d753f61-5f5b-468e-97ea-8e0fdd347340",
+      "illustration_id": "d4a80d40-02ec-4d4e-bbe5-2fb58bbb4a88",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "normal": "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "large": "https://cards.scryfall.io/large/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "png": "https://cards.scryfall.io/png/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.png?1624593379",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379"
+      }
+    },
+    {
+      "object": "card_face",
+      "name": "Awaken the Blood Avatar",
+      "mana_cost": "{6}{B}{R}",
+      "type_line": "Sorcery",
+      "oracle_text": "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way.\nEach opponent sacrifices a creature of their choice. Create a 3/6 black and red Avatar creature token with haste and \"Whenever this token attacks, it deals 3 damage to each opponent.\"",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "artist": "Kekai Kotaki",
+      "artist_id": "4b771085-c049-4308-930d-ec9665f803a4",
+      "illustration_id": "ed8629b5-b79b-4b2a-a3dd-e230f0b8b3ea",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "normal": "https://cards.scryfall.io/normal/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "large": "https://cards.scryfall.io/large/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "png": "https://cards.scryfall.io/png/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.png?1624593379",
+        "art_crop": "https://cards.scryfall.io/art_crop/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
+        "border_crop": "https://cards.scryfall.io/border_crop/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379"
+      }
+    }
+  ],
+  "all_parts": [
+    {
+      "object": "related_card",
+      "id": "786156ce-544c-4aa4-8381-756042d0bcda",
+      "component": "combo_piece",
+      "name": "Extus, Oriq Overlord // Awaken the Blood Avatar",
+      "type_line": "Legendary Creature — Human Warlock // Sorcery",
+      "uri": "https://api.scryfall.com/cards/786156ce-544c-4aa4-8381-756042d0bcda"
+    },
+    {
+      "object": "related_card",
+      "id": "94a50acd-ac2d-47bf-b331-0bcf5edd9c75",
+      "component": "token",
+      "name": "Avatar",
+      "type_line": "Token Creature — Avatar",
+      "uri": "https://api.scryfall.com/cards/94a50acd-ac2d-47bf-b331-0bcf5edd9c75"
+    }
+  ],
+  "legalities": {
+    "standard": "not_legal",
+    "future": "not_legal",
+    "historic": "legal",
+    "timeless": "legal",
+    "gladiator": "legal",
+    "pioneer": "legal",
+    "modern": "legal",
+    "legacy": "legal",
+    "pauper": "not_legal",
+    "vintage": "legal",
+    "penny": "legal",
+    "commander": "legal",
+    "oathbreaker": "legal",
+    "standardbrawl": "not_legal",
+    "brawl": "legal",
+    "alchemy": "not_legal",
+    "paupercommander": "not_legal",
+    "duel": "legal",
+    "oldschool": "not_legal",
+    "premodern": "not_legal",
+    "predh": "not_legal"
+  },
+  "games": [
+    "arena",
+    "paper",
+    "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+    "nonfoil",
+    "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set_id": "541c3c28-8747-40e5-a231-8e8f33234859",
+  "set": "stx",
+  "set_name": "Strixhaven: School of Mages",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/541c3c28-8747-40e5-a231-8e8f33234859",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Astx&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/stx?utm_source=api",
+  "rulings_uri": "https://api.scryfall.com/cards/ba09360a-067e-48a5-bdc5-a19fd066a785/rulings",
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A0b299983-9f0f-404a-acd1-8f142572b1f1&unique=prints",
+  "collector_number": "149",
+  "digital": false,
+  "rarity": "mythic",
+  "artist": "Chase Stone & Kekai Kotaki",
+  "artist_ids": [
+    "2d753f61-5f5b-468e-97ea-8e0fdd347340",
+    "4b771085-c049-4308-930d-ec9665f803a4"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+    "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": true,
+  "edhrec_rank": 10302,
+  "penny_rank": 8124,
+  "preview": {
+    "source": "PowrDragn",
+    "source_uri": "https://twitter.com/powrdragn/status/1376927296758509568",
+    "previewed_at": "2021-03-30"
+  },
+  "prices": {
+    "usd": "0.48",
+    "usd_foil": "1.27",
+    "usd_etched": null,
+    "eur": "0.93",
+    "eur_foil": "1.58",
+    "tix": "0.02"
+  },
+  "related_uris": {
+    "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=516912&printed=false",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DExtus%252C%2BOriq%2BOverlord%2B%252F%252F%2BAwaken%2Bthe%2BBlood%2BAvatar",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DExtus%252C%2BOriq%2BOverlord%2B%252F%252F%2BAwaken%2Bthe%2BBlood%2BAvatar",
+    "edhrec": "https://edhrec.com/route/?cc=Extus%2C+Oriq+Overlord"
+  },
+  "purchase_uris": {
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F235673%3Fpage%3D1",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=557492&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "cardhoarder": "https://www.cardhoarder.com/cards/88779?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+  }
+}

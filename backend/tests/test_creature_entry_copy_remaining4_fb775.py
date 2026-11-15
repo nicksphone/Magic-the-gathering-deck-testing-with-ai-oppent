@@ -146,7 +146,7 @@ def test_paid_clone_exact_current_roster_retained_one_one_and_own_ability_bindin
     assert state.cards[target].owner == 3-seat
     assert effective_combat_stats(state, clone) == (1, 1)
     assert effective_keywords(state, clone) == []
-    assert_physical(state.cards[clone], 'Clone')
+    assert_physical(state.cards[clone], 'Clone', version=2)
     state = upgrade(state, seat, clone, 0)
     assert effective_combat_stats(state, clone) == (2, 2)
     assert effective_combat_stats(state, target) == (8, 8)
@@ -226,8 +226,8 @@ def test_paid_creature_copy_of_actual_copy_uses_retained_values_not_physical_clo
     assert effective_combat_stats(state, first) == effective_combat_stats(state, second) == (1, 1)
     assert state.cards[first].characteristic_record['values'] == state.cards[second].characteristic_record['values']
     assert state.cards[first].owner == seat and state.cards[second].owner == 3-seat
-    assert_physical(state.cards[first], 'Clone')
-    assert_physical(state.cards[second], 'Clone')
+    assert_physical(state.cards[first], 'Clone', version=2)
+    assert_physical(state.cards[second], 'Clone', version=2)
     assert effective_combat_stats(state, figure) == (8, 8)
 
 

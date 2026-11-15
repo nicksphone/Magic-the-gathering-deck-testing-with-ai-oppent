@@ -39,3 +39,12 @@ assert.deepEqual(cardStates({...fresh,keywords:['flying']},{}),['Summoning sick'
 assert.deepEqual(cardStates({...lostHaste,summoning_sick:false},{}),[],'an established creature remains unaffected');
 assert.deepEqual(cardStates({...fresh,types:['Artifact'],keywords:[]},{}),[],'noncreatures do not acquire a sickness badge');
 console.log('PASS 9 haste-badge checks: effective keywords, keyword loss/regain, raw condition and other states preserved');
+
+const siegeView = { ...forest, id: 'siege', name: 'Invasion of Zendikar', types: ['Battle'],
+  printed_defense: '3', defense: 0, battle_protector: 2 };
+const boardView = { players: { '2': { name: 'Defending seat' } } };
+assert.deepEqual(cardStates(siegeView, boardView), ['Defense 0', 'Protected by Defending seat']);
+const battleLand = { ...siegeView, types: ['Battle', 'Land'] };
+assert.deepEqual(groupBattlefield([battleLand, forest]).nonLands.map(card => card.id), ['siege']);
+const backView = { ...siegeView, name: 'Awakened Skyclave', types: ['Land', 'Creature'] };
+assert.deepEqual(cardStates(backView, boardView), [], 'a transformed creature has no Battle badges');

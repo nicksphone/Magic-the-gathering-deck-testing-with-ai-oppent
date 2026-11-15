@@ -25,7 +25,7 @@ RUNTIME = (
     'instance_order', 'zone_change_sequence', 'chosen_creature_type',
     'bestow_characteristics', 'is_token', 'last_known_battlefield',
     'exile_face_down', 'foretell_record', 'suspend_haste', 'granted_flashback',
-    'was_foretold', 'was_kicked', 'kicker_count',
+    'was_foretold', 'was_kicked', 'kicker_count', 'battle_protector',
 )
 
 

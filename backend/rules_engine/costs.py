@@ -48,6 +48,7 @@ class CostOption:
     kicker_base_id: str | None = None
     hand_exile_color: str | None = None
     hand_exile_generic_reduction: int = 0
+    additional_generic_reduction: int = 0
     graveyard_permission_key: str | None = None
     graveyard_permission_max_mana_value: int | None = None
 
@@ -82,7 +83,7 @@ def _parse_source_counter_cost(cost_text: str) -> ActivatedCost:
     for part in (segment.strip() for segment in cost_text.split(',')):
         match = re.fullmatch(
             r"\s*remove\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+)"
-            r"\s+(\+1/\+1|charge)\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment)\s*",
+            r"\s+(\+1/\+1|charge|defense)\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment|battle)\s*",
             part, re.IGNORECASE,
         )
         if match:
@@ -378,7 +379,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         raise ActionRejected('Graveyard replacement plan changed during mana payment')
     resource_causes = prepare_graveyard_entry_causes(state, resource_plans.values())
     if cost.remove_source_counters:
-        source.counters[cost.remove_counter_kind] -= cost.remove_source_counters
+        from rules_engine.counter_removal import remove_counters
+        remove_counters(state, source.id, cost.remove_counter_kind, cost.remove_source_counters)
+        # Existing cost snapshots and departure LKI retain an explicit zero slot.
+        source.counters.setdefault(cost.remove_counter_kind, 0)
     if cost.tap_source:
         from rules_engine.resource_events import tap_permanents
         tap_permanents(state, [source_id])
@@ -551,6 +555,17 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                             sacrifice_kind=kicker.get('sacrifice_kind', option.sacrifice_kind),
                             kicker_base_id=option.id))]
 
+    expanded = []
+    for branch in branches:
+        if 'optional_sacrifice_generic_reduction' in branch:
+            reduction = branch['optional_sacrifice_generic_reduction']
+            expanded.extend({'sacrifice_creatures': count, 'sacrifice_kind': 'creature',
+                             'additional_generic_reduction': count * reduction,
+                             '__optional_sacrifice': True}
+                            for count in range(len(_eligible_sacrifice_ids(state, player_id)) + 1))
+        else:
+            expanded.append(branch)
+    branches = expanded
     compiled = []
     for option in options:
         used_suffixes = set()
@@ -560,7 +575,8 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 # Mixed mandatory types need independent selection groups, not
                 # a summed count using whichever type appeared last.
                 continue
-            suffix = ('discard' if set(branch) == {'discard_cards'} else
+            suffix = (f'sacrifice_{branch["sacrifice_creatures"]}' if branch.get('__optional_sacrifice') else
+                      'discard' if set(branch) == {'discard_cards'} else
                       'sacrifice' if set(branch) == {'sacrifice_creatures', 'sacrifice_kind'} else
                       'life' if set(branch) == {'pay_life'} else f'additional_{index}')
             if suffix in used_suffixes:
@@ -579,7 +595,8 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 sacrifice_creatures=option.sacrifice_creatures + branch.get('sacrifice_creatures', 0),
                 sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind),
                 hand_exile_color=branch.get('hand_exile_color'),
-                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))
+                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0),
+                additional_generic_reduction=branch.get('additional_generic_reduction', 0)))
     from rules_engine.alternative_casts import spell_cast_view
     from rules_engine.graveyard_permissions import spell_cast_prohibited
     compiled = [option for option in compiled if not spell_cast_prohibited(
@@ -642,7 +659,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         source_card_id=card.id, target_card_id=target_card_id,
         cast_resource_card=card,
         reserved_card_ids={card.id, *escape_reserved, *selected['discard_card_ids'], *selected['sacrifice_card_ids'], *selected.get('exile_card_ids', [])},
-        additional_generic_reduction=len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,
+        additional_generic_reduction=option.additional_generic_reduction + len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,
         post_payment_condition=escape_condition,
     ) for selected in selections)
 

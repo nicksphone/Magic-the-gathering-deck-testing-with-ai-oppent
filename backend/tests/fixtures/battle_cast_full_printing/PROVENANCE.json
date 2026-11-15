@@ -1,0 +1,31 @@
+{
+  "admission": "PUBLIC-PRINTING-ADMISSION.json in battle-transformed-cast-work",
+  "commit": "dca82d7e32df5f3fbb229b47c3ba5fc808240de2",
+  "exact_complete_public_printings": [
+    {
+      "bytes": 4904,
+      "fields": 62,
+      "git_blob": "4629511a056f55561ef3cba45cd40fd46f894f35",
+      "id": "c5333556-eea2-41ae-833e-007b9d540700",
+      "local_file": "bitter-triumph-tdc-173.json",
+      "name": "Bitter Triumph",
+      "oracle_id": "776341cb-d2ec-423f-9250-92dc8bd8d503",
+      "path": "data/cards/bitter_triumph.json",
+      "sha256": "64cf3c93629088ccc96b2959b8765603425e4a9cf0345d20a2afd52ed4702370"
+    },
+    {
+      "bytes": 5118,
+      "fields": 66,
+      "git_blob": "c9167000d0f87b27734afeebefdd2364feda83d9",
+      "id": "98b0a4a8-9319-451b-9b79-b0bca7a41e91",
+      "local_file": "drannith-magistrate-iko-11.json",
+      "name": "Drannith Magistrate",
+      "oracle_id": "aadd10d0-6dd0-4bdc-8d93-ff08e29a5863",
+      "path": "data/cards/drannith_magistrate.json",
+      "sha256": "82610f07cfd86da94dc6c8d4c3e8f76115d553cdbef784a7c19da055d3b3c6ef"
+    }
+  ],
+  "fresh_Scryfall_fetch_claimed": false,
+  "repository": "coolcrazyben/MagicML",
+  "whole_corpus_qualified": false
+}

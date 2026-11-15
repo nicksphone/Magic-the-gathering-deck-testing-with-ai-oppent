@@ -1,5 +1,23 @@
 # RC Readiness: November 8, 2026
 
+The November 10 rules work includes
+[Battle model/copy semantics](battle-lifecycle-foundation-20261110.md),
+[entry and protectors](battle-entry-native-20261110.md),
+[counter/defeat handling](battle-defeat-native-20261110.md), and
+[transformed casting](battle-transformed-cast-native-20261110.md).
+[Battle printing provenance](battle-copy-native-gap-20261110.md) is documented
+separately.
+
+Other changes cover
+[conditional graveyard self-copy](conditional-graveyard-self-copy-20261110.md),
+[conditional player draws](conditional-player-draw-20261110.md),
+[noncolor target restrictions](noncolor-targets-20261110.md), and
+[AI payment forecasting](AI-deferred-payment-20261110.md), including
+[additional commitments](AI-additional-payment-20261110.md) and
+[simultaneous ordering](AI-ordered-payment-20261110.md).
+The [evidence input-boundary correction](native-profile-input-boundary-20261110.md)
+records a historical tooling incident separately from gameplay.
+
 The [target mana-value correction](target-mana-value-20261110.md) replaces a
 payment estimate with existing rules mana value in the common target predicate.
 A native missing legal counter target reproduces before the fix;183tests across
@@ -731,3 +749,16 @@ The next native step requires an execution environment in which the unchanged
 qualified guards can start. Preserve the pending two-game declaration and its
 no-retry limits; do not spend it on a known pre-JVM sandbox rejection. Other
 source, fixture and packaging work can continue in this isolated candidate.
+
+
+### Deferred upkeep payments
+
+Summoner's Pact creates its next-own-upkeep obligation on resolution. Copies
+retain controller ownership, and pay/decline choices survive snapshot restore.
+See [the behavior and test instructions](deferred-upkeep-payment-20261110.md).
+
+### Variable library search
+
+Variable searches derive their restrictions from the printing and bind their
+mana-value maximum to announced X. See
+[the behavior and test instructions](variable-library-search-20261110.md).

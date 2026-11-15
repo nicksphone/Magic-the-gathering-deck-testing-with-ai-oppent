@@ -5,7 +5,7 @@ from copy import deepcopy
 import pytest
 
 from game_state.serializers import serialize_match_snapshot as snapshot
-from game_state.state import CardInstance, Zone
+from game_state.state import CardInstance, Zone, object_incarnation
 from rules_engine.ability_model import build_spell_spec, spell_resolution_gaps
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.costs import collect_cost_options
@@ -183,6 +183,17 @@ def test_canonical_treasure_waits_for_both_real_draw_choices_and_survives_resume
     with controls.publications(monkeypatch, records), native_calls(monkeypatch, calls):
         paid = audit.restart(checked_action(state, RulesEngine(), seat, action))
         queued = snapshot(paid)
+        expected_resolving_item = deepcopy(queued['stack'][0])
+        assert not paid.trigger_staging
+        assert '__stack_source_reference' not in expected_resolving_item['payload']
+        assert '__resolution_stage_owned' not in expected_resolving_item['payload']
+        expected_reference = {'incarnation': object_incarnation(paid.cards[spell.id]),
+                              'zone_change_sequence': paid.cards[spell.id].zone_change_sequence}
+        expected_resolving_item['payload'].update(__stack_source_reference=expected_reference,
+                                                  __resolution_stage_owned=True)
+        expected_continuation = [{'effect_key': 'create_token', 'payload': {
+            **token_payload(), '__source_card_id': spell.id,
+            '__announced_stack_kind': 'spell', '__stack_source_reference': expected_reference}}]
         assert not resolve_top_of_stack(paid)
         for drawn in (0, 1):
             paid = audit.restart(paid)
@@ -193,10 +204,9 @@ def test_canonical_treasure_waits_for_both_real_draw_choices_and_survives_resume
             pending = paid.pending_mechanic_choice
             assert pending['kind'] == 'draw' and pending['options'] == ['draw', witness.id]
             assert pending['player_id'] == seat and pending['continuation_controller'] == seat
-            assert pending['resolving_item'] == queued['stack'][0]
+            assert pending['resolving_item'] == expected_resolving_item
             assert pending['draw_payload']['__source_card_id'] == spell.id
-            assert pending['continuation_effects'] == [
-                {'effect_key': 'create_token', 'payload': {**token_payload(), '__source_card_id': spell.id}}]
+            assert pending['continuation_effects'] == expected_continuation
             assert paid.players[seat].hand == library[::-1][:drawn]
             assert paid.draws_this_turn[seat] == drawn and audit.tokens(paid, seat) == []
             assert paid.cards[spell.id].zone == Zone.STACK and not paid.stack
@@ -234,6 +244,7 @@ def test_canonical_treasure_waits_for_both_real_draw_choices_and_survives_resume
     assert paid.draws_this_turn[seat] == 2 and paid.discards_this_turn[seat] == 0
     assert paid.players[seat].mana_pool == {'W': 0, 'U': 0, 'B': 0, 'R': 0, 'G': 0, 'C': 0}
     assert not paid.stack and paid.pending_mechanic_choice is None
+    assert not paid.trigger_staging
     assert snapshot(state) == before
 
 

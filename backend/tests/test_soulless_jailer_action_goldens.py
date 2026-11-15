@@ -176,9 +176,14 @@ def test_real_daretti_paid_loyalty_sacrifice_and_retained_return(rows, history, 
     pending = state.pending_mechanic_choice
     assert pending['kind'] == 'loyalty_cards' and pending['player_id'] == seat
     assert sacrifice in pending['options']
-    # The only authorized raw-frame addition is native ownership of resolution staging.
+    # The only authorized raw-frame additions are native ownership of resolution staging
+    # and the retained identity of the resolving source (added with Battles).
     owned = deepcopy(frame)
     owned['payload']['__resolution_stage_owned'] = True
+    stack_reference = pending['resolving_item']['payload']['__stack_source_reference']
+    assert set(stack_reference) == {'incarnation', 'zone_change_sequence'}
+    assert all(type(value) is int and value >= 0 for value in stack_reference.values())
+    owned['payload']['__stack_source_reference'] = dict(stack_reference)
     assert pending['resolving_item'] == owned
     assert pending['effect_payload']['__resolving_item'] == owned
     assert pending['option_references'][sacrifice] == card_reference(state, sacrifice)

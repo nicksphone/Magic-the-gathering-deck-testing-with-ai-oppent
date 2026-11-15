@@ -5,11 +5,27 @@ from game_state.state import _infer_keywords
 from game_state.state import Zone
 from rules_engine.card_types import is_token_card, printed_card_types
 
-FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "loyalty", "keywords", "image_uri", "selected_face_index", "colors")
+FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "printed_defense", "loyalty", "keywords", "image_uri", "selected_face_index", "colors")
 EXILE_PLAY_DURATIONS = frozenset({'this_turn', 'controller_next_turn', 'next_controller_end_step'})
 
 
-def select_cast_face(card, index=None):
+def card_mana_value(card, *, x_value=0):
+    """Value the current object, retaining the physical nonmodal back exception."""
+    from rules_engine.mana import mana_value
+    if (getattr(card, 'zone', None) in {Zone.STACK, Zone.BATTLEFIELD}
+            and not getattr(card, '_stack_spell_copy', False)
+            and getattr(card, 'layout', None) == 'transform'
+            and getattr(card, 'selected_face_index', None) == 1
+            and len(getattr(card, 'card_faces', [])) == 2):
+        record = getattr(card, 'characteristic_record', None)
+        # A copied back has its copied mana cost (normally absent), even when
+        # the object doing the copying is itself a physical double-faced card.
+        if not (isinstance(record, dict) and record.get('effects')):
+            return mana_value(card.card_faces[0].get('mana_cost') or '', x_value=x_value)
+    return mana_value(getattr(card, 'mana_cost', '') or '', x_value=x_value)
+
+
+def select_cast_face(card, index=None, *, preserve_copy_effects=True):
     faces = list(getattr(card, "card_faces", []) or [])
     if not faces:
         return card
@@ -23,6 +39,7 @@ def select_cast_face(card, index=None):
     proxy.types = printed_card_types(proxy.type_line)
     proxy.keywords = _infer_keywords(proxy.oracle_text)
     proxy.colors = face.get("colors")
+    proxy.printed_defense = str(face['defense']) if face.get('defense') is not None else None
     for field in ("power", "toughness", "loyalty"):
         value = face.get(field)
         setattr(proxy, field, int(value) if value is not None and str(value).lstrip("-").isdigit() else None)
@@ -31,7 +48,7 @@ def select_cast_face(card, index=None):
     proxy.image_uri = face.get("image_uri") or getattr(card, "image_uri", None)
     proxy.selected_face_index = index
     from rules_engine.copiable_values import record_form
-    record_form(proxy)
+    record_form(proxy, preserve_effects=preserve_copy_effects)
     return proxy
 
 
@@ -43,18 +60,21 @@ def apply_cast_face(card, face):
         card.printed_characteristics.setdefault(field, copy(getattr(card, field)))
         setattr(card, field, copy(getattr(face, field)))
     from rules_engine.copiable_values import record_form
-    record_form(card)
+    record_form(card, printed_fields=FACE_FIELDS)
 
 
 def apply_transform_face(card, index):
     """Apply a battlefield face without changing the card's printed identity."""
-    face = select_cast_face(card, index)
-    front = select_cast_face(card, 0)
+    live_loyalty = card.loyalty
+    face = select_cast_face(card, index, preserve_copy_effects=False)
+    front = select_cast_face(card, 0, preserve_copy_effects=False)
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(front, field)))
         setattr(card, field, copy(getattr(face, field)))
     from rules_engine.copiable_values import record_form
-    record_form(card)
+    record_form(card, printed_fields=FACE_FIELDS)
+    if card.zone.value == 'battlefield':
+        card.loyalty = live_loyalty if live_loyalty is not None else (0 if 'Planeswalker' in card.types else None)
     from rules_engine.type_effects import rebase_type_effects
     rebase_type_effects(card)
 

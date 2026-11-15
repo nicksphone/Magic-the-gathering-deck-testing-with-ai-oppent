@@ -139,11 +139,11 @@ def shuffle_library(state, player_id, *, resolving_item=None, cause=None):
         if (payload.get('__trigger_event') == 'enters_graveyard'
                 or '__trigger_source_reference' in payload):
             retained = payload.get('__trigger_source_reference')
-            if (kind != 'triggered' or payload.get('__trigger_event') != 'enters_graveyard'
+            if (kind != 'triggered' or type(payload.get('__trigger_event')) is not str or not payload['__trigger_event']
                     or not isinstance(retained, dict)
                     or set(retained) != {'incarnation', 'zone_change_sequence'}
                     or any(type(value) is not int or value < 0 for value in retained.values())):
-                raise ValueError('Graveyard shuffle requires a complete retained trigger reference')
+                raise ValueError('Triggered shuffle requires a complete retained trigger reference')
             # The real source may have moved again; its trigger keeps the entry identity.
             reference = dict(retained)
         cause = {

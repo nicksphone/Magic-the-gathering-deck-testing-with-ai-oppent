@@ -71,14 +71,17 @@ def resolve(state, controller, payload):
         if (card is None or card.zone != Zone.BATTLEFIELD
                 or ref != [object_incarnation(card), card.zone_change_sequence]):
             return
+        from rules_engine.counter_removal import remove_counters, counter_count
         for key in list(card.counters):
             if not key.startswith('__') or key == '__lore':
-                del card.counters[key]
+                counter_kind = 'lore' if key == '__lore' else key  # Do not shadow the target kind.
+                remove_counters(state, card.id, counter_kind, counter_count(state, card, counter_kind))
+                card.counters.pop(key, None)
         for key in list(card.counter_timestamps):
             if not key.startswith('__') or key == '__lore':
-                del card.counter_timestamps[key]
+                card.counter_timestamps.pop(key, None)
         if card.loyalty is not None:
-            card.loyalty = 0
+            remove_counters(state, card.id, 'loyalty', counter_count(state, card, 'loyalty'))
         target = {'target_ref': reference(card)}
     elif kind == 'player':
         player = state.players.get(payload.get('target_player'))

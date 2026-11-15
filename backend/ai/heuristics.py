@@ -71,7 +71,7 @@ def repeatable_mana_value(state, card_id: str, *, surface_card=None) -> float:
     return max(outputs.values()) * (2.0 if lands < 4 else 0.75)
 
 
-def choose_damage_trigger_target(state: MatchState, controller: int, amount: int, options: list[dict]) -> dict:
+def choose_damage_trigger_target(state: MatchState, controller: int, amount: int, options: list[dict], *, trigger=None) -> dict:
     opponent = 3 - controller
 
     def score(option: dict) -> tuple[float, str]:
@@ -83,6 +83,11 @@ def choose_damage_trigger_target(state: MatchState, controller: int, amount: int
 
         card_id = option["target_card_id"]
         card = state.cards[card_id]
+        if trigger is not None and 'Battle' in effective_types(state, card):
+            from ai.pending_effects import public_trigger_target_value
+            value = public_trigger_target_value(state, trigger, controller, option)
+            if value is not None:
+                return (value, card_id)
         if card.controller != opponent:
             return (-1000.0, card_id)
         keywords = {str(keyword).lower() for keyword in effective_keywords(state, card_id)}

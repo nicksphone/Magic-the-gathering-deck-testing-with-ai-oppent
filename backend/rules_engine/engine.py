@@ -97,6 +97,10 @@ def _finish_prepared_cast(state, player_id, data, *, stage, live=None, reject_in
     payload["__ward_trigger_specs"] = ward_specs
     payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
     payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
+    if from_graveyard and state.loyalty_permissions:
+        from rules_engine.loyalty_instructions import graveyard_cast_granted
+        if graveyard_cast_granted(state, player_id, cid):
+            payload['__exile_instead_of_graveyard'] = True
     if "Planeswalker" in effective_types(state, face_card) and "compleated" in face_card.oracle_text.lower():
         payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
     if effect_key == "look_top_select_hand":
@@ -267,6 +271,7 @@ class RulesEngine:
             if state.step == Step.BEGIN_COMBAT:
                 state.attackers = []
                 state.attack_targets = {}
+                state.combat_target_context = {}
                 state.blocks = {}
                 state.blockers_declared = False
                 state.attack_bands = []
@@ -293,6 +298,7 @@ class RulesEngine:
                 state.attackers = []
                 state.attack_bands = []
                 state.attack_targets = {}
+                state.combat_target_context = {}
                 state.blocks = {}
                 state.attackers_declared = False
                 state.blockers_declared = False
@@ -358,10 +364,15 @@ class RulesEngine:
         # Damage removal and duration expiry have no intervening SBA check.
         self._clear_marked_damage(state)
         self._clear_prevention_shields(state)
+        from rules_engine.copiable_values import expire_temporary_copies
+        expire_temporary_copies(state)
         self._revert_expired_control_changes(state)
         self._revert_crew_vehicles(state)
         from rules_engine.card_faces import expire_exile_play_durations
         expire_exile_play_durations(state)
+        if state.loyalty_permissions:
+            from rules_engine.loyalty_instructions import expire_turn_graveyard_cast_grants
+            expire_turn_graveyard_cast_grants(state)
         state.pending_entry_counters = [
             entry
             for entry in getattr(state, "pending_entry_counters", [])
@@ -560,7 +571,7 @@ class RulesEngine:
         return False
 
     @action_boundary
-    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False, suspend_cast: bool = False) -> None:
+    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False, suspend_cast: bool = False, effect_permission: dict | None = None) -> None:
         from rules_engine.activation_copy import record_activation_complete
 
         def reject(reason: str) -> None:
@@ -571,6 +582,14 @@ class RulesEngine:
         if state.winner is not None:
             return
         kind = action.get("type")
+        transformed_cast = False
+        if effect_permission is not None:
+            from rules_engine.effect_casts import validate_permission
+            if not (effect_cast and effect_permission.get('permission_kind') == 'battle_transformed'
+                    and validate_permission(state, player_id, effect_permission, action=action)):
+                reject('The transformed casting permission is unavailable')
+                return
+            transformed_cast = True
         if kind in {'cast_spell', 'activate_ability', 'activate_loyalty', 'equip', 'crew', 'cycle_card', 'ninjutsu'}:
             from rules_engine.restrictions import split_second_active
             if split_second_active(state):
@@ -1052,7 +1071,7 @@ class RulesEngine:
             from rules_engine.card_faces import exile_permission, leave_exile
             chosen_face = action.get("selected_face_index", (action.get("targets") or {}).get("selected_face_index", 0)) or 0
             allowed_source = (
-                (effect_cast and suspend_cast and cid in player.exile) or exile_permission(state, player_id, cid, chosen_face)
+                transformed_cast or (effect_cast and suspend_cast and cid in player.exile) or exile_permission(state, player_id, cid, chosen_face)
                 if from_exile
                 else (cid in player.graveyard if from_graveyard else cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
             )
@@ -1060,7 +1079,7 @@ class RulesEngine:
                 card = state.cards[cid]
                 at_targets = action.get("targets", {})
                 selected_face_index = action.get("selected_face_index", at_targets.get("selected_face_index"))
-                if selected_face_index and card.layout in {"transform", "meld", "flip", "double_faced_token"}:
+                if selected_face_index and card.layout in {"transform", "meld", "flip", "double_faced_token"} and not transformed_cast:
                     reject("This back face cannot be cast directly")
                     state.log.append(f"{card.name}'s back face cannot be cast directly.")
                     return
@@ -1264,7 +1283,7 @@ class RulesEngine:
                         source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
                         cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
                         reserved_card_ids=reserved_cost_cards,
-                        additional_generic_reduction=len(selected_cost_cards.get('exile_card_ids', [])) * chosen.hand_exile_generic_reduction,
+                        additional_generic_reduction=chosen.additional_generic_reduction + len(selected_cost_cards.get('exile_card_ids', [])) * chosen.hand_exile_generic_reduction,
                         post_payment_condition=escape_payment_goal,
                     )
                 if not paid:
@@ -1722,9 +1741,10 @@ class RulesEngine:
                 state.priority_player = player_id
 
     def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
+        from copy import deepcopy
         from rules_engine.query_context import rule_query_scope
         with rule_query_scope(state):
-            return legal_moves(state, player_id)
+            return deepcopy(legal_moves(state, player_id))
 
     def _handle_pregame_action(self, state: MatchState, player_id: int, action: dict) -> None:
         kind = action.get("type")

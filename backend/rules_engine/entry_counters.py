@@ -18,12 +18,13 @@ def entry_counter_modifier(line):
     return None
 
 
-def resident_entry_counter_options(state, card, controller):
+def resident_entry_counter_options(state, card, controller, *, prospective_types=None):
     from game_state.state import object_incarnation
     from rules_engine.basic_land_layer import layer_four_view
     from rules_engine.continuous import printed_abilities_suppressed
-    types = layer_four_view(state, entering=card, controller=controller)[2].get(
-        card.id, effective_types(state, card))
+    types = (prospective_types if prospective_types is not None else
+             layer_four_view(state, entering=card, controller=controller)[2].get(
+                 card.id, effective_types(state, card)))
     if 'Creature' not in types:
         return []
     options = []
@@ -49,7 +50,7 @@ def intrinsic_x_entry_instruction(line):
                              line.strip(), re.I))
 
 
-def prospective_entry_ability_view(state, card, controller):
+def prospective_entry_ability_view(state, card, controller, *, include_land_types=True):
     from game_state.state import assign_static_order_on_battlefield_entry
     from rules_engine.basic_land_layer import layer_four_view
     from rules_engine.continuous import printed_abilities_suppressed
@@ -65,7 +66,8 @@ def prospective_entry_ability_view(state, card, controller):
         query_cache(query_state)[layer_four_view] = layer_four_view(
             query_state, entering=projected, controller=controller)
         return {'types': effective_types(query_state, card.id),
-                'printed_suppressed': printed_abilities_suppressed(query_state, card.id)}
+                'printed_suppressed': printed_abilities_suppressed(query_state, card.id,
+                    include_land_types=include_land_types)}
 
 
 def intrinsic_entry_counter_options(state, controller, payload, used=()):
@@ -293,7 +295,7 @@ def entry_counter_context_matches(state, payload):
     context = payload.get('__counter_entry_context')
     if context is None:
         return (not any(payload.get(key) for key in (
-            '__counter_entry_producers', '__intrinsic_entry_counter', '__entry_counter_event'))
+            '__counter_entry_producers', '__intrinsic_entry_counter', '__entry_counter_event', '__battle_entry_counter'))
             and retained_next_entry_options(state, payload.get('entry_item', {}).get('controller'), payload) is not None)
     if not isinstance(context, dict):
         return False
@@ -301,13 +303,14 @@ def entry_counter_context_matches(state, payload):
     producers = payload.get('__counter_entry_producers')
     controller = context.get('recipient_controller')
     intrinsic = payload.get('__intrinsic_entry_counter')
+    battle = payload.get('__battle_entry_counter')
     next_entry = payload.get('__next_entry_counter')
     next_options = retained_next_entry_options(state, controller, payload)
     if next_options is None:
         return False
-    if (not isinstance(receipts, list) or (not receipts and not intrinsic and not next_entry)
+    if (not isinstance(receipts, list) or (not receipts and not intrinsic and not next_entry and not battle)
             or not all(isinstance(receipt, dict) for receipt in receipts)
-            or not isinstance(producers, list) or (not producers and not intrinsic and not next_entry)
+            or not isinstance(producers, list) or (not producers and not intrinsic and not next_entry and not battle)
             or controller not in state.players):
         return False
     if ('target_card_id' in payload and payload['target_card_id'] != context.get('recipient_id')):
@@ -338,6 +341,10 @@ def entry_counter_context_matches(state, payload):
             != context.get('recipient_reference')):
         return False
     card = projected.get(card.id, card)
+    if battle is not None:
+        from rules_engine.battles import entry_proof_matches
+        if not entry_proof_matches(state, card, controller, battle):
+            return False
     if (intrinsic is None and payload.get('entry_item')
             and any(intrinsic_x_entry_instruction(line) for line in card.oracle_text.splitlines())):
         return False
@@ -602,7 +609,7 @@ def resume_entry_batch(state, controller, payload):
         for key in ('entry_payload', 'entry_prepared', 'entry_index', 'entry_counts', 'consume_entry_counter',
                     'target_card_id', 'counter',
                     '__counter_entry_context', '__counter_entry_producers',
-                    '__intrinsic_entry_counter', '__entry_counter_event', '__next_entry_counter'):
+                    '__intrinsic_entry_counter', '__entry_counter_event', '__next_entry_counter', '__battle_entry_counter'):
             data.pop(key, None)
     staged_here = not state.trigger_staging
     if staged_here:
@@ -627,11 +634,17 @@ def commit_entry_counters(state, card, payload, *, _event_receipts=None):
                      _event_receipts=_event_receipts)
     from rules_engine.source_linked_exile import commit_entry
     commit_entry(state, card)
+    from rules_engine.battles import ensure_protectors
+    ensure_protectors(state)
 
 
 def prepare_entry_counters(state, controller, data, card, resume_effect):
     from rules_engine.card_faces import day_night_entry_face
     card = day_night_entry_face(state, card)
+    from rules_engine.basic_land_layer import layer_four_view
+    from rules_engine.battles import prepare_entry_defense
+    prospective_types = layer_four_view(state, entering=card, controller=controller)[2].get(card.id, card.types)
+    battle_defense = prepare_entry_defense(state, card, controller, data, prospective_types)
     entry = data['entry_payload']
     if (data.get('entry_item') and '__next_entry_counter' not in data
             and '__counter_entry_context' not in data and 'Creature' in effective_types(state, card)):
@@ -670,7 +683,7 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
         from rules_engine.counter_replacements import counter_options
         excluded = {target.get('card_id', target.get('candidate', {}).get('id'))
                     for target in data.get('entry_targets', [])}
-        producers = [option for option in resident_entry_counter_options(state, card, controller)
+        producers = [option for option in resident_entry_counter_options(state, card, controller, prospective_types=prospective_types)
                      if option['source_card_id'] not in excluded]
         intrinsic_lines = [(index, line) for index, line in enumerate(card.oracle_text.splitlines())
                            if intrinsic_x_entry_instruction(line)]
@@ -702,7 +715,7 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
                     if data['__next_entry_counter'].get('kind') == 'native_spell_bound'
                     else data['__next_entry_counter']['recipient_reference']),
                 'counter': '+1/+1', 'amount': 0, 'applied_ids': [], 'history': []}
-        if producers or data.get('__intrinsic_entry_counter') or data.get('__next_entry_counter'):
+        if producers or data.get('__intrinsic_entry_counter') or data.get('__next_entry_counter') or data.get('__battle_entry_counter'):
             original = state.cards.get(card.id)
             projected = copy(card)
             projected.controller = controller
@@ -749,6 +762,8 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
         return False
     if 'entry_counts' not in data:
         counts = {}
+        if battle_defense is not None:
+            counts['defense'] = battle_defense
         from rules_engine.kicker import permanent_kicker
         kicker = permanent_kicker(card.oracle_text)
         if kicker and entry.get('__kicked'):

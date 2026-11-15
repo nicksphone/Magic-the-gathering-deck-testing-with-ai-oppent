@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { combatDraftGuidance, selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
+import { attackTargetIssue, combatDraftGuidance, selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 import { TriggerOrderPicker } from "./TriggerOrderPicker";
@@ -9,7 +9,7 @@ import { cardStates } from "./table-model";
 // Includes engine-supported generic selections not yet listed in LegalMove.kind.
 const supportedMechanicControls = new Set<string>([
   "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order", "hand_top_order",
-  "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
+  "proliferate", "ward_payment", "deferred_upkeep_payment", "ward_cost_cards", "counter_payment", "optional_search",
   "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
   "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry", "entry_mode", "note_creature_type",
   "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
@@ -141,6 +141,8 @@ export function Controls(props: Props) {
   const [attackReviewRequired, setAttackReviewRequired] = useState(false);
   const selectedAttackers = (attackMove?.options ?? []).filter(id => !excludedAttackers.includes(id));
   const combatGuidance = combatDraftGuidance(props.combatDraft, attackMove, blockMove);
+  const defenderIssue = attackTargetIssue(selectedAttackers, attackTargets, attackMove);
+  const hasBattleDefender = attackMove?.defenders?.some(defender => defender.kind === "battle");
   const attackNeedsPayment = selectedAttackers.some(id => {
     const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
     const cost = attackMove?.attack_costs?.[id]?.[defender];
@@ -337,7 +339,7 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "optional_reveal" || mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "optional_reveal" || mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "deferred_upkeep_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
@@ -640,6 +642,7 @@ export function Controls(props: Props) {
         <form id="attack-declaration" tabIndex={-1} className="block-panel" onSubmit={event => {
           event.preventDefault();
           if (attackNeedsPayment) return;
+          if (defenderIssue) return;
           const attackers = selectedAttackers;
           const targets = Object.fromEntries(Object.entries(attackTargets).filter(([id, target]) => attackers.includes(id) && target));
           const grouped = new Map<number, string[]>();
@@ -657,6 +660,7 @@ export function Controls(props: Props) {
         }}>
           <h3>Declare Attackers</h3>
           {combatGuidance ? <p className="combat-draft-status" role="status">{combatGuidance}</p> : null}
+          {defenderIssue ? <p role="alert">{defenderIssue}</p> : null}
           <p>{props.combatDraft ? "Click creatures on the battlefield to select them. Drag an eligible attacker onto another to form a legal band. Confirm when ready." : "Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without."}</p>
           <div className="row">
             <button type="button" disabled={!attackMove.options?.length} onClick={() => {
@@ -685,7 +689,8 @@ export function Controls(props: Props) {
             {props.onCombatDraftChange ? <button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, bands: [] }))}>Separate bands</button> : null}
           </div>
           {attackReviewRequired ? <p role="status">All eligible attackers selected. Review defenders, bands and attack costs, choose any required payments, then click Submit Attackers to confirm. No attack has been declared.</p> : null}
-          <details open={attackReviewRequired || !props.combatDraft || selectedAttackers.some(id => attackMove.attack_costs?.[id]?.[attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`]?.mana_cost) ? true : undefined}>
+          <details open={attackReviewRequired || defenderIssue || hasBattleDefender || !props.combatDraft
+            || selectedAttackers.some(id => attackMove.attack_costs?.[id]?.[attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`]?.mana_cost) ? true : undefined}>
           <summary>Advanced attackers, defenders and payments</summary>
           {(attackMove.options ?? []).map((attackerId) => {
             const defender = attackTargets[attackerId] || `player:${3 - (props.match?.active_player ?? 1)}`;
@@ -715,7 +720,7 @@ export function Controls(props: Props) {
                   <option value="">Default Defender</option>
                   {attackMove.defenders?.map((d) => (
                     <option key={`${attackerId}-def-${d.id}`} value={d.id}>
-                      {d.label}
+                      {d.kind === "battle" ? `Battle: ${d.label}` : d.label}
                     </option>
                   ))}
                 </select>
@@ -735,7 +740,7 @@ export function Controls(props: Props) {
             );
           })}
           </details>
-          <button type="submit" disabled={attackNeedsPayment}>
+          <button type="submit" disabled={attackNeedsPayment || Boolean(defenderIssue)}>
             Submit Attackers
           </button>
         </form>

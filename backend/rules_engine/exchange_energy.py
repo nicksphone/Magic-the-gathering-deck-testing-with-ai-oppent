@@ -58,7 +58,7 @@ def resolve(state, controller, payload):
     from rules_engine.counter_placement import put_counters
     from rules_engine.counter_replacements import counter_effect_amount
     from rules_engine.events import emit_event
-    from rules_engine.mana import mana_value
+    from rules_engine.card_faces import card_mana_value
     phase = payload.get('__exchange_phase')
     actor = controller if phase == 'exchange' else payload.get('__exchange_controller')
     amount = payload.get('energy_amount')
@@ -102,7 +102,7 @@ def resolve(state, controller, payload):
             'player_id': actor, 'controller': actor, 'counter': 'energy', 'amount': placed})
     if not current(state, target_id, target_ref):
         return
-    cost = mana_value(state.cards[target_id].mana_cost or '')
+    cost = card_mana_value(state.cards[target_id])
     if not bounded(cost):
         return
     options = ['pay', 'decline'] if state.players[actor].counters.get('energy', 0) >= cost else ['decline']

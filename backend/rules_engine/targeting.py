@@ -219,6 +219,7 @@ def stack_source_card(state: Any, item: Any):
             setattr(source, key, deepcopy(value))
         source.controller = item.controller
         source.zone = Zone.STACK
+        source._stack_spell_copy = True
     if stack_object_kind(state, item) == 'spell':
         from rules_engine.kicker import spell_kicker_view
         source = spell_kicker_view(source, bool(payload.get('__kicked')))

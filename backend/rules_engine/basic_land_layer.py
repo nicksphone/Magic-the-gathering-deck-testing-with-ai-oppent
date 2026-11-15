@@ -57,12 +57,13 @@ def layer_four_view(state, entering=None, controller=None, *, attached=False):
     key = (layer_four_view, 'attached') if attached else layer_four_view
     if cache is not None and key in cache:
         return cache[key]
-    from rules_engine.type_effects import active_type_effects
+    from rules_engine.type_effects import active_type_effects, battlefield_additional_type
     cards = [state.cards[cid] for player in state.players.values() for cid in player.battlefield
              if state.cards[cid].zone == Zone.BATTLEFIELD]
     if entering is not None:
         cards = [card for card in cards if card.id != entering.id] + [entering]
-    if not any(_printed_layer_four_effect(getattr(card, 'oracle_text', '')) or
+    if not any(_printed_layer_four_effect(oracle_text := getattr(card, 'oracle_text', '')) or
+               battlefield_additional_type(oracle_text, card.name) or
                any('creature_subtypes' in effect for effect in active_type_effects(card))
                for card in cards):
         result = () if attached else (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
@@ -113,6 +114,7 @@ def _resolve(rows):
     from rules_engine.card_types import CARD_TYPES, CREATURE_SUBTYPES
     from rules_engine.land_types import LAND_TYPES, BASIC_TYPES, land_type_instructions, _split_line
     from rules_engine.attached_characteristics import attached_compound, AttachedEffect
+    from rules_engine.type_effects import battlefield_additional_type
 
     phrases = sorted((tuple(kind.split()) for kind in CREATURE_SUBTYPES if ' ' in kind),
                      key=len, reverse=True)
@@ -141,11 +143,14 @@ def _resolve(rows):
                 for line in without_reminder_text(row[2]).splitlines()):
             subtypes[row[0]] = list(dict.fromkeys([*subtypes[row[0]], *sorted(CREATURE_SUBTYPES)]))
     lost, colorless, replaced = set(), set(), set()
-    creature_replaced, started = set(), []
+    creature_replaced, printed_additions, started = set(), set(), []
     effects = []
     replacement_targets = {row[6] for row in rows if permanent_land_replacement(row[2])}
     compound_targets = {row[6] for row in rows if attached_compound(row[2])}
     for row in rows:
+        added = battlefield_additional_type(row[2], row[7])
+        if added:
+            effects.append((row, 'printed_add', (added,), -1, row[5]))
         effects.extend((row, 'subtypes', instruction, index, row[5])
                        for index, instruction in enumerate(land_type_instructions(row[2])))
         replacement = permanent_land_replacement(row[2])
@@ -164,7 +169,7 @@ def _resolve(rows):
 
     def targets(effect, current_types=types):
         source, operation, instruction, _, _ = effect
-        if operation in {'add', 'remove', 'creature_subtypes'}:
+        if operation in {'add', 'printed_add', 'remove', 'creature_subtypes'}:
             return {source[0]}
         if operation == 'replace':
             return {source[6]} if source[6] in by_id else set()
@@ -190,13 +195,13 @@ def _resolve(rows):
         affected = targets(other)
         if removes_printed(other) and effect[1] not in {'add', 'creature_subtypes'} and effect[0][0] in affected:
             return True
-        if (other[1] in {'replace', 'attached_replace'} or
+        if (other[1] in {'replace', 'attached_replace', 'printed_add'} or
                 effect[1] == 'attached_replace' and other[1] in {'add', 'remove'}):
             changed = {cid: list(values) for cid, values in types.items()}
             for cid in affected:
                 if other[1] in {'replace', 'attached_replace'}:
                     changed[cid] = ['Land'] if other[1] == 'replace' else ['Creature']
-                elif other[1] == 'add':
+                elif other[1] in {'add', 'printed_add'}:
                     changed[cid] = list(dict.fromkeys([*changed[cid], *other[2]]))
                 else:
                     changed[cid] = [kind for kind in changed[cid] if kind not in other[2]]
@@ -211,9 +216,11 @@ def _resolve(rows):
         if source[0] in lost and operation not in {'add', 'creature_subtypes'}:
             continue
         for cid in targets(effect):
-            if operation == 'add':
+            if operation in {'add', 'printed_add'}:
                 types[cid] = list(dict.fromkeys([*types[cid], *instruction]))
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(kind for kind in instruction if kind not in CARD_TYPES)]))
+                if operation == 'printed_add':
+                    printed_additions.add(cid)
             elif operation == 'remove':
                 types[cid] = [kind for kind in types[cid] if kind not in instruction]
             elif operation == 'creature_subtypes':
@@ -241,14 +248,15 @@ def _resolve(rows):
         # Correlate only the final view; later type regain must retain prior operations.
         visible = (subtypes[cid] if set(types[cid]) & {'Creature', 'Kindred', 'Tribal'} else
                    [word for word in subtypes[cid] if word.lower() not in CREATURE_SUBTYPES])
-        if cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
+        recompute_prefix = cid in replaced | creature_replaced | printed_additions or any(
+            operation == 'creature_subtypes' for _, operation, _ in row[8])
+        if recompute_prefix:
             supertypes = [word for word in _split_line(row[1])[0].split()
                           if word in {'Basic', 'Legendary', 'Snow', 'World', 'Ongoing'}]
             prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES or kind == 'Tribal')])
         else:
             prefix = _split_line(row[1])[0] or 'Land'
-        if (cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
-                or 'Land' in types[cid] and visible != _split_line(row[1])[1]):
+        if recompute_prefix or ('Land' in types[cid] and visible != _split_line(row[1])[1]):
             lines[cid] = prefix + (' \u2014 ' + ' '.join(visible) if visible else '')
     changed_types = {cid: tuple(values) for cid, values in types.items() if tuple(values) != by_id[cid][4]}
     return (MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless),

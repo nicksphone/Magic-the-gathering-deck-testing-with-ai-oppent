@@ -17,14 +17,25 @@ def next_turn_draw_instruction(text):
 
 
 def schedule_next_turn_draw(state, controller, payload):
+    from rules_engine.events import trigger_source_reference
     source_id = payload.get('__source_card_id') or payload.get('source_card_id')
     source = state.cards.get(source_id)
     state.delayed_triggers.append({
         'step': 'upkeep', 'earliest_turn': state.turn + 1,
         'source_card_id': source_id, 'controller': controller,
         'label': f'{source.name if source else "Delayed"} next-turn draw',
-        'effect_key': 'draw_cards', 'payload': {'amount': payload['amount'], 'target_player': controller},
+        'effect_key': 'draw_cards', 'payload': {'amount': payload['amount'], 'target_player': controller,
+            '__trigger_source_reference': trigger_source_reference(state, source_id, payload)},
     })
+
+
+def _delayed_trigger(record, ignored):
+    result = {key: value for key, value in record.items() if key not in ignored}
+    data = dict(result.get('payload') or {})
+    # Old records lacking creation provenance remain unknown at collection.
+    data.setdefault('__trigger_source_reference', data.get('__delayed_source_reference'))
+    result['payload'] = data
+    return result
 
 
 def collect_keyword_triggers(state, event, payload):
@@ -45,8 +56,7 @@ def collect_keyword_triggers(state, event, payload):
                     and payload.get('controller') != record.get('controller'))
             (due if matches and lost else remaining).append(record)
         state.delayed_triggers = remaining
-        return [{key: value for key, value in record.items() if key != 'condition'}
-                for record in due]
+        return [_delayed_trigger(record, {'condition'}) for record in due]
     if event == 'creature_dies':
         card = state.cards.get(payload.get('card_id'))
         if card is None or card.zone != Zone.GRAVEYARD:
@@ -71,10 +81,11 @@ def collect_keyword_triggers(state, event, payload):
                 remaining.append(record)
                 continue
             (due if record.get('step') == payload.get('step')
-             and state.turn >= record.get('earliest_turn', state.turn) else remaining).append(record)
+             and state.turn >= record.get('earliest_turn', state.turn)
+             and (record.get('active_player') is None
+                  or record['active_player'] == payload.get('active_player')) else remaining).append(record)
         state.delayed_triggers = remaining
-        return [{key: value for key, value in record.items() if key not in {'step', 'earliest_turn'}}
-                for record in due]
+        return [_delayed_trigger(record, {'step', 'earliest_turn', 'active_player'}) for record in due]
     if event != 'attack_declared':
         return []
     attacker = state.cards.get(payload.get('card_id'))
@@ -171,6 +182,7 @@ def schedule_control_loss_tap(state, controller, payload):
             'zone_change_sequence': card.zone_change_sequence,
             '__source_lki': deepcopy(payload.get('__source_lki') or {}),
             '__delayed_source_reference': deepcopy(reference),
+            '__trigger_source_reference': deepcopy(reference),
             '__control_source_frame': deepcopy(receipt),
             '__resolving_item': deepcopy(frame),
         },
@@ -200,7 +212,8 @@ def resolve_keyword_trigger(state, controller, key, payload):
             'step': 'end_combat', 'source_card_id': cid, 'controller': controller,
             'label': f'{card.name if card else "Creature"} decayed sacrifice',
             'effect_key': 'decayed_sacrifice',
-            'payload': {'card_id': cid, 'incarnation': payload['incarnation']},
+            'payload': {'card_id': cid, 'incarnation': payload['incarnation'],
+                        '__trigger_source_reference': payload.get('__trigger_source_reference')},
         })
         return
     if card is None or card.zone != Zone.BATTLEFIELD or object_incarnation(card) != payload['incarnation']:

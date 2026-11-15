@@ -2,6 +2,7 @@
 from dataclasses import replace
 import hashlib
 import json
+from os.path import normpath
 from pathlib import Path
 
 from game_state.state import MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry
@@ -17,7 +18,7 @@ SOURCES = json.loads((HERE / 'fixtures/rings_activation_native_5763/SOURCES.json
 
 def raw_card(name):
     pin = SOURCES[name]
-    data = (HERE / pin['file']).read_bytes()
+    data = Path(normpath(HERE / pin['file'])).read_bytes()
     assert hashlib.sha256(data).hexdigest() == pin['file_sha256']
     raw = json.loads(data.splitlines()[pin['line']-1] if pin['line'] else data)
     for step in pin['steps']:

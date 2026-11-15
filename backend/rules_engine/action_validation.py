@@ -76,6 +76,9 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
 
 
 def checked_action(state, rules, player_id: int, action: dict):
+    from copy import deepcopy
+    # Retained selections belong to the accepted state, not the caller's request.
+    action = deepcopy(action)
     # Even legality helpers run on the copy: no rejected request changes the
     # authoritative state, RNG, logs, cost payments or pending continuations.
     candidate = copy_match_state(state, include_history=True)
@@ -335,9 +338,15 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         from rules_engine.costs import collect_cost_options
         from rules_engine.engine import _select_face_for_cast
         face = action.get("selected_face_index", action.get("targets", {}).get("selected_face_index"))
+        from rules_engine.effect_casts import validate_permission
+        pending_cast = state.pending_mechanic_choice or {}
+        permission = pending_cast.get('effect_payload') or {}
+        transformed_cast = (pending_cast.get('kind') == 'effect_cast'
+                            and permission.get('permission_kind') == 'battle_transformed'
+                            and validate_permission(state, player_id, permission, action=action))
         if face is not None:
             require(0 <= face < len(state.cards[action["card_id"]].card_faces), "Selected card face is unavailable")
-            require(not face or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
+            require(not face or transformed_cast or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
         face_card = _select_face_for_cast(state.cards[action["card_id"]], face)
         if casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow':
             from rules_engine.bestow import bestow_cast_view
@@ -383,8 +392,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 spell_kicked=option.kicked,
                 source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),
                 hybrid_choices=hybrid_choices,
-                additional_generic_reduction=(len(pitch.get('exile_card_ids', [])) * selected_option.hand_exile_generic_reduction
-                                              if selected_option and selected_option.hand_exile_color else 0),
+                additional_generic_reduction=option.additional_generic_reduction + (
+                    len(pitch.get('exile_card_ids', [])) * option.hand_exile_generic_reduction
+                    if option.hand_exile_color else 0),
                 reserved_card_ids={face_card.id, *pitch.get('exile_card_ids', [])},
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")

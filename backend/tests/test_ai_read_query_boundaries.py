@@ -51,9 +51,9 @@ def test_lethal_scan_reuse_does_not_survive_departures(seat):
         assert query_cache(position) is not None
         return original_scan(position, card_id)
 
-    def departure(position, card_ids):
+    def departure(position, card_ids, *, zero_defense=()):
         assert query_cache(position) is None
-        return original_departure(position, card_ids)
+        return original_departure(position, card_ids, zero_defense=zero_defense)
 
     with patch.object(sba, 'creature_has_lethal_state', side_effect=scan), \
             patch.object(sba, '_resolve_lethal_creature_batch', side_effect=departure):

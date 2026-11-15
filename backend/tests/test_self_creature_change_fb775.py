@@ -120,7 +120,7 @@ def position(seat):
     return state, ids, cid
 
 
-def assert_physical(card, name='Figure of Destiny'):
+def assert_physical(card, name='Figure of Destiny', *, version=1):
     obj = raw(name)
     record = card.characteristic_record
     expected = {key: obj.get(key, '') for key in ('name', 'mana_cost', 'type_line', 'oracle_text')}
@@ -130,7 +130,7 @@ def assert_physical(card, name='Figure of Destiny'):
                     card_faces=[], layout='normal', selected_face_index=None,
                     image_uri=obj['image_uris']['normal'])
     assert record['physical'] == expected
-    assert record['version'] == 1
+    assert record['version'] == version
 
 
 def activate(state, seat, cid, index):
@@ -337,7 +337,7 @@ def test_paid_clone_does_not_copy_non_copiable_upgrades_and_binds_its_own_upgrad
     assert state.cards[clone].zone == Zone.BATTLEFIELD
     assert effective_combat_stats(state, clone) == (1, 1)
     assert effective_keywords(state, clone) == []
-    assert_physical(state.cards[clone], 'Clone')
+    assert_physical(state.cards[clone], 'Clone', version=2)
     assert state.cards[clone].characteristic_record['values']['name'] == 'Figure of Destiny'
     state = upgrade(state, seat, clone, 0)
     assert effective_combat_stats(state, clone) == (2, 2)

@@ -109,6 +109,8 @@ class CardInstance:
     kicker_count: int | None = None
     printed_power: str | None = None
     printed_toughness: str | None = None
+    printed_defense: str | None = field(default=None, kw_only=True)
+    battle_protector: int | None = field(default=None, kw_only=True)
     characteristic_record: dict | None = field(default=None, kw_only=True)
     knowledge_snapshot: dict = field(default_factory=dict)
 
@@ -151,6 +153,7 @@ class CardInstance:
             from rules_engine.bestow import end_bestow
             end_bestow(self)
         if zone != self.zone:
+            self.battle_protector = None
             if not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
                 self.suspend_haste.clear()
             self.foretell_record.clear()
@@ -243,6 +246,7 @@ class MatchState:
     passed_priority: set[int] = field(default_factory=set)
     attackers: list[str] = field(default_factory=list)
     attack_targets: dict[str, str] = field(default_factory=dict)
+    combat_target_context: dict[str, dict] = field(default_factory=dict)
     attack_bands: list[list[str]] = field(default_factory=list)
     blocks: dict[str, list[str]] = field(default_factory=dict)
     attackers_declared: bool = False
@@ -387,6 +391,9 @@ class MatchFactory:
                     mana_cost=raw_item.get("mana_cost", "") or "",
                     oracle_text=raw_item.get("oracle_text", "") or "",
                 )
+                defense_face = (raw_item['card_faces'][0]
+                    if raw_item.get('card_faces') and raw_item.get('layout') in {'transform', 'modal_dfc'}
+                    else raw_item)
                 card = CardInstance(
                     id=cid,
                     name=card_name,
@@ -394,11 +401,12 @@ class MatchFactory:
                     controller=owner,
                     zone=Zone.LIBRARY,
                     types=types,
-                    mana_cost=raw_item.get("mana_cost", ""),
+                    mana_cost=raw_item.get("mana_cost") or "",
                     power=_infer_power(card_name, raw_item.get("power"), types),
                     toughness=_infer_toughness(card_name, raw_item.get("toughness"), types),
                     printed_power=str(raw_item['power']) if raw_item.get('power') is not None else None,
                     printed_toughness=str(raw_item['toughness']) if raw_item.get('toughness') is not None else None,
+                    printed_defense=str(defense_face['defense']) if defense_face.get('defense') is not None else None,
                     loyalty=_infer_loyalty(card_name, raw_item.get("loyalty"), types),
                     summoning_sick="Creature" in types,
                     keywords=_infer_keywords(raw_item.get("oracle_text", "") or ""),

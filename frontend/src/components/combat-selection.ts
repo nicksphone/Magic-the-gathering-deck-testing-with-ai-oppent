@@ -45,6 +45,14 @@ export function toggleAttacker(draft: CombatDraft, id: string): CombatDraft {
   return selectAttackers(draft, draft.attackers.includes(id) ? draft.attackers.filter(cid => cid !== id) : [...draft.attackers, id]);
 }
 
+export function attackTargetIssue(attackers: string[], targets: Record<string, string>, move?: LegalMove): string | null {
+  if (!move?.defenders) return null;
+  const offered = new Set(move.defenders.map(defender => defender.id));
+  return attackers.some(id => targets[id] && !offered.has(targets[id]))
+    ? "Choose a current defender for each attacker."
+    : null;
+}
+
 export function bandAttackers(draft: CombatDraft, source: string, target: string, move: LegalMove, defaultDefender: string) {
   const group = [...new Set([source, target, ...draft.bands.filter(band => band.includes(source) || band.includes(target)).flat()])];
   if (source === target || group.some(id => !move.options?.includes(id))) {
@@ -53,6 +61,8 @@ export function bandAttackers(draft: CombatDraft, source: string, target: string
   if (group.filter(id => !move.banding_attackers?.includes(id)).length > 1) {
     return { draft, error: "A band needs banding; at most one member may lack it." };
   }
+  const issue = attackTargetIssue(group, draft.attackTargets, move);
+  if (issue) return { draft, error: issue };
   if (new Set(group.map(id => draft.attackTargets[id] || defaultDefender)).size > 1) {
     return { draft, error: "Band members must attack the same defender." };
   }

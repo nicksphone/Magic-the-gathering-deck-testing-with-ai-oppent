@@ -4,6 +4,9 @@ from copy import copy, deepcopy
 
 COUNT = r'(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
 LAND = r'(?:Plains|Island|Swamp|Mountain|Forest)'
+OPTIONAL_SINGLE_TARGET = {'loyalty_tap_freeze', 'loyalty_next_turn_pt'}
+RETAINED_TARGET = OPTIONAL_SINGLE_TARGET | {'loyalty_sacrifice_return', 'loyalty_graveyard_cast_exile'}
+COPY_TARGET = RETAINED_TARGET | {'loyalty_graveyard_exile_copy'}
 
 
 def number(text):
@@ -28,6 +31,9 @@ def emblem_body(text):
     trigger = re.fullmatch(r'Whenever you draw a card, exile target permanent an opponent controls\.', text, re.I)
     if trigger:
         return {'kind': 'draw_exile', 'text': text}
+    mill = re.fullmatch(r'Whenever you cast a spell, target opponent mills ('+COUNT+r') cards?\.', text, re.I)
+    if mill:
+        return {'kind': 'cast_mill', 'text': text, 'amount': number(mill[1])}
     if re.fullmatch(r'Whenever an artifact is put into your graveyard from the battlefield, '
                     r'return that card to the battlefield at the beginning of the next end step\.', text, re.I):
         return {'kind': 'artifact_return', 'text': text}
@@ -91,6 +97,12 @@ def compile_extended(text, name):
     if re.fullmatch(r'Tap up to (?:one|1) target artifact or creature\. '
                     r'It doesn\x27t untap during its controller\x27s next untap step\.', text, re.I):
         return [node('tap_freeze')]
+    pt = re.fullmatch(r'Up to (?:one|1) target creature gets ([+-]\d{1,6})/([+-]\d{1,6}) until your next turn\.', text, re.I)
+    if pt:
+        return [node('next_turn_pt', power=int(pt[1]), toughness=int(pt[2]))]
+    if re.fullmatch(r'You may cast target instant or sorcery card from your graveyard this turn\. '
+                    r'If that (?:card|spell) would be put into your graveyard(?: this turn)?, exile it instead\.', text, re.I):
+        return [node('graveyard_cast_exile')]
     if re.fullmatch(r'Exile target nonland permanent card with mana value X from your graveyard\. '
                     r'Create a token that\x27s a copy of that card\.', text, re.I):
         return [node('graveyard_exile_copy')]
@@ -207,9 +219,9 @@ def compile_proxy(state, card, controller, targets):
             payload = {**step['data'], 'source_reference': reference, 'loyalty_clause': card.oracle_text}
             if targets.get('target_card_id'):
                 payload['target_card_id'] = targets['target_card_id']
-            elif key == 'loyalty_tap_freeze' and targets.get('target_card_ids'):
+            elif key in OPTIONAL_SINGLE_TARGET and targets.get('target_card_ids'):
                 payload['target_card_id'] = targets['target_card_ids'][0]
-            if key in {'loyalty_tap_freeze', 'loyalty_sacrifice_return'} and payload.get('target_card_id'):
+            if key in RETAINED_TARGET and payload.get('target_card_id'):
                 payload['target_reference'] = card_reference(state, payload['target_card_id'])
             if key == 'loyalty_graveyard_exile_copy':
                 payload['x_value'] = targets.get('x_value', 0)
@@ -223,9 +235,8 @@ def compile_proxy(state, card, controller, targets):
         effects.append({'effect_key': key, 'payload': payload})
     if len(effects) == 1 and effects[0]['effect_key'] == 'loyalty_conditional_discard_damage':
         return effects[0]['effect_key'], {**effects[0]['payload'], '__ability_target_text': card.oracle_text}
-    if any(step['effect_key'] in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy',
-                                  'loyalty_named_artifact_token', 'loyalty_sacrifice_return',
-                                  'loyalty_conditional_discard_damage'} for step in steps):
+    if any(step['effect_key'] in COPY_TARGET | {'loyalty_named_artifact_token',
+                                                'loyalty_conditional_discard_damage'} for step in steps):
         # The native outer receipt validates singular and list slots, including copies.
         return 'effect_sequence', {'effects': effects, '__ability_target_text': card.oracle_text,
                                    'x_value': targets.get('x_value', 0)}
@@ -291,7 +302,8 @@ def resolve(state, controller, payload):
             'source_card_id': frame['source_card_id'], 'controller': controller,
             'label': 'Emblem delayed graveyard return', 'effect_key': 'loyalty_return',
             'payload': {'target_card_id': payload['target_card_id'],
-                        'target_reference': deepcopy(payload['target_reference'])}})
+                        'target_reference': deepcopy(payload['target_reference']),
+                        '__trigger_source_reference': deepcopy(frame['payload'].get('__trigger_source_reference'))}})
     elif kind == 'return':
         frame = payload.get('__resolving_item')
         if not trigger_return_frame_matches(frame, controller, payload, 'loyalty_return'):
@@ -312,6 +324,18 @@ def resolve(state, controller, payload):
             state.loyalty_permissions.append({'kind': 'next_untap_lock', 'controller': controller,
                 'created_turn': state.turn, 'target_card_id': target.id,
                 'target_reference': card_reference(state, target.id)})
+    elif kind in {'next_turn_pt', 'graveyard_cast_exile'}:
+        if target is None or not reference_matches(state, target.id, payload.get('target_reference')):
+            return
+        permission = {'kind': kind, 'controller': controller, 'created_turn': state.turn,
+                      'target_card_id': target.id, 'target_reference': card_reference(state, target.id)}
+        if kind == 'next_turn_pt':
+            if target.zone != Zone.BATTLEFIELD or 'Creature' not in effective_types(state, target):
+                return
+            permission.update(power=payload['power'], toughness=payload['toughness'])
+        elif not _eligible_graveyard_spell(state, controller, target):
+            return
+        state.loyalty_permissions.append(permission)
     elif kind == 'graveyard_exile_copy':
         from rules_engine.mana import mana_value
         from rules_engine.zone_actions import is_departed_token
@@ -397,7 +421,9 @@ def resolve(state, controller, payload):
         state.delayed_triggers.append({'step': 'end_step', 'earliest_turn': state.turn,
             'source_card_id': payload['source_reference']['id'], 'controller': controller,
             'label': 'Delayed land untap', 'effect_key': 'loyalty_choose_untap',
-            'payload': {'count': payload['count']}})
+            'payload': {'count': payload['count'], '__trigger_source_reference': {
+                'incarnation': payload['source_reference']['incarnation'],
+                'zone_change_sequence': payload['source_reference']['sequence']}}})
     elif kind in {'choose_untap', 'hand_entry'}:
         choose_cards(state, controller, payload, kind)
     elif kind == 'flash':
@@ -440,6 +466,56 @@ def valid_card_reference(reference):
     return (isinstance(reference, dict) and set(reference) == {'incarnation', 'sequence', 'zone'}
         and type(reference['zone']) is str and reference['zone'] in {zone.value for zone in Zone}
         and all(type(reference[key]) is int and reference[key] >= 0 for key in ('incarnation', 'sequence')))
+
+
+def _eligible_graveyard_spell(state, controller, card):
+    from game_state.state import Zone
+    from rules_engine.type_effects import effective_types
+    from rules_engine.zone_actions import is_departed_token
+
+    return (card.zone == Zone.GRAVEYARD and card.owner == controller
+            and card.id in state.players[controller].graveyard and not is_departed_token(card)
+            and bool({'Instant', 'Sorcery'} & set(effective_types(state, card))))
+
+
+def graveyard_cast_granted(state, controller, card_id):
+    return any(row.get('kind') == 'graveyard_cast_exile' and row['controller'] == controller
+               and row['created_turn'] == state.turn and row['target_card_id'] == card_id
+               and reference_matches(state, card_id, row['target_reference'])
+               for row in state.loyalty_permissions)
+
+
+def expire_turn_graveyard_cast_grants(state):
+    state.loyalty_permissions = [row for row in state.loyalty_permissions
+                                 if row.get('kind') != 'graveyard_cast_exile']
+
+
+def next_turn_pt_delta(state, card_id):
+    power = toughness = 0
+    for row in state.loyalty_permissions:
+        if (row.get('kind') == 'next_turn_pt' and row['target_card_id'] == card_id
+                and reference_matches(state, card_id, row['target_reference'])):
+            power += row['power']
+            toughness += row['toughness']
+    return power, toughness
+
+
+def validate_loyalty_grants(state, rows):
+    for row in rows:
+        kind = row.get('kind')
+        if kind not in {'next_turn_pt', 'graveyard_cast_exile'}:
+            continue
+        keys = {'kind', 'controller', 'created_turn', 'target_card_id', 'target_reference'}
+        if kind == 'next_turn_pt':
+            keys |= {'power', 'toughness'}
+        if (set(row) != keys or type(row['controller']) is not int or row['controller'] not in state.players
+                or type(row['created_turn']) is not int or not 0 <= row['created_turn'] <= state.turn
+                or type(row['target_card_id']) is not str or row['target_card_id'] not in state.cards
+                or not valid_card_reference(row['target_reference'])
+                or row['target_reference']['zone'] != ('battlefield' if kind == 'next_turn_pt' else 'graveyard')
+                or kind == 'next_turn_pt' and any(type(row[key]) is not int or abs(row[key]) > 999999
+                                                  for key in ('power', 'toughness'))):
+            raise ValueError('Invalid retained loyalty grant')
 
 
 def native_frame_matches(frame, controller):
@@ -889,7 +965,7 @@ def land_choice_valid(state, controller, action, pending):
 
 
 def collect_emblem_triggers(state, event, payload):
-    if event not in {'draw_card', 'permanent_dies'}:
+    if event not in {'draw_card', 'permanent_dies', 'spell_cast'}:
         return []
     out = []
     for cid in state.emblems:
@@ -900,6 +976,12 @@ def collect_emblem_triggers(state, event, payload):
                 'label': 'Emblem draw trigger', 'effect_key': 'exile',
                 'payload': {'__trigger_full_clause': card.oracle_text,
                             '__trigger_resolution_text': 'Exile target permanent an opponent controls.'}})
+        elif parsed and parsed['kind'] == 'cast_mill' and event == 'spell_cast' and payload.get('controller') == card.controller:
+            amount = parsed['amount']
+            out.append({'source_card_id': cid, 'controller': card.controller,
+                'label': 'Emblem cast trigger', 'effect_key': 'mill_cards',
+                'payload': {'amount': amount, '__trigger_full_clause': card.oracle_text,
+                            '__target_opponent_only': True}})
         elif parsed and parsed['kind'] == 'artifact_return' and event == 'permanent_dies':
             from game_state.state import Zone
             departed = state.cards.get(payload.get('card_id'))
@@ -915,11 +997,17 @@ def collect_emblem_triggers(state, event, payload):
 
 
 def begin_turn(state):
-    state.loyalty_permissions = [p for p in state.loyalty_permissions
-        if p.get('kind') == 'source_linked_exile'
-        or (p.get('kind') == 'next_untap_lock' and reference_matches(state, p['target_card_id'], p['target_reference']))
-        or (p.get('kind') != 'next_untap_lock' and
-            (p['controller'] != state.active_player or p['created_turn'] == state.turn))]
+    def remains(permission):
+        kind = permission.get('kind')
+        if kind == 'source_linked_exile':
+            return True
+        if kind == 'graveyard_cast_exile':
+            return permission['created_turn'] == state.turn
+        if kind == 'next_untap_lock':
+            return reference_matches(state, permission['target_card_id'], permission['target_reference'])
+        return permission['controller'] != state.active_player or permission['created_turn'] == state.turn
+
+    state.loyalty_permissions = [permission for permission in state.loyalty_permissions if remains(permission)]
 
 
 def consume_untap_lock(state, card_id):
@@ -938,6 +1026,8 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
     text = card.oracle_text
     if not isinstance(text, str) or not re.match(
             r'(?:Tap up to (?:one|1) target artifact or creature\.|'
+            r'Up to (?:one|1) target creature gets |'
+            r'You may cast target instant or sorcery card from your graveyard this turn\.|'
             r'Exile target nonland permanent card with mana value X from your graveyard\.|'
             r'Sacrifice an artifact\. If you do, return target artifact card from your graveyard to the battlefield\.|'
             r'Create [^"\n,]+, a legendary colorless (?:(?:Book) )?artifact token with ")', text, re.I):
@@ -952,7 +1042,7 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
     if steps is None or len(steps) != 1:
         return None
     key = steps[0]['effect_key']
-    if key not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_named_artifact_token', 'loyalty_sacrifice_return'}:
+    if key not in COPY_TARGET | {'loyalty_named_artifact_token'}:
         return None
     targets = action_targets or {}
     ids = targets.get('target_card_ids') or []
@@ -961,16 +1051,21 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
             or targets.get('target_distribution') or targets.get('mode_targets')
             or singular and ids or len(ids) > 1
             or key == 'loyalty_named_artifact_token' and singular
-            or key != 'loyalty_tap_freeze' and ids):
+            or key not in OPTIONAL_SINGLE_TARGET and ids):
         raise ActionRejected('Invalid target shape for this complete loyalty instruction')
     def view(cid):
         target = state.cards[cid]
         return {'id': cid, 'name': target.name, 'owner': target.owner, 'controller': target.controller}
-    if key == 'loyalty_tap_freeze':
+    if key in OPTIONAL_SINGLE_TARGET:
+        types = {'Artifact', 'Creature'} if key == 'loyalty_tap_freeze' else {'Creature'}
         return {'up_to_target_count': 1, 'player_targets': [], 'stack_targets': [],
             'permanent_targets': [view(cid) for player in state.players.values() for cid in player.battlefield
                 if state.cards[cid].zone == Zone.BATTLEFIELD
-                and set(effective_types(state, state.cards[cid])) & {'Artifact', 'Creature'}]}
+                and types.intersection(effective_types(state, state.cards[cid]))]}
+    if key == 'loyalty_graveyard_cast_exile':
+        return {'player_targets': [], 'stack_targets': [], 'graveyard_card_targets': [
+            view(cid) for cid in state.players[controller].graveyard
+            if _eligible_graveyard_spell(state, controller, state.cards[cid])]}
     if key == 'loyalty_graveyard_exile_copy':
         x = targets.get('x_value')
         if x is not None and (type(x) is not int or x < 0):
@@ -1005,7 +1100,7 @@ def offer_copy_target_choice(state, controller, copied_item, *, preview=False):
     steps = compile_instruction(text, source.name)
     effects = payload.get('effects') or []
     if (steps is None or len(steps) != 1 or len(effects) != 1
-            or steps[0]['effect_key'] not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_sacrifice_return'}
+            or steps[0]['effect_key'] not in COPY_TARGET
             or effects[0].get('effect_key') != steps[0]['effect_key']):
         return False
     child = effects[0].get('payload') or {}
@@ -1085,7 +1180,7 @@ def choose_copy_target(state, copied, pending, chosen):
             copied.payload.get('__announced_target_references'), announced, [tuple(slot)])
         copied.payload['__announced_targets'] = announced
         copied.payload['effects'][0]['payload']['target_card_id'] = cid
-        if copied.payload['effects'][0]['effect_key'] in {'loyalty_tap_freeze', 'loyalty_sacrifice_return'}:
+        if copied.payload['effects'][0]['effect_key'] in RETAINED_TARGET:
             copied.payload['effects'][0]['payload']['target_reference'] = card_reference(state, cid)
         if '__announced_target_references' in copied.payload:
             copied.payload['__announced_target_references'] = references
@@ -1182,5 +1277,7 @@ def timing(state, card, player):
                     and not normal):
                 return False, False
     flash = 'Sorcery' in effective_types(state, card) and any(
-        p.get('kind') not in {'source_linked_exile', 'next_untap_lock', 'combat_retaliation'} and p['controller'] == player for p in state.loyalty_permissions)
+        p.get('kind') not in {'source_linked_exile', 'next_untap_lock', 'combat_retaliation',
+                             'next_turn_pt', 'graveyard_cast_exile'}
+        and p['controller'] == player for p in state.loyalty_permissions)
     return True, flash

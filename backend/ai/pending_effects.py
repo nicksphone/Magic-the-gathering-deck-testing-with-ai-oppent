@@ -25,6 +25,7 @@ SECONDARY_EFFECT_RE = re.compile(
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
 _projection_choice_path = ContextVar("ai_projection_choice_path", default=())
+_trigger_target_projection = ContextVar("ai_trigger_target_projection", default=False)
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
 
@@ -744,7 +745,8 @@ def _has_forecast_response(projected, player_id, rules):
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
                            own_choice_action=None, opaque_hand_choices=False,
                            settle_declared_combat=False, stop_at_private_action_frontier=False,
-                           retained_stack: tuple[str, ...] | None = None) -> bool:
+                           retained_stack: tuple[str, ...] | None = None,
+                           settle_retained_choices=False) -> bool:
     rules = RulesEngine()
     combat = settle_declared_combat is True
     if combat and player_id not in projected.players:
@@ -759,10 +761,14 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
                 return True
             current = tuple(item.id for item in projected.stack)
             if current == retained_stack:
-                return not (projected.pending_mechanic_choice or projected.pending_replacement_choice
-                            or projected.pending_trigger_order)
+                pending = (projected.pending_mechanic_choice or projected.pending_replacement_choice
+                           or projected.pending_trigger_order)
+                if not pending:
+                    return True
+                if not settle_retained_choices:
+                    return False
             # Older frames are a hard frontier, never a forecast of their hidden effects.
-            if len(current) <= len(retained_stack) or current[:len(retained_stack)] != retained_stack:
+            elif len(current) <= len(retained_stack) or current[:len(retained_stack)] != retained_stack:
                 return False
         # A newly acquired hand can answer the remaining stack. Passing that
         # opportunity is not an immediate hard-loss proof, even for opaque cards.
@@ -821,6 +827,75 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
         except UncertainSimulation:
             return False
     return False
+
+
+def public_trigger_target_value(state: MatchState, item, controller: int, choice: dict):
+    """Value one real trigger branch above the older stack using public inputs."""
+    if (_trigger_target_projection.get() or controller not in state.players
+            or item.controller != controller or not item.payload.get('__trigger_target_clause')
+            or state.pending_mechanic_choice or state.pending_replacement_choice
+            or state.pending_trigger_order or state.staged_triggers):
+        return None
+    from ai.information import decision_view
+    from ai.heuristics import evaluate_board
+    from ai.agent import AIAgent
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.targeting import stack_object_kind
+    from rules_engine.events import trigger_target_options, _remember_trigger_target
+    from rules_engine.granted_target_triggers import _record_target_selection
+    from rules_engine.ward import mark_stack_targets
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    if stack_object_kind(state, item) != 'triggered':
+        return None
+    existing = [frame for frame in state.stack if frame.id == item.id]
+    if existing and state.stack[-1].id != item.id:
+        return None
+    selected = {key: choice[key] for key in ('target_card_id', 'target_player') if key in choice}
+    if len(selected) != 1:
+        return None
+    token = _trigger_target_projection.set(True)
+    try:
+        view, _ = decision_view(state, controller, [])
+        before = evaluate_board(view, controller)
+        projected = _projection_copy(view)
+        projected.stack = [frame for frame in projected.stack if frame.id != item.id]
+        retained = tuple(frame.id for frame in projected.stack)
+        frame = deepcopy(item)
+        if not any(all(option.get(key) == value for key, value in selected.items())
+                   for option in trigger_target_options(projected, frame)):
+            return None
+        frame.payload.pop('target_card_id', None)
+        frame.payload.pop('target_player', None)
+        frame.payload.update(selected)
+        frame.payload['__trigger_target_choice'] = True
+        _remember_trigger_target(projected, frame)
+        _record_target_selection(projected, frame)
+        projected.stack.append(frame)
+        projected.trigger_staging = True
+        projected.trigger_staging_event = 'becomes_target'
+        mark_stack_targets(projected, frame)
+        apply_state_based_actions(projected)
+        agent = AIAgent(difficulty='strong')
+
+        def own_choice(position, moves, player):
+            return agent.choose_action(position, moves, player).action
+
+        if not _settle_announced_stack(projected, player_id=controller,
+                own_choice_action=own_choice, retained_stack=retained,
+                settle_retained_choices=True, stop_at_private_action_frontier=True):
+            return None
+        if (any(projected.players[pid].library != player.library for pid, player in view.players.items())
+                or projected.players[3-controller].hand != view.players[3-controller].hand
+                or set(projected.players[controller].hand) - set(view.players[controller].hand)):
+            return None
+        if projected.winner is not None:
+            return 1000.0 if projected.winner == controller else 0.0 if projected.winner == 0 else -1000.0
+        return evaluate_board(projected, controller) - before
+    except (ActionRejected, UncertainSimulation):
+        return None
+    finally:
+        _trigger_target_projection.reset(token)
 
 
 def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *,

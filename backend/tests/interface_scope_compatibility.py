@@ -128,6 +128,20 @@ assert SACRIFICE_QUERY_COST['source'] == 'rules_engine/costs.py'
 ACCEPTED_SACRIFICE_QUERY_COST_DELTA = SACRIFICE_QUERY_COST['accepted_delta']
 assert ACCEPTED_SACRIFICE_QUERY_COST_DELTA['old_sha256'] == ACCEPTED_SPECTACLE_COST_DELTA['new_sha256']
 
+PR55_DELTAS_PATH = PATH.with_name('accepted_pr55_deltas.json')
+pr55_deltas_raw = PR55_DELTAS_PATH.read_bytes()
+assert hashlib.sha256(pr55_deltas_raw).hexdigest() == 'cc5163710b32af6434da6657c396f6e11485ef43a05f239405dfb60284e69af5'
+PR55_DELTAS = json.loads(pr55_deltas_raw)
+assert PR55_DELTAS['accepted_public_commit'].startswith('bb3ebfa3')
+assert PR55_DELTAS['costs']['source'] == 'rules_engine/costs.py'
+ACCEPTED_PR55_COST_DELTA = PR55_DELTAS['costs']['accepted_delta']
+assert ACCEPTED_PR55_COST_DELTA['old_sha256'] == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']
+# Reviewed costs.py layers, newest first; each is replayed only when it is the measured source.
+COST_DELTA_CHAIN = (ACCEPTED_PR55_COST_DELTA, ACCEPTED_SACRIFICE_QUERY_COST_DELTA)
+assert PR55_DELTAS['keyword']['source'] == 'rules_engine/keyword_actions.py'
+PR55_KEYWORD_PREFIX = PR55_DELTAS['keyword']['prefix']
+PR55_KEYWORD_SUFFIX = PR55_DELTAS['keyword']['suffix']
+
 FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
 finite_raw = FINITE_PATH.read_bytes()
 assert hashlib.sha256(finite_raw).hexdigest() == '268baa65862fe5eab759629e5b8370a8943f4d3dcae8077009515f2e0494324d'
@@ -259,8 +273,10 @@ def restore_reviewed_source(name, current, historical):
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
-    if name == 'rules_engine/costs.py' and hashlib.sha256(current).hexdigest() == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']:
-        current = _restore(current.decode(), ACCEPTED_SACRIFICE_QUERY_COST_DELTA).encode()
+    if name == 'rules_engine/costs.py':
+        for layer in COST_DELTA_CHAIN:
+            if hashlib.sha256(current).hexdigest() == layer['new_sha256']:
+                current = _restore(current.decode(), layer).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == LIFECYCLE_RETENTION_MAIN_DELTA['new_sha256']:
         current = _restore(current.decode(), LIFECYCLE_RETENTION_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == NATIVE_FORGE_MAIN_DELTA['new_sha256']:
@@ -287,6 +303,10 @@ def restore_keyword_edges(text):
     assert text.count(prefix) == text.count(suffix) == 1
     before, remaining = text.split(prefix)
     middle, after = remaining.split(suffix)
+    if hashlib.sha256(before.encode()).hexdigest() == PR55_KEYWORD_PREFIX['new_sha256']:
+        before = _restore(before, PR55_KEYWORD_PREFIX)
+    if hashlib.sha256(after.encode()).hexdigest() == PR55_KEYWORD_SUFFIX['new_sha256']:
+        after = _restore(after, PR55_KEYWORD_SUFFIX)
     if hashlib.sha256(before.encode()).hexdigest() not in {
             CONTRACT['keyword_prefix']['old_sha256'], CONTRACT['keyword_prefix']['new_sha256']}:
         before = _restore(before, FINITE['keyword']['prefix'])

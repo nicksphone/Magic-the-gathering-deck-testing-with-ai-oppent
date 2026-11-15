@@ -51,4 +51,15 @@ for (const attacker of ['a','b','flying']) all = assignBlocker(all, 'wall', atta
 assert.deepEqual(Object.values(all.blocks), [['wall'],['wall'],['wall']]);
 assert.deepEqual(assignBlocker(all, 'wall', 'a', block).draft, all, 'repeated drops do not duplicate blockers');
 assert.deepEqual(empty, emptyCombatDraft(), 'all selection operations preserve the original draft');
+
+const siege = { id: 'battle:siege', label: 'Invasion of Zendikar', kind: 'battle' };
+const player = { id: 'player:2', label: 'Player 2', kind: 'player' };
+const battleDraft = { ...selected, attackTargets: { hero: siege.id, angel: siege.id } };
+const attackWithBattle = { ...attack, defenders: [player, siege] };
+const battleBand = bandAttackers(battleDraft, 'hero', 'angel', attackWithBattle, player.id);
+assert.equal(battleBand.error, null);
+assert.deepEqual(battleBand.draft.attackTargets, battleDraft.attackTargets);
+const staleBattleBand = bandAttackers(battleDraft, 'hero', 'angel', { ...attackWithBattle, defenders: [player] }, player.id);
+assert.ok(staleBattleBand.error, 'a removed Battle cannot remain a draft destination');
+assert.deepEqual(staleBattleBand.draft, battleDraft, 'refresh must preserve the stale choice for correction');
 console.log('PASS direct combat selection, legal bands, defender consistency, legal block targets and 1/2/unlimited blocking capacities');

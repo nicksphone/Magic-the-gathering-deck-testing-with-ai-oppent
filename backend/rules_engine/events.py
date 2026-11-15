@@ -90,6 +90,8 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "power": effective_power(state, card_id) if 'Creature' in types else None,
         "toughness": effective_toughness(state, card_id) if 'Creature' in types else None,
         "loyalty": card.loyalty,
+        **({'printed_defense': card.printed_defense, 'battle_protector': card.battle_protector}
+           if 'Battle' in types else {}),
         "keywords": list(keyword_counts),
         "keyword_counts": keyword_counts,
         "counters": dict(card.counters),
@@ -97,6 +99,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "color_names": sorted(card_color_names(card, state)),
         "selected_face_index": card.selected_face_index,
         "battlefield_incarnation": object_incarnation(card),
+        "zone_change_sequence": card.zone_change_sequence,
         "effect_timestamp": card.effect_timestamp,
         "was_kicked": card.was_kicked,
         **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
@@ -390,7 +393,8 @@ def _publish_ordered_triggers(
                     choice = preferred_graveyard_spell(state, item.controller, options)
                 elif item.effect_key == "deal_damage":
                     from ai.heuristics import choose_damage_trigger_target
-                    choice = choose_damage_trigger_target(state, item.controller, int(item.payload.get("amount", 0)), options)
+                    choice = choose_damage_trigger_target(state, item.controller, int(item.payload.get("amount", 0)), options,
+                                                          trigger=item)
                 else:
                     choice = options[0]
                 item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
@@ -463,7 +467,7 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         if (source is not None and item.payload.get('__trigger_event') == 'enters_battlefield'
                 and re.fullmatch(
                     r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
-                    r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                    r'aura|equipment|vehicle|land|battle|siege|token)|' + re.escape(source.name)
                     + r') enters(?: the battlefield)?, gain control of target permanent\.',
                     clause, re.I)):
             return clause
@@ -471,6 +475,8 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         return item.payload['__trigger_full_clause']
     if item.effect_key == 'retained_counter_prohibition':
         return item.payload['__counter_mode_clause']
+    if item.effect_key == 'mill_cards' and item.payload.get('__target_opponent_only'):
+        return item.payload['__trigger_full_clause']
     if item.payload.get('__trigger_resolution_text'):
         return item.payload['__trigger_full_clause']
     event = item.payload.get("__trigger_event")
@@ -545,7 +551,8 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     if item.effect_key in {'cast_from_graveyard', 'grant_flashback'}:
         return [{'target_card_id': target['id'], 'target_name': target['name']}
                 for target in hints.get('graveyard_spell_targets', [])]
-    if item.payload.get("__targeted_life_loss") or item.payload.get('__counter_target_kind') == 'player':
+    if (item.payload.get("__targeted_life_loss") or item.payload.get('__counter_target_kind') == 'player'
+            or item.effect_key == 'mill_cards' and item.payload.get('__target_opponent_only')):
         return [
             {"target_player": pid, "target_name": player.name}
             for pid, player in state.players.items()
@@ -561,7 +568,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         for player in state.players.values():
             for cid in player.battlefield:
                 target = state.cards[cid]
-                if not {"Creature", "Planeswalker"}.intersection(effective_types(state, target)):
+                if not {"Creature", "Planeswalker", "Battle"}.intersection(effective_types(state, target)):
                     continue
                 choice = {"target_card_id": cid}
                 if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
@@ -680,7 +687,56 @@ def _collect_graveyard_entry_triggers(state, payload):
     return triggers
 
 
+def _valid_source_reference(reference):
+    return (type(reference) is dict and set(reference) == {'incarnation','zone_change_sequence'}
+            and all(type(value) is int and value >= 0 for value in reference.values()))
+
+
+def trigger_source_reference(state, source_card_id, payload=None):
+    """Retain a creator's original object; never rebind an old spell copy or frame."""
+    payload = payload or {}
+    if payload.get('__stack_copy_kind') == 'spell':
+        return None  # A spell copy is a distinct object, not its physical source card.
+    for key in ('__trigger_source_reference','__activation_source_reference',
+                '__stack_source_reference','__delayed_source_reference'):
+        if key in payload:
+            reference = payload[key]
+            return deepcopy(reference) if _valid_source_reference(reference) else None
+    frame = payload.get('__resolving_item')
+    if frame is not None:
+        if (type(frame) is not dict or frame.get('source_card_id') != source_card_id
+                or type(frame.get('payload')) is not dict or '__resolving_item' in frame['payload']):
+            return None
+        return trigger_source_reference(state, source_card_id, frame['payload'])
+    card = state.cards.get(source_card_id)
+    if (card is None or payload.get('__announced_stack_kind') == 'spell' and card.zone != Zone.STACK):
+        return None
+    return {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+
+
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if event == 'defense_counters_removed':
+        from rules_engine.battles import collect_defeat
+        triggers = collect_defeat(state, payload)
+    else:
+        triggers = _collect_triggers_unbound(state, event, payload)
+    for trigger in triggers:
+        data = trigger['payload']
+        if '__trigger_source_reference' in data:
+            continue
+        card = state.cards.get(trigger.get('source_card_id'))
+        if (card is not None and card.zone != Zone.BATTLEFIELD
+                and event in {'permanent_dies','creature_dies','sacrifice'}):
+            lki = card.last_known_battlefield
+            reference = {'incarnation': lki.get('battlefield_incarnation'),
+                         'zone_change_sequence': lki.get('zone_change_sequence')}
+            data['__trigger_source_reference'] = reference if _valid_source_reference(reference) else None
+        else:
+            data['__trigger_source_reference'] = trigger_source_reference(state, trigger.get('source_card_id'))
+    return triggers
+
+
+def _collect_triggers_unbound(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     if event == 'nonmana_ability_activated':
         from rules_engine.activation_copy import collect_activation_copy_triggers
         return collect_activation_copy_triggers(state, payload)
@@ -862,7 +918,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 changed = state.cards.get(payload.get("card_id"))
                 transformed_entry = (
                     event == "enters_battlefield" and changed is not None
-                    and changed.layout in {"transform", "double_faced_token"}
+                        and changed.layout in {"transform", "modal_dfc", "double_faced_token"}
                     and changed.selected_face_index == 1
                 )
                 if (changed is not None and changed.controller == card.controller
@@ -1314,12 +1370,12 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard', 'exchange_energy_payment', 'change_control'}
-            or item.effect_key == 'retained_counter_prohibition' and item.payload.get('__counter_target_kind') == 'card'
-            or item.effect_key == 'destroy_permanent'
-            and item.payload.get('__trigger_event') == 'time_counters_removed'):
-        target = state.cards[item.payload['target_card_id']]
+    target_id = item.payload.get('target_card_id')
+    if target_id is not None:
+        target = state.cards[target_id]
         item.payload['__trigger_target_reference'] = [object_incarnation(target), target.zone_change_sequence]
+    else:
+        item.payload.pop('__trigger_target_reference', None)
 
 
 def _self_entry_transform_clauses(card, oracle):
@@ -1332,7 +1388,7 @@ def _self_entry_transform_clauses(card, oracle):
 
 
 def _entry_observer_clause(oracle: str, *, source_name: str | None = None):
-    reference = r'this (?:creature|permanent|artifact|enchantment|planeswalker|aura|equipment|vehicle|land|battle|token)'
+    reference = r'this (?:creature|permanent|artifact|enchantment|planeswalker|aura|equipment|vehicle|land|battle|siege|token)'
     if source_name:
         reference += '|' + re.escape(source_name)
     return re.fullmatch(
@@ -1415,7 +1471,7 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
         return entering_id == card.id
     if any(f"when this {subject} enters the battlefield" in oracle for subject in
            ("creature", "permanent", "artifact", "enchantment", "planeswalker",
-            "aura", "equipment", "vehicle", "land", "battle", "token")):
+            "aura", "equipment", "vehicle", "land", "battle", "siege", "token")):
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:
         return "Creature" in (effective_types(state, entering_card) or []) and entering_id != card.id
@@ -1707,8 +1763,8 @@ def _any_player_cast_damage_triggers(state, source, event, payload, oracle):
     if (type(caster) is not int or caster not in state.players or spell is None
             or type(x_value) is not int or x_value < 0):
         return []
-    from rules_engine.mana import mana_value
-    value = mana_value(spell.mana_cost, x_value=x_value)
+    from rules_engine.card_faces import card_mana_value
+    value = card_mana_value(spell, x_value=x_value)
     subject = r'(?:this (?:artifact|creature|enchantment|permanent)|' + re.escape(source.name.lower()) + r')'
     triggers = []
     for clause in oracle.splitlines():
@@ -1836,13 +1892,26 @@ def _trigger_from_oracle(
                 'label': default_label, 'effect_key': 'player_loses_game',
                 'payload': {'target_player': payload['target_player'], '__trigger_full_clause': oracle}}
     source = state.cards.get(source_card_id)
+    attack_clauses = ([line.strip() for line in oracle.splitlines()
+                       if _matches_attack_trigger(state, source, line, payload)]
+                      if event == 'attack_declared' and source is not None else [])
+    attack_damage = re.fullmatch(
+        r'whenever this (?:token|creature) attacks, it deals (\d+) damage to each opponent\.',
+        attack_clauses[0], re.I) if len(attack_clauses) == 1 else None
+    if event == 'attack_declared' and attack_damage:
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': 'effect_sequence', 'payload': {
+                    '__trigger_full_clause': attack_clauses[0], 'effects': [
+                        {'effect_key': 'deal_damage', 'payload': {
+                            'target_player': player, 'amount': int(attack_damage[1])}}
+                        for player in state.players if player != controller]}}
     if (entry_oracle is not None and source is not None
             and payload.get('card_id') == source_card_id):
         entries = []
         for line in entry_oracle.splitlines():
             match = re.fullmatch(
                 r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
-                r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                r'aura|equipment|vehicle|land|battle|siege|token)|' + re.escape(source.name)
                 + r') enters(?: the battlefield)?, (gain control\b.*)', line.strip(), re.I)
             if match:
                 entries.append((line.strip(), match[1]))
@@ -1864,7 +1933,7 @@ def _trigger_from_oracle(
     if raw_entry is not None and source is not None:
         self_entry_pattern = (
             r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
-            r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+            r'aura|equipment|vehicle|land|battle|siege|token)|' + re.escape(source.name)
             + r') enters(?: the battlefield)?, (.+)')
         entries = []
         for line in raw_entry.splitlines():
@@ -2011,7 +2080,7 @@ def _trigger_from_oracle(
     if event == 'enters_battlefield' and source is not None:
         from rules_engine.flashback_grants import grant_instruction
         for line in oracle.splitlines():
-            entry = re.fullmatch(r'when (?:this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name.lower())
+            entry = re.fullmatch(r'when (?:this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|siege|token)|' + re.escape(source.name.lower())
                                  + r') enters(?: the battlefield)?, (.+)', line.strip().lower())
             if entry and grant_instruction(entry[1]) and _matches_enters_battlefield_trigger(state, source, line, payload):
                 return {'source_card_id': source_card_id, 'controller': controller,
@@ -2239,14 +2308,14 @@ def _trigger_from_oracle(
             r"whenever you cast a noncreature spell, incubate x, where x is that spell's mana value",
             oracle,
         ):
-            spell = state.cards.get(payload.get("source_card_id"))
+            spell = _cast_event_source(state, event, payload)
             if spell is not None:
-                from rules_engine.mana import mana_value
+                from rules_engine.card_faces import card_mana_value
                 x_value = int((payload.get("stack_payload") or {}).get("x_value", 0) or 0)
                 return {
                     "source_card_id": source_card_id, "controller": controller,
                     "label": default_label, "effect_key": "incubate",
-                    "payload": {"counters": mana_value(spell.mana_cost, x_value=x_value)},
+                    "payload": {"counters": card_mana_value(spell, x_value=x_value)},
                 }
         if event == "permanent_dies" and "target opponent loses life equal to this creature's power" in oracle:
             from rules_engine.continuous import effective_power
@@ -2399,7 +2468,7 @@ def _trigger_from_oracle(
         self_instructions = [(oracle, cast_instruction)]
     elif (source is not None and event == 'enters_battlefield'
           and payload.get('card_id') == source_card_id):
-        reference = (r'this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|token)|'
+        reference = (r'this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|siege|token)|'
                      + re.escape(source.name))
         for line in oracle.splitlines():
             entry = re.fullmatch(r'(?:when|whenever) (?:' + reference
