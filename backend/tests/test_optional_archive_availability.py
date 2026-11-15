@@ -30,13 +30,12 @@ def _skip_decision(monkeypatch, archive):
     return eval(condition, vars(original)) if isinstance(condition, str) else condition
 
 
-def test_optional_archive_permission_denial_becomes_skip(monkeypatch):
-    archive = MetadataOnlyArchive(error=PermissionError(errno.EACCES, 'Inert metadata denial'))
-    try:
-        decision = _skip_decision(monkeypatch, archive)
-    except PermissionError:
-        decision = None
-    assert decision is True
+def test_optional_archive_permission_denial_still_fails_loudly(monkeypatch):
+    # Matches test_optional_archive_collection: an unreadable archive is not silently skipped.
+    error = PermissionError(errno.EACCES, 'Inert metadata denial')
+    with pytest.raises(PermissionError) as caught:
+        _skip_decision(monkeypatch, MetadataOnlyArchive(error=error))
+    assert caught.value is error
 
 
 @pytest.mark.parametrize('available,expected', [(False, True), (True, False)], ids=['missing', 'present'])
