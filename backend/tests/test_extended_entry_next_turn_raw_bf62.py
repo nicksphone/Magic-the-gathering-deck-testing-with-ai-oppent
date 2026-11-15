@@ -51,5 +51,9 @@ def test_complete_legacy_and_extended_delayed_draw_keep_native_route(seat, selec
     delayed = state.delayed_triggers[0]
     assert delayed['controller'] == seat
     assert delayed['effect_key'] == 'draw_cards'
-    assert delayed['payload'] == {'amount': 1, 'target_player': seat}
+    payload = dict(delayed['payload'])
+    reference = payload.pop('__trigger_source_reference')  # Retained source identity added with Battles.
+    assert set(reference) == {'incarnation', 'zone_change_sequence'}
+    assert all(type(value) is int and value >= 0 for value in reference.values())
+    assert payload == {'amount': 1, 'target_player': seat}
     assert delayed['earliest_turn'] == state.turn + 1

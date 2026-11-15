@@ -152,7 +152,12 @@ def test_thoughtseize_filters_lands_then_loses_life_after_discard_choice():
     assert pending["options"] == [cards["bolt"], cards["elf"]]
     assert any("reveals their hand:" in line and "Forest" in line and "Lightning Bolt" in line
                and "Llanowar Elves" in line for line in state.log)
-    assert pending["continuation_effects"] == [{
+    continuation = [{**effect, "payload": dict(effect["payload"])} for effect in pending["continuation_effects"]]
+    for effect in continuation:  # Retained stack-source identity added with Battles.
+        reference = effect["payload"].pop("__stack_source_reference")
+        assert set(reference) == {"incarnation", "zone_change_sequence"}
+        assert effect["payload"].pop("__announced_stack_kind") == "spell"
+    assert continuation == [{
         "effect_key": "lose_life", "payload": {"target_player": 1, "amount": 2, "__source_card_id": spell_id},
     }]
     state = deserialize_match_snapshot(serialize_match_snapshot(state))

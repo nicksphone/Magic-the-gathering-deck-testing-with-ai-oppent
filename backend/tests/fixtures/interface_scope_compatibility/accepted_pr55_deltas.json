@@ -1,0 +1,142 @@
+{
+  "accepted_public_commit": "bb3ebfa3cc8cb0db151cf017cd154bd87fbeea1d",
+  "previous_accepted_public_commit": "cc29147b",
+  "costs": {
+    "source": "rules_engine/costs.py",
+    "accepted_delta": {
+      "old_sha256": "205f021cd371f0a95c1e15d5efa2311a93bb3e37888072ec71a96825ffa77841",
+      "new_sha256": "0dce5b2bffbcb1d5acadd26e04ed00a732f50a32c91faded56fff725e1fce368",
+      "hunks": [
+        {
+          "start": 50,
+          "end": 51,
+          "old": "",
+          "new": "    additional_generic_reduction: int = 0\n"
+        },
+        {
+          "start": 85,
+          "end": 86,
+          "old": "            r\"\\s+(\\+1/\\+1|charge)\\s+counters?\\s+from\\s+this\\s+(?:creature|permanent|artifact|enchantment)\\s*\",\n",
+          "new": "            r\"\\s+(\\+1/\\+1|charge|defense)\\s+counters?\\s+from\\s+this\\s+(?:creature|permanent|artifact|enchantment|battle)\\s*\",\n"
+        },
+        {
+          "start": 381,
+          "end": 385,
+          "old": "        source.counters[cost.remove_counter_kind] -= cost.remove_source_counters\n",
+          "new": "        from rules_engine.counter_removal import remove_counters\n        remove_counters(state, source.id, cost.remove_counter_kind, cost.remove_source_counters)\n        # Existing cost snapshots and departure LKI retain an explicit zero slot.\n        source.counters.setdefault(cost.remove_counter_kind, 0)\n"
+        },
+        {
+          "start": 557,
+          "end": 568,
+          "old": "",
+          "new": "    expanded = []\n    for branch in branches:\n        if 'optional_sacrifice_generic_reduction' in branch:\n            reduction = branch['optional_sacrifice_generic_reduction']\n            expanded.extend({'sacrifice_creatures': count, 'sacrifice_kind': 'creature',\n                             'additional_generic_reduction': count * reduction,\n                             '__optional_sacrifice': True}\n                            for count in range(len(_eligible_sacrifice_ids(state, player_id)) + 1))\n        else:\n            expanded.append(branch)\n    branches = expanded\n"
+        },
+        {
+          "start": 577,
+          "end": 579,
+          "old": "            suffix = ('discard' if set(branch) == {'discard_cards'} else\n",
+          "new": "            suffix = (f'sacrifice_{branch[\"sacrifice_creatures\"]}' if branch.get('__optional_sacrifice') else\n                      'discard' if set(branch) == {'discard_cards'} else\n"
+        },
+        {
+          "start": 597,
+          "end": 599,
+          "old": "                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))\n",
+          "new": "                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0),\n                additional_generic_reduction=branch.get('additional_generic_reduction', 0)))\n"
+        },
+        {
+          "start": 661,
+          "end": 662,
+          "old": "        additional_generic_reduction=len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,\n",
+          "new": "        additional_generic_reduction=option.additional_generic_reduction + len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,\n"
+        }
+      ]
+    }
+  },
+  "keyword": {
+    "source": "rules_engine/keyword_actions.py",
+    "prefix": {
+      "old_sha256": "76198cadc19f9bc74c2081b59bc9575a6f1d02116d0ce505cce92261e172c9e4",
+      "new_sha256": "75e7317d27171937dc56d03d1745bb585c65e010106178667d031a9104f5818c",
+      "hunks": [
+        {
+          "start": 5,
+          "end": 6,
+          "old": "from game_state.state import Step, Zone, assign_static_order_on_battlefield_entry\n",
+          "new": "from game_state.state import Step, Zone, assign_static_order_on_battlefield_entry, object_incarnation\n"
+        },
+        {
+          "start": 17,
+          "end": 19,
+          "old": "    return [cid for cid in state.attackers if cid in state.players[player_id].battlefield and not state.blocks.get(cid)]\n",
+          "new": "    return [cid for cid in state.attackers\n            if cid in state.players[player_id].battlefield and cid not in state.blocks]\n"
+        },
+        {
+          "start": 47,
+          "end": 49,
+          "old": "",
+          "new": "    from rules_engine.combat import reconcile_combat_targets\n    reconcile_combat_targets(state)\n"
+        },
+        {
+          "start": 50,
+          "end": 58,
+          "old": "",
+          "new": "    payload = {\"attack_target\": target, \"__source_zone_sequence\": source_sequence}\n    if target.startswith(('battle:', 'planeswalker:')):\n        permanent = state.cards.get(target.split(':', 1)[1])\n        if permanent is not None and permanent.zone == Zone.BATTLEFIELD:\n            payload['__attack_target_reference'] = {\n                'incarnation': object_incarnation(permanent),\n                'zone_change_sequence': permanent.zone_change_sequence,\n            }\n"
+        },
+        {
+          "start": 64,
+          "end": 65,
+          "old": "",
+          "new": "    state.combat_target_context.pop(return_id, None)\n"
+        },
+        {
+          "start": 66,
+          "end": 67,
+          "old": "                 {\"attack_target\": target, \"__source_zone_sequence\": source_sequence}, is_spell=False)\n",
+          "new": "                 payload, is_spell=False)\n"
+        },
+        {
+          "start": 69,
+          "end": 100,
+          "old": "",
+          "new": "\n\ndef _ninjutsu_destination(state, controller, payload):\n    from rules_engine.combat import _valid_defenders\n    target = payload.get('attack_target')\n    if type(target) is not str or not target:\n        return None\n    choices = _valid_defenders(state, 3-controller)\n    if target.startswith('player:'):\n        return target if target in choices else None\n    kind, _, cid = target.partition(':')\n    if kind not in {'battle', 'planeswalker'}:\n        return None\n    reference = payload.get('__attack_target_reference')\n    if reference is None and kind == 'planeswalker':\n        # Snapshots from before retained combat references support the old PW path.\n        return target if target in choices else None\n    card = state.cards.get(cid)\n    if card is None or card.zone != Zone.BATTLEFIELD or type(reference) is not dict:\n        return None\n    if set(reference) != {'incarnation', 'zone_change_sequence'}:\n        return None\n    if any(type(value) is not int or value < 0 for value in reference.values()):\n        return None\n    if (reference['incarnation'] != object_incarnation(card)\n            or reference['zone_change_sequence'] != card.zone_change_sequence):\n        return None\n    if target in choices:\n        return target\n    alternate = ('planeswalker:' if kind == 'battle' else 'battle:') + cid\n    return alternate if alternate in choices else None\n"
+        },
+        {
+          "start": 121,
+          "end": 130,
+          "old": "    if state.step in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE, Step.END_COMBAT} and state.active_player == controller:\n        state.attackers.append(card_id)\n        state.attack_targets[card_id] = payload[\"attack_target\"]\n",
+          "new": "    if (state.step in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE, Step.END_COMBAT}\n            and state.active_player == controller and 'Creature' in effective_types(state, card)\n            and 'Battle' not in effective_types(state, card)):\n        target = _ninjutsu_destination(state, controller, payload)\n        if target is not None:\n            state.attackers.append(card_id)\n            state.attack_targets[card_id] = target\n            from rules_engine.combat import bind_attack_target\n            bind_attack_target(state, card_id, target)\n"
+        },
+        {
+          "start": 140,
+          "end": 152,
+          "old": "",
+          "new": "    state.priority_player = player_id\n    state.passed_priority = set()\n\n\ndef resolve_creature_sacrifice(state, controller: int, payload: dict) -> None:\n    player_id = payload['target_player']\n    choices = [cid for cid in state.players[player_id].battlefield\n               if 'Creature' in effective_types(state, state.cards[cid])]\n    if not choices:\n        return\n    state.pending_mechanic_choice = {'kind': 'sacrifice', 'player_id': player_id,\n                                    'options': choices, 'count': 1, 'label': 'Sacrifice a creature'}\n"
+        },
+        {
+          "start": 178,
+          "end": 181,
+          "old": "",
+          "new": "        return finish(state, player_id, action)\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'deferred_upkeep_payment':\n        from rules_engine.deferred_upkeep_payment import finish\n"
+        },
+        {
+          "start": 451,
+          "end": 452,
+          "old": "            if selected_graveyard_trigger or (key == 'target_card_id' and copied.payload.get('__trigger_target_choice') is True):\n",
+          "new": "            if copied.payload.get('__trigger_target_choice') is True:\n"
+        }
+      ]
+    },
+    "suffix": {
+      "old_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd",
+      "new_sha256": "59f833fec3f852959a9e467605a54cdc2982c6f384ef11d53093dc20aaf7641a",
+      "hunks": [
+        {
+          "start": 8,
+          "end": 10,
+          "old": "    if pending.get(\"resolving_item\"):\n        from game_state.state import StackItem\n        from rules_engine.stack_engine import finish_stack_resolution\n        item = StackItem(**pending[\"resolving_item\"])\n        finish_stack_resolution(state, item, {**item.payload, \"__source_card_id\": item.source_card_id})\n    if not state.pending_trigger_order and not state.pending_replacement_choice:\n        state.priority_player = state.active_player\n        state.passed_priority = set()\n",
+          "new": "    from rules_engine.stack_engine import resume_paused_resolution\n    resume_paused_resolution(state, pending)\n"
+        }
+      ]
+    }
+  }
+}

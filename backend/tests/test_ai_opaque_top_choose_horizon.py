@@ -27,13 +27,6 @@ CARDS = {name: {**raw, 'power': raw.get('power'), 'toughness': raw.get('toughnes
 NATURAL = Path('/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/holding-spells/natural-matrix/mtg-natural-matrix-LrSgLt/evidence')
 
 
-def _natural_archive_available():
-    try:
-        return NATURAL.exists()
-    except PermissionError:
-        return False
-
-
 def position(seat):
     state = bare_state(seat)
     state.turn = 16
@@ -340,7 +333,7 @@ def mirror_snapshot(snapshot):
     return visit(snapshot)
 
 
-@pytest.mark.skipif('not _natural_archive_available()', reason='Optional archived natural decision fixture')
+@pytest.mark.skipif('not NATURAL.exists()', reason='Optional archived natural decision fixture')
 @pytest.mark.parametrize('tick', [433, 446])
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('style', STYLES)

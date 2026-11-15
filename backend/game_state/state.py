@@ -401,7 +401,7 @@ class MatchFactory:
                     controller=owner,
                     zone=Zone.LIBRARY,
                     types=types,
-                    mana_cost=raw_item.get("mana_cost", ""),
+                    mana_cost=raw_item.get("mana_cost") or "",
                     power=_infer_power(card_name, raw_item.get("power"), types),
                     toughness=_infer_toughness(card_name, raw_item.get("toughness"), types),
                     printed_power=str(raw_item['power']) if raw_item.get('power') is not None else None,

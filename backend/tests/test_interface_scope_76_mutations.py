@@ -187,6 +187,7 @@ def test_keyword_previously_approved_inputs_stay_supported(level):
     raw = keyword()
     before, middle, after = edges(raw)
     if level != 'current':
+        before = api._restore(before, api.PR55_KEYWORD_PREFIX)
         before = api._restore(before, DATA['keyword']['prefix'])
     if level == 'historical':
         before = api._restore(before, api.CONTRACT['keyword_prefix'])

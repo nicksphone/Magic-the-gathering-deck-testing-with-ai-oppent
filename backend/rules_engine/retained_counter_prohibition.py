@@ -74,8 +74,8 @@ def resolve(state, controller, payload):
         from rules_engine.counter_removal import remove_counters, counter_count
         for key in list(card.counters):
             if not key.startswith('__') or key == '__lore':
-                kind = 'lore' if key == '__lore' else key
-                remove_counters(state, card.id, kind, counter_count(state, card, kind))
+                counter_kind = 'lore' if key == '__lore' else key  # Do not shadow the target kind.
+                remove_counters(state, card.id, counter_kind, counter_count(state, card, counter_kind))
                 card.counters.pop(key, None)
         for key in list(card.counter_timestamps):
             if not key.startswith('__') or key == '__lore':

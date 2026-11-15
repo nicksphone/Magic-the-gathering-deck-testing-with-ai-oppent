@@ -625,7 +625,8 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
         )
         return True
     from rules_engine.targeting import stack_object_kind
-    is_spell = stack_object_kind(state, item) == 'spell'
+    # Unannounced frames from earlier snapshots keep their original non-trigger spell route.
+    is_spell = stack_object_kind(state, item) in {'spell', 'legacy_unknown'}
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK and is_spell:
         owner = state.players[getattr(card, "owner", card.controller)]

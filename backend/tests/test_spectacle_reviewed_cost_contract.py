@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.interface_scope_compatibility import ACCEPTED_SACRIFICE_QUERY_COST_DELTA, restore_reviewed_source
+from tests.interface_scope_compatibility import COST_DELTA_CHAIN, restore_reviewed_source
 
 
 BACKEND = Path(__file__).parents[1]
@@ -17,14 +17,17 @@ NEW = '08a45918b5adfd2f09fb8d762e6a6019e064fb77794cdb991399aa8c845516b8'
 
 def sources():
     current = (BACKEND / 'rules_engine/costs.py').read_bytes()
-    assert hashlib.sha256(current).hexdigest() == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']
-    lines = current.decode().splitlines(keepends=True)
-    for hunk in reversed(ACCEPTED_SACRIFICE_QUERY_COST_DELTA['hunks']):
-        assert ''.join(lines[hunk['start']:hunk['end']]) == hunk['new']
-        lines[hunk['start']:hunk['end']] = hunk['old'].splitlines(keepends=True)
-    spectacle = ''.join(lines).encode()
-    assert hashlib.sha256(spectacle).hexdigest() == NEW
-    lines = spectacle.decode().splitlines(keepends=True)
+    assert hashlib.sha256(current).hexdigest() == COST_DELTA_CHAIN[0]['new_sha256']
+    layered = current
+    for layer in COST_DELTA_CHAIN:
+        assert hashlib.sha256(layered).hexdigest() == layer['new_sha256']
+        lines = layered.decode().splitlines(keepends=True)
+        for hunk in reversed(layer['hunks']):
+            assert ''.join(lines[hunk['start']:hunk['end']]) == hunk['new']
+            lines[hunk['start']:hunk['end']] = hunk['old'].splitlines(keepends=True)
+        layered = ''.join(lines).encode()
+    assert hashlib.sha256(layered).hexdigest() == NEW
+    lines = layered.decode().splitlines(keepends=True)
     hunk, = RECIPE['hunks']
     assert ''.join(lines[hunk['start']:hunk['end']]) == hunk['new']
     lines[hunk['start']:hunk['end']] = hunk['old'].splitlines(keepends=True)
@@ -36,7 +39,7 @@ def sources():
 def test_only_the_reviewed_spectacle_addition_is_reversed():
     previous, current = sources()
     assert restore_reviewed_source('rules_engine/costs.py', current, OLD) == previous
-    assert hashlib.sha256(current).hexdigest() == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']
+    assert hashlib.sha256(current).hexdigest() == COST_DELTA_CHAIN[0]['new_sha256']
 
 
 def test_original_cost_source_and_historical_operands_remain_unchanged():
