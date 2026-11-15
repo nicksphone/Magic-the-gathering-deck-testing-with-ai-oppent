@@ -1,0 +1,154 @@
+{
+  "status": "BOUNDED_NATIVE_COMPONENT_QUALIFIED_NOT_DEPLOYED",
+  "AI_done": false,
+  "candidate_content_id": "842989f447e0986ddc3eae0b884cc3979462051f8a63674ad034648f9b1c9a28",
+  "native_profile_build_id": "919bdc1c845fd4b455c1d0fd8bcd8992dd8d8c0c852a547c1a1d5370e8a929e0",
+  "sources": 14,
+  "physical_classes": 23,
+  "changed_source_and_class_only": "forge.ai.ability.DamageDealAi",
+  "inherited13sources22classes_unchanged": true,
+  "base_resource_files_unchanged": 59971,
+  "native_cohorts": [
+    {
+      "name": "policy10-c14",
+      "total": 10,
+      "ordinary_AI_cases": 8,
+      "manual_rules_controls": 2,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "cfcf1a213d55f97c10e14952e3458a5a6176ba2dae237ceb17475f1c9724bb99",
+      "natural_games": 0
+    },
+    {
+      "name": "review4-c14",
+      "total": 4,
+      "ordinary_AI_cases": 4,
+      "manual_rules_controls": 0,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "48654bc853a66cd25e70fe811ca915181ec4d557ba49d098c329b872132311ad",
+      "natural_games": 0
+    },
+    {
+      "name": "threshold4-c14",
+      "total": 4,
+      "ordinary_AI_cases": 4,
+      "manual_rules_controls": 0,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "1d1937558ed456f3ae56957b7801535d039038154e6a81ab63a7c544b0199b60",
+      "natural_games": 0
+    },
+    {
+      "name": "phase4-c14",
+      "total": 4,
+      "ordinary_AI_cases": 4,
+      "manual_rules_controls": 0,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "48654bc853a66cd25e70fe811ca915181ec4d557ba49d098c329b872132311ad",
+      "natural_games": 0
+    },
+    {
+      "name": "canonical-hazard20",
+      "total": 20,
+      "ordinary_AI_cases": 20,
+      "manual_rules_controls": 0,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "51d2549714df6fd2b79f29db5e4006ff9261d5d0a9701cec87abc120e39c60fa",
+      "natural_games": 0
+    },
+    {
+      "name": "existing-native-regression186",
+      "total": 186,
+      "subcohorts": [
+        156,
+        6,
+        10,
+        8,
+        6
+      ],
+      "exit": 0,
+      "seconds": 319.423,
+      "result_sha256": "5f69faa60497aa14b5ae80b30dc6e993776c0140d3153c590e5c6e71a00a3e02",
+      "natural_games": 0,
+      "not_all_AI_or_expert_labels": true
+    },
+    {
+      "name": "unchanged-linked-lethal18",
+      "total": 18,
+      "ordinary_AI_cases": 12,
+      "manual_rules_controls": 6,
+      "exit": 0,
+      "native_errors": 0,
+      "result_sha256": "c00d1cdc417b1ffd0fd306485a0ef128c6099efd682f4eb6862deab4eabe2339",
+      "natural_games": 0,
+      "unchanged_original_source_sha256": "3b8a7f4884a32600468d70b609a54b7edacb64969dfd902f6200c9bd4ca3384c"
+    }
+  ],
+  "profile_unit_checks": {
+    "passed": 42,
+    "seconds": 0.314,
+    "exit": 0
+  },
+  "matched_natural_games": {
+    "completed": 4,
+    "native_errors": 0,
+    "incomplete": 0,
+    "original_case_ids": [
+      "00",
+      "01",
+      "02",
+      "03"
+    ],
+    "original_seeds": [
+      2026110701,
+      2026110702
+    ],
+    "changed_public_cast_sequences": 4,
+    "changed_outcomes": 1,
+    "Burn_losses_changed_to_win": 1,
+    "no_seed_search_or_forced_winner": true,
+    "strength_or_unique_action_causality_claim": false,
+    "terminal_sha256": "3ae09b33211c483801bedbae7c0b615d99e972154f357db48823cb5fb7a9dd76"
+  },
+  "historical_drafts": [
+    {
+      "candidate": "C10",
+      "original10": "4AI_RED/4AI_PASS/2manual_PASS; zero harness errors"
+    },
+    {
+      "candidate": "C11",
+      "original10": "PASS",
+      "natural4": "completed",
+      "review4": "4RED zero harness errors; rejected"
+    },
+    {
+      "candidate": "C12",
+      "review4": "4PASS",
+      "threshold4": "4RED zero harness errors; rejected"
+    },
+    {
+      "candidate": "C13",
+      "phase4": "4RED",
+      "unchanged_C10_same_phase4": "4PASS; regression reproduced; rejected"
+    }
+  ],
+  "review": "No new high-severity blocker identified in final C14; source review is not execution proof.",
+  "isolated_runtime_limits": {
+    "global_java_javac_max": 2,
+    "each_heap_mb": 1500,
+    "each_processors": 1,
+    "native_SQL_or_network_permission_added": false
+  },
+  "private_evidence_archive": "native-linked-pressure-20261107-1OrJypiw",
+  "limitations": [
+    "Not a full AI strength certificate",
+    "Not a learned-policy result",
+    "No live/default app switch",
+    "No arbitrary reaction/body interpreter",
+    "No full UI/BO3 application qualification",
+    "No all-matchup or global fairness claim"
+  ]
+}

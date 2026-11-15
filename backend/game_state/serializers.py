@@ -98,6 +98,7 @@ def _card_snapshot(card):
         "type_line": card.type_line,
         "image_uri": card.image_uri,
         "keyword_effects": deepcopy(card.keyword_effects),
+        "activated_ability_effects": deepcopy(card.activated_ability_effects),
         "base_stat_effects": deepcopy(card.base_stat_effects),
         "type_effects": deepcopy(card.type_effects),
         "type_effect_base": deepcopy(card.type_effect_base),
@@ -144,6 +145,7 @@ def _card_from_snapshot(raw, players):
         entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
         counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
         keywords=list(raw.get("keywords", [])), keyword_effects=restore_keyword_effects(raw), oracle_text=str(raw.get("oracle_text", "")),
+        activated_ability_effects=deepcopy(raw.get('activated_ability_effects', [])),
         base_stat_effects=deepcopy(raw.get('base_stat_effects', [])),
         type_effects=deepcopy(raw.get('type_effects', [])),
         type_effect_base=deepcopy(raw.get('type_effect_base')),
@@ -171,6 +173,8 @@ def _card_from_snapshot(raw, players):
         was_kicked=bool(raw.get('was_kicked', False)),
         kicker_count=raw.get('kicker_count'),
     )
+    from rules_engine.activated_grants import validate_records
+    validate_records(card)
     from rules_engine.control_effects import restore_control_effects
     restore_control_effects(raw, card, players)
     return card
@@ -263,6 +267,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "discards_this_turn": {str(key): value for key, value in state.discards_this_turn.items()},
         "land_entries_this_turn": {str(key): value for key, value in state.land_entries_this_turn.items()},
         "land_entry_history_known": state.land_entry_history_known,
+        "life_lost_this_turn": {str(key): value for key, value in state.life_lost_this_turn.items()},
+        "life_loss_history_known": state.life_loss_history_known,
         "players_with_permanent_departure": sorted(state.players_with_permanent_departure),
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
@@ -299,6 +305,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "graveyard": list(player.graveyard),
                 "exile": list(player.exile),
                 "exile_play_until": dict(player.exile_play_until),
+                **({"exile_play_durations": deepcopy(player.exile_play_durations)}
+                   if player.exile_play_durations else {}),
                 "mana_pool": dict(player.mana_pool),
                 "snow_mana_pool": dict(player.snow_mana_pool),
                 "restricted_mana_pool": deepcopy(player.restricted_mana_pool),
@@ -343,6 +351,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         for key in ("library", "hand", "battlefield", "graveyard", "exile"):
             setattr(player, key, list(raw.get(key, [])))
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
+        from rules_engine.card_faces import restore_exile_play_durations
+        player.exile_play_durations = restore_exile_play_durations(raw.get("exile_play_durations", {}), int(payload["turn"]))
         player.mana_pool = {str(key): int(value) for key, value in raw.get("mana_pool", {}).items()}
         player.snow_mana_pool = {str(key): int(value) for key, value in raw.get("snow_mana_pool", {}).items()}
         player.restricted_mana_pool = deepcopy(raw.get("restricted_mana_pool", []))
@@ -451,6 +461,15 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.land_entry_history_known = ('land_entries_this_turn' in payload
                                      and payload.get('land_entry_history_known', True) is True)
+    losses = payload.get('life_lost_this_turn', {str(pid): 0 for pid in players})
+    known = payload.get('life_loss_history_known', True)
+    if (type(losses) is not dict or type(known) is not bool
+            or any(type(key) not in (int, str) or str(key) not in {str(pid) for pid in players}
+                   or type(value) is not int or value < 0 for key, value in losses.items())
+            or len(losses) != len(players) or {int(key) for key in losses} != set(players)):
+        raise ValueError('Invalid current-turn life-loss history')
+    state.life_lost_this_turn = {int(key): value for key, value in losses.items()}
+    state.life_loss_history_known = 'life_lost_this_turn' in payload and known
     from rules_engine.control_effects import validate_temporary_control_snapshot
     validate_temporary_control_snapshot(payload.get('temporary_control_changes', {}), cards, players)
     state.temporary_control_changes = {
@@ -482,6 +501,24 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.staged_triggers = list(payload.get("staged_triggers", []))
     state.pending_trigger_order = payload.get("pending_trigger_order")
     state.pending_mechanic_choice = payload.get("pending_mechanic_choice")
+    # Old suspended land entries retained asdict(face) before this additive field.
+    for attribute, packet_key in (('pending_replacement_choice', 'counter_payload'),
+                                  ('pending_mechanic_choice', 'effect_payload')):
+        pending = getattr(state, attribute)
+        packet = pending.get(packet_key) if type(pending) is dict else None
+        if type(packet) is not dict or packet.get('entry_effect') != 'land_play_entry':
+            continue
+        completion = packet.get('entry_completion_payload')
+        if type(completion) is not dict:
+            continue
+        action, origin = completion.get('land_action'), completion.get('land_origin')
+        if (type(action) is not dict or action.get('type') != 'play_land'
+                or type(origin) is not dict or type(origin.get('face')) is not dict
+                or 'activated_ability_effects' in origin['face']):
+            continue
+        restored = deepcopy(pending)
+        restored[packet_key]['entry_completion_payload']['land_origin']['face']['activated_ability_effects'] = []
+        setattr(state, attribute, restored)
     state.rng.setstate(_tupleize(payload["rng_state"]))
     from rules_engine.mana_continuation import validate
     state.mana_continuation = validate(state, payload.get('mana_continuation'))
@@ -525,6 +562,8 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
         "day_night": state.day_night,
         "spells_cast_this_turn": state.spells_cast_this_turn,
         "discards_this_turn": dict(state.discards_this_turn),
+        "life_lost_this_turn": dict(state.life_lost_this_turn),
+        "life_loss_history_known": state.life_loss_history_known,
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "combat_damage_stage": state.combat_damage_stage,

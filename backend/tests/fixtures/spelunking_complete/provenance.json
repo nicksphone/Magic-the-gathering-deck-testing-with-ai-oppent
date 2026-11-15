@@ -1,0 +1,110 @@
+{
+  "cards": {
+    "Alhammarret's Archive": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 65,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "2399471da8490d26882721b7f436f5c74b804ffb71a857c8cc9b5f7e226c1c60",
+      "oracle_id": "d5c4d36c-54b3-4149-906b-a57a670260fc",
+      "source_repo_path": "backend/tests/fixtures/life_conversion/alhammarrets-archive.json",
+      "source_sha256": "498b8c1c97b465892cdef001231bf1b59c9b9a4f577988906088a920b5a7753a"
+    },
+    "Boon Reflection": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 65,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "d6d17e94afaf6b79cc80860cf40a09b247c44c08ab14f3ac596433c46084406b",
+      "oracle_id": "b86d3142-568a-4eea-b1ae-5fcfc1453533",
+      "source_repo_path": "backend/tests/fixtures/damage_life_printed_79/boon-reflection-scryfall-raw.json",
+      "source_sha256": "2023700cc2abc3b60d3475933373448715fc03d1616242674c9442633abc2d01"
+    },
+    "Forest": {
+      "fields": 61,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "source": "original audit24 FACTS.json",
+      "source_sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc"
+    },
+    "Hidden Courtyard": {
+      "fields": 65,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "1bf09250a2180a47df1c46db10538befcd95da3f342ec797762b461e9863dfdb",
+      "oracle_id": "e19d5071-4ea1-4883-b067-a21e553f96e0",
+      "source": "original audit24 FACTS.json",
+      "source_sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc"
+    },
+    "Lush Portico": {
+      "fields": 64,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "c8d27be0bd3d7a46b8d848ed37568e2b3c0206aec7ee6ea9165c3a1dd78beae2",
+      "oracle_id": "d51831b1-7394-456e-a1de-6787a59f5932",
+      "source": "original audit24 FACTS.json",
+      "source_sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc"
+    },
+    "Mountain": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 60,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "a2ab558e22268e0ad7a9815c80a52208101e2c43340d9d8453d6045995aa9a9a",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "source_repo_path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Sacred Foundry": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 63,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "504c58cc035a95cfee6c4fa290de889f6237de5dc08fb47aa6088d5d6caf427f",
+      "oracle_id": "45181cb8-2090-4471-ba90-e5a8f04d525f",
+      "source_repo_path": "backend/tests/fixtures/contextual_cost_prohibitions/sacred-foundry.json",
+      "source_sha256": "4b932b31ec242087fa9a135ef47c3e4d3c08bddfd4259fa5976c2ca491acd6fd"
+    },
+    "Skullcrack": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 63,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "b00719e21f56507a8a92d0f047adca9429741a00f438f236221e838cd59f8135",
+      "oracle_id": "a6fc0b0c-9ba2-47f2-ab92-26fd20d0f86d",
+      "source_repo_path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Song of the Dryads": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 12,
+      "kind": "CANONICAL_COMPLETE_PRINTED_FACT_ROW_NOT_FULL_RAW_SCRYFALL_OBJECT",
+      "object_sha256": "a140db0d5535c03747d417016fb2dd8c1bfdfc7d816f45227f7a2b5a2a868cbb",
+      "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+      "source_repo_path": "backend/tests/fixtures/aura_costs.json",
+      "source_sha256": "c6861515e20337ec3c32763a6ca89332e0ed665aad54f8bb520261c4e5a9d17c"
+    },
+    "Spelunking": {
+      "fields": 64,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "8cdb135d3cfef913d56b78c3ba9dc325453519c8947d893792b322c5c34450e0",
+      "oracle_id": "2962fe4c-bf48-454b-8a6b-0f8253352ae8",
+      "source": "original audit24 FACTS.json",
+      "source_sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc"
+    },
+    "Tainted Remedy": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 65,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "6a2775362ea1bcf8bfc03eaa11a70d7840f1b77433c1fee3041e92c7ef44a9a5",
+      "oracle_id": "51b114cd-c174-4d74-a854-07c68b41fc9d",
+      "source_repo_path": "backend/tests/fixtures/life_conversion/tainted-remedy.json",
+      "source_sha256": "ba19cae13904742391bd6976c6bd011680054dbae4617c802432d5a3b62717c1"
+    },
+    "Thought Reflection": {
+      "commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "fields": 65,
+      "kind": "FULL_RAW_CARD",
+      "object_sha256": "6450a120fa366c41e6c1092415c858a3b4c04c66fe47296146968f4d85307bb0",
+      "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+      "source_repo_path": "backend/tests/fixtures/trigger_instruction_audit/thought-reflection.json",
+      "source_sha256": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f"
+    }
+  },
+  "facts_sha256": "82b0bf0a0cbd48236ae5a9474158af3f5fc33fa0412baed212e35a9c4f3c9667",
+  "fixture_placement": "CONTROLLED_INITIAL_ONLY_NOT_GAMEPLAY_OR_TRAIN_LABELS"
+}

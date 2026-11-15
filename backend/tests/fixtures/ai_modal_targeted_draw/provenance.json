@@ -1,0 +1,13 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_line": 20119,
+  "id": "57b852b6-4388-4a41-a5c0-bba37a5c1451",
+  "oracle_id": "85cbb035-25df-43bb-ae06-ab098f448b02",
+  "source_row_sha256": "84edb86a07b7b96d5c9ebfdc5bf08dd5bea29462d0c1363355d1069b1ebd0104",
+  "file": "archmages_charm.json",
+  "sha256": "5ac333f8e377a41bfef302900a387187fcfd54a8cc46cadff380c20b59175354",
+  "full_printed_text_unmodified": true,
+  "source_kind": "hash_verified_frozen_official_oracle_bulk",
+  "engine_certified": false
+}

@@ -1,0 +1,15 @@
+{
+  "upstream": "Forge Team / Card-Forge",
+  "revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "url": "https://github.com/Card-Forge/forge",
+  "license": "GPL-3.0-or-later",
+  "runner_structure_template": "tools/engine_evaluation/forge/native-ai/counter-tactics/run.py",
+  "runner_template_sha256": "53e55011557a7acd13d57c510283c66a028d15922ae743d625811a686f2c50c3",
+  "historical_Java_scene_names_seeds_assertions_and_legends_preserved": true,
+  "packager_JVM_executions": 0,
+  "packager_public_gate_executions": 0,
+  "parent_report_separate_private_candidate3_rows_passed": 30,
+  "parent_report_not_independently_reproduced_by_packager": true,
+  "parent_repinned_working_copy": "candidate4 typed runtime API consistency; stage3 preserved",
+  "current_content_id": "7998ea519b319759b22abe1db526229be053914ffce643aa7d6f802e366a77d9"
+}

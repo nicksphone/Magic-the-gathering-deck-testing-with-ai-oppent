@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "label": "CANONICAL-DEFAULT-THREE-SORCERY-CHAIN-SUPPLEMENT",
+  "seed": 2026110617,
+  "seed_boundary": "Once before model initialization; never reset between choices or seats",
+  "cases": [{"seat": 0}, {"seat": 1}],
+  "games_per_case": 1,
+  "phase": "own MAIN2 throughout",
+  "life": {"own": 20, "opponent": 20},
+  "hand": ["Lava Spike", "Lava Spike", "Lava Spike"],
+  "red_sources": ["Mountain", "Mountain", "Mountain"],
+  "other_battlefield_cards": [],
+  "expected": {
+    "fresh_consecutive_choices": 3,
+    "pay_and_resolve_each_before_next_choice": true,
+    "enemy_life_after_each": [17, 14, 11],
+    "original_source_ids_in_graveyard": 3,
+    "hand_size": 0,
+    "tapped_mountains": 3,
+    "mana_pool": 0,
+    "native_game_terminal": false
+  },
+  "decline_policy": "Record first actual decline as RED and stop that case; no forced cast, same-state retry, diagnostic evaluator or RNG reset"
+}

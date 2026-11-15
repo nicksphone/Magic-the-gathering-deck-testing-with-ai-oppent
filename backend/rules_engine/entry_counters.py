@@ -433,6 +433,83 @@ def entry_counter_context_matches(state, payload):
     return True
 
 
+def begin_land_entry(state, controller, card, face, action, used_land_plays, permission_key):
+    """Prepare the played land off-board; retain its genuine action boundary."""
+    from game_state.state import object_incarnation
+    prepare_counter_entries(state, controller, [card], 'land_play_entry', {
+        'land_action': deepcopy(action), 'land_origin': {
+            'incarnation': object_incarnation(card), 'sequence': card.zone_change_sequence,
+            'zone': card.zone.value, 'owner': card.owner, 'controller': card.controller,
+            'face': asdict(face), 'turn': state.turn, 'step': state.step.value,
+            'used_land_plays': used_land_plays, 'permission_key': permission_key,
+        },
+    }, entry_payload={}, projections={card.id: face})
+
+
+def resume_land_entry(state, controller, payload):
+    from game_state.state import Step, object_incarnation, assign_static_order_on_battlefield_entry
+    from rules_engine.action_validation import require
+    from rules_engine.card_faces import select_cast_face, apply_cast_face, exile_permission, leave_exile
+    from rules_engine.card_types import is_land_card
+    from rules_engine.entry import apply_entry_choice, land_entry_options
+    from rules_engine.graveyard_permissions import battlefield_entry_prohibited, graveyard_land_choices, record_graveyard_permission
+    from rules_engine.land_rules import compute_max_land_plays_this_turn
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    from rules_engine.events import emit_event
+
+    action, origin = payload['land_action'], payload['land_origin']
+    cid = action['card_id']
+    card, player = state.cards.get(cid), state.players[controller]
+    require(card is not None and card.zone.value == origin['zone']
+            and card.owner == origin['owner'] and card.controller == origin['controller']
+            and object_incarnation(card) == origin['incarnation']
+            and card.zone_change_sequence == origin['sequence'], 'Played land entry object changed')
+    face_index = action.get('selected_face_index', 0) or 0
+    face = select_cast_face(card, face_index)
+    require(asdict(face) == origin['face'] and is_land_card(face), 'Played land entry face changed')
+    require(state.turn == origin['turn'] and state.step.value == origin['step']
+            and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
+            and state.active_player == controller and not state.stack, 'Played land entry timing changed')
+    used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn)
+    require(player.last_land_play_turn == state.turn and used == origin['used_land_plays']
+            and used < max(1, compute_max_land_plays_this_turn(state, controller)), 'Played land entry quota changed')
+    from_exile, from_graveyard = bool(action.get('from_exile')), bool(action.get('from_graveyard'))
+    permission_key = origin['permission_key']
+    allowed = (exile_permission(state, controller, cid, face_index) if from_exile else
+               any(grant['key'] == permission_key for grant in graveyard_land_choices(state, controller, cid))
+               if from_graveyard else card.zone == Zone.HAND and cid in player.hand)
+    require(allowed and not battlefield_entry_prohibited(state, cid, face_index), 'Played land entry permission changed')
+    options, choice = land_entry_options(state, controller, face), action.get('entry_choice')
+    require(choice in options if options else choice is None, 'Played land entry choice changed')
+    require(set(payload['__entry_counters_by_id']) == {cid}, 'Played land entry counters missing')
+
+    departures = []
+    if from_exile:
+        leave_exile(state, cid)
+    elif from_graveyard:
+        departures = capture_graveyard_departures(state, [cid])
+        player.graveyard.remove(cid)
+    else:
+        player.hand.remove(cid)
+    apply_cast_face(card, face)
+    card.controller = controller
+    apply_entry_choice(state, controller, card, choice=choice or 'tapped')
+    player.battlefield.append(cid)
+    player.lands_played_this_turn = player.land_plays_recorded_on_turn = used + 1
+    player.last_land_play_turn = state.turn
+    card.move_to_zone(Zone.BATTLEFIELD)
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    assign_static_order_on_battlefield_entry(state, cid)
+    commit_entry_counters(state, card, payload)
+    state.log.append(f'{player.name} plays {card.name}.')
+    if permission_key:
+        record_graveyard_permission(state, permission_key)
+    if departures:
+        emit_graveyard_departures(state, departures)
+    emit_event(state, 'enters_battlefield', {'card_id': cid, 'controller': controller})
+
+
 def begin_spell_entry(state, item, payload):
     resume_spell_entry(state, item.controller, {
         'entry_item': asdict(item), 'entry_payload': deepcopy(payload),

@@ -1,0 +1,144 @@
+--- a/forge-ai/src/main/java/forge/ai/ComputerUtilAbility.java
++++ b/forge-ai/src/main/java/forge/ai/ComputerUtilAbility.java
+@@ -1,3 +1,5 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Forge Team/Card-Forge implementation; local entry-sweeper priority extension.
+ package forge.ai;
+ 
+ import java.util.Comparator;
+@@ -11,9 +13,12 @@
+ import com.google.common.collect.Lists;
+ 
+ import com.google.common.collect.Multimap;
++import com.google.common.primitives.Ints;
+ import forge.card.CardStateName;
+ import forge.game.Game;
+ import forge.game.GameActionUtil;
++import forge.game.IHasSVars;
++import forge.game.ability.AbilityFactory;
+ import forge.game.ability.ApiType;
+ import forge.game.card.Card;
+ import forge.game.card.CardCollection;
+@@ -28,7 +33,9 @@
+ import forge.game.player.Player;
+ import forge.game.spellability.OptionalCost;
+ import forge.game.spellability.OptionalCostValue;
++import forge.game.spellability.AbilitySub;
+ import forge.game.spellability.SpellAbility;
++import forge.game.spellability.SpellAbilityCondition;
+ import forge.game.spellability.SpellAbilityStackInstance;
+ import forge.game.spellability.TargetChoices;
+ import forge.game.staticability.StaticAbility;
+@@ -38,6 +45,7 @@
+ import forge.game.zone.ZoneType;
+ import forge.util.ComparatorUtil;
+ import forge.util.IterableUtil;
++import org.apache.commons.lang3.builder.EqualsBuilder;
+ 
+ public class ComputerUtilAbility {
+     public static CardCollection getAvailableLandsToPlay(final Game game, final Player player) {
+@@ -254,6 +262,95 @@
+      */
+     public static final class SortKey implements Comparable<SortKey> {
+         private final int activateLast, lowPriorityDie, energyPump, zeroCmcFirst, freeSpellFirst, score;
++        private static final SpellAbilityCondition DEFAULT_ENTRY_CONDITION = new SpellAbilityCondition();
++
++        private static boolean hasKnownEntryCreatureSweep(final SpellAbility root) {
++            final Card source = root.getHostCard();
++            final Player observer = root.getActivatingPlayer();
++            if (source == null || observer == null || !root.isSpell()
++                    || !source.getView().canBeShownTo(observer.getView())
++                    || !source.getView().canFaceDownBeShownTo(observer.getView())
++                    || !source.isPermanent() || !entrySweepContextKnown(source, observer)) return false;
++            boolean found = false;
++            for (final Trigger trigger : source.getTriggers()) {
++                if (trigger.isSuppressed() || trigger.getMode() != TriggerType.ChangesZone
++                        || !"Battlefield".equals(trigger.getParam("Destination"))) continue;
++                if (!Set.of("Mode", "Origin", "Destination", "ValidCard", "Execute", "TriggerZones",
++                        "TriggerDescription").containsAll(trigger.getMapParams().keySet())
++                        || !Set.of("Any", "Stack").contains(trigger.getParamOrDefault("Origin", "Any"))
++                        || !Set.of("Card.Self", "Creature.Self", "Permanent.Self", "Artifact.Self", "Enchantment.Self")
++                                .contains(trigger.getParamOrDefault("ValidCard", ""))
++                        || !"Battlefield".equals(trigger.getParamOrDefault("TriggerZones", "Battlefield"))
++                        || !trigger.phasesCheck(source.getGame())
++                        || !trigger.matchesValidParam("ValidCard", source)
++                        || (trigger.getActiveZone() != null && !trigger.getActiveZone().isEmpty()
++                                && !trigger.getActiveZone().contains(ZoneType.Battlefield))) return false;
++                final SpellAbility override = trigger.getOverridingAbility();
++                if (override != null) {
++                    // The effective ability is authoritative; never fall back to a printed Execute.
++                    if (!(override instanceof AbilitySub) || override.getHostCard() != source
++                            || override.getApi() != ApiType.PumpAll || override.getParent() != null
++                            || override.getSubAbility() != null || override.usesTargeting()
++                            || override.getRestrictions() != null
++                            || !override.getAdditionalAbilities().isEmpty() || !override.getAdditionalAbilityLists().isEmpty()
++                            || (override.getPayCosts() != null && !override.getPayCosts().isFree())
++                            || override.getConditions() == null
++                            || override.getConditions().getClass() != SpellAbilityCondition.class
++                            || !EqualsBuilder.reflectionEquals(override.getConditions(), DEFAULT_ENTRY_CONDITION, true)
++                            || !isSupportedEntrySweep(override.getMapParams(), override, root)) return false;
++                } else {
++                    final String execute = trigger.getParam("Execute");
++                    if (execute == null || !trigger.hasSVar(execute)) return false;
++                    // Parse native parameters only: ensureAbility would allocate/cache a game object.
++                    try {
++                        if (!isSupportedEntrySweep(AbilityFactory.getMapParams(trigger.getSVar(execute)), trigger, root)) return false;
++                    } catch (final RuntimeException unsupported) {
++                        return false;
++                    }
++                }
++                found = true;
++            }
++            return found;
++        }
++
++        private static boolean isSupportedEntrySweep(final Map<String, String> body, final IHasSVars vars,
++                final SpellAbility root) {
++            if (!Set.of("DB", "ValidCards", "NumAtt", "NumDef", "IsCurse", "Duration", "SpellDescription")
++                    .containsAll(body.keySet()) || !"PumpAll".equals(body.get("DB"))
++                    || !"True".equals(body.get("IsCurse"))
++                    || !Set.of("Creature", "Creature.OppCtrl", "Creature.Other").contains(body.getOrDefault("ValidCards", ""))
++                    || !"UntilEndOfTurn".equals(body.getOrDefault("Duration", "UntilEndOfTurn"))) return false;
++            final String toughness = body.get("NumDef");
++            if (toughness == null || !(toughness.equals(body.get("NumAtt")) || "0".equals(body.get("NumAtt")))) return false;
++            if ("-X".equals(toughness)) {
++                return root.getPayCosts() != null && root.getPayCosts().getTotalMana().countX() > 0
++                        && "Count$xPaid".equals(vars.getSVar("X"));
++            }
++            final Integer fixed = Ints.tryParse(toughness);
++            return fixed != null && fixed < 0;
++        }
++
++        private static boolean entrySweepContextKnown(final Card source, final Player observer) {
++            for (final Card card : source.getGame().getCardsIn(ZoneType.STATIC_ABILITIES_SOURCE_ZONES)) {
++                if (!card.getView().canBeShownTo(observer.getView())
++                        || !card.getView().canFaceDownBeShownTo(observer.getView())) return false;
++                if (card.isPhasedOut()) continue;
++                for (final StaticAbility ability : card.getStaticAbilities()) {
++                    if (ability.isSuppressed() || (ability.getActiveZone() == null
++                            ? !card.isInZone(ZoneType.Battlefield)
++                            : !ability.getActiveZone().contains(card.getZone().getZoneType()))) continue;
++                    // Do not speculate about prospective text/type/ability layers or disabled triggers.
++                    if (ability.getMode().contains(StaticAbilityMode.DisableTriggers)) return false;
++                    if (ability.getMode().contains(StaticAbilityMode.Continuous)) {
++                        for (final String parameter : ability.getMapParams().keySet()) {
++                            if (parameter.startsWith("Remove") || parameter.startsWith("GainText")
++                                    || Set.of("AddType", "SetType", "GainControl", "ChangeColorWordsTo").contains(parameter)) return false;
++                        }
++                    }
++                }
++            }
++            return true;
++        }
+ 
+         private SortKey(SpellAbility sa, boolean safeToEvaluateCreatures) {
+             // we want the highest costs first
+@@ -410,7 +507,7 @@
+                 }
+             }
+ 
+-            if (ApiType.DestroyAll == sa.getApi()) {
++            if (ApiType.DestroyAll == sa.getApi() || hasKnownEntryCreatureSweep(sa)) {
+                 // check boardwipe earlier
+                 p += 4;
+             } else if (sa.isManaAbility()) {

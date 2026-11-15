@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "upstream": "Forge Team / Card-Forge",
+  "license": "GPL-3.0-or-later",
+  "forge_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "source_origin_path": "forge-ai/src/main/java/forge/ai/ability/PermanentAi.java",
+  "preimage_sha256": "4384a7d23c3d28f5ad99c408354625f343eb3c3fa7d9c2a325c7d684696c685c",
+  "source_sha256": "5608d80db5a78f164dbdf582c13a887968fc52c7c0e5e628e66709dae7b26fc2",
+  "patch_sha256": "7e412bb05fec59c07665b3dbbd0e285887d01346c533f99071c67185ac61132b",
+  "original_audit_sha256": "730112256129c7ea887e7b9965b9a96a6cf13fdc458678f2408f0e98eeb89aad",
+  "golden_audit_sha256": "379e3608c04dd90d82d9af4ad5163b60ac3ebd42aee96ea8ebbffcb28c94934c",
+  "audit_producer_label": "frozen native-chalice-goldens-iDKktbxd source; no private run reports copied",
+  "base_identity_sha256": "cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0",
+  "base_runtime_content_sha256": "acc7567174ff29e05a392d246b6c54e9b65a14d3e145dd661e60ec34739c624a",
+  "E4_content_id": "dc5d53ec6ca42386e8831fbd602c7e1dc2a9f3a3cc4b53f20994863932b332ed",
+  "candidate_content_id": "a7d94a7e8998cdc81fb6f6cc762a551e1e03f1c918f0e9fbbea56155b6ef32c1",
+  "canonical_programs_copied_before_audits": true,
+  "canonical_program_count": 6,
+  "no_baseline_or_portable_native_run_by_packager": true
+}

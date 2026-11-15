@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
+import pytest
+
 from ai.deck_analysis import analyze_deck, guess_archetype
 from tests.canonical_positive_fixtures import deck_entry
+from training.environment import _deck
 
 
 def test_guess_archetype_uses_curve_and_damage_density_for_burn() -> None:
@@ -111,3 +116,81 @@ def test_guess_archetype_uses_primary_face_cost_for_non_split_face_cards() -> No
     assert out["face_card_count_estimate"] == 4
     assert out["split_card_count_estimate"] == 0
     assert out["avg_cmc_estimate"] == 0.2
+
+
+@pytest.mark.parametrize(("name", "expected"), [
+    ("Mono Red Aggro", "Burn"),
+    ("White Weenie", "Tokens"),
+    ("Blue Control", "Control"),
+    ("Dimir Control", "Control"),
+    ("Burn", "Burn"),
+    ("Midrange", "Midrange"),
+    ("Ramp", "Ramp"),
+    ("Drain Deck", "Drain"),
+    ("Tokens", "Tokens"),
+    ("Tribal", "Tribal"),
+    ("Tempo", "Tempo"),
+])
+def test_builtin_complete_metadata_distinguishes_plan_from_support_cards(name, expected):
+    # Use the same shipped metadata loader as native gameplay, not the deck label.
+    deck = _deck(name)
+    before = deepcopy(deck)
+    assert guess_archetype(deck) == expected
+    assert deck == before
+
+
+@pytest.mark.parametrize("land_count", [22, 27, 30])
+def test_midrange_spell_curve_is_not_diluted_by_lands(land_count):
+    deck = [row for row in _deck("Midrange") if row["card_name"] not in
+            {"Forest", "Swamp", "Mountain", "Bayou", "Badlands", "Taiga"}]
+    deck.append(deck_entry("Forest", land_count))
+    assert guess_archetype(deck) == "Midrange"
+
+
+def test_curve_prior_uses_spells_but_preserves_full_deck_average_metric():
+    deck = [deck_entry("Island", 40), deck_entry("Counterspell", 4),
+            deck_entry("Memory Deluge", 4), deck_entry("Torrential Gearhulk", 4)]
+    analysis = analyze_deck(deck)
+    assert analysis["primary_archetype"] == "Control"
+    assert analysis["scores"].get("Aggro", 0) == 0
+    assert analysis["scores"]["Ramp"] == 2
+    assert analysis["avg_cmc_estimate"] == round(48 / 52, 3)
+
+
+def test_midrange_classification_ignores_row_order_and_quantity_splitting():
+    deck = _deck("Midrange")
+    expected = analyze_deck(deck)
+    split = [dict(row, quantity=1) for row in reversed(deck)
+             for _ in range(row["quantity"])]
+    assert analyze_deck(split) == expected
+    assert expected["primary_archetype"] == "Midrange"
+
+
+@pytest.mark.parametrize(("name", "cost", "ramp_score"), [
+    ("Bala Ged Recovery // Bala Ged Sanctuary", 3, 1),
+    ("Fire // Ice", 4, 2),
+    ("Bonecrusher Giant // Stomp", 3, 1),
+])
+def test_spell_curve_prior_preserves_physical_card_face_cost_rules(name, cost, ramp_score):
+    analysis = analyze_deck([deck_entry("Island", 40), deck_entry(name, 4)])
+    assert analysis["land_count_estimate"] == 40
+    assert analysis["avg_cmc_estimate"] == round(cost * 4 / 44, 3)
+    assert analysis["scores"].get("Aggro", 0) == 0
+    assert analysis["scores"]["Ramp"] == ramp_score
+
+
+def test_balanced_midrange_curve_starts_at_two_mana_per_spell():
+    deck = [deck_entry(name, quantity) for name, quantity in [
+        ("Forest", 24), ("Llanowar Elves", 4), ("Tarmogoyf", 4),
+        ("Bloodtithe Harvester", 4), ("Sheoldred, the Apocalypse", 4),
+        ("Fatal Push", 4), ("Abrupt Decay", 4),
+        ("Fable of the Mirror-Breaker // Reflection of Kiki-Jiki", 4),
+        ("Grizzly Bears", 4), ("Consider", 4),
+    ]]
+    at_boundary = analyze_deck(deck)
+    cheaper = [deck_entry("Thalia, Guardian of Thraben", 4)
+               if row["card_name"] == "Sheoldred, the Apocalypse" else row for row in deck]
+    below_boundary = analyze_deck(cheaper)
+    assert at_boundary["avg_cmc_estimate"] == 1.2  # 72 mana / 36 spells = 2.
+    assert below_boundary["avg_cmc_estimate"] == round(64 / 60, 3)
+    assert at_boundary["scores"]["Midrange"] == below_boundary["scores"]["Midrange"] + 2

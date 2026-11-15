@@ -1,0 +1,105 @@
+{
+  "content_id": "75d4ac3971e7f970d2e3c62ba12f25aba639eba5fd36d0ed2f930a4ea17511b7",
+  "identity": {
+    "schema": "forge-known-held-piece-shadow-v1",
+    "forge_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+    "base_build_id": "59228745bfcbec403b038019815d8e94f74273fd4494a2e5799479d61abd3605",
+    "base_identity_sha256": "cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0",
+    "parent_content_id": "ff89fd32da4e011d9e8f9af613a07a484894171ba7e4045c3932fcfaed4de398",
+    "parent_manifest_sha256": "2a7d5847bdc6bf95838b7585362541f0a5f94b9b3fa88624cc215206e2a147c4",
+    "required_base_launch_sha256": "ee58d6110017448391e210c1722d6f1450904c239cc297282f34e4ed4c588562",
+    "increment_patch_sha256": "cc1468a4a764e95764880a6397dac7210e87cc2a315c4cde2e195b867c7e3669",
+    "builder_sha256": "c926a87a7a25e5b1ae1cb052a42c7a84a83caf18eb02d68d50650b73be81c0cd",
+    "compiler": {
+      "release": 17,
+      "implicit": "none",
+      "java_sha256": "9cad3f2620d3ef2ed10b26f922af7e773d54fdaa05f615d6d6df014f3fec4155",
+      "javac_sha256": "2cc288a26beebc50ca7cd924847dffbfb38ef3314e105bba6d4ebce03a0bcb6b",
+      "jdk_release_sha256": "f83f6dcc966043c93cd498ac8e7ee7c310852074970d62c702e4ad2710002898",
+      "classpath_sha256": "9c6624690329d60fc4e3c16847056c6811c92707c93872d3bfe36ee2faa78c33"
+    },
+    "source_preimages": [
+      {
+        "sha256": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java"
+      },
+      {
+        "sha256": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java"
+      },
+      {
+        "sha256": "6928620486da73f525fc5eb5e9369d47a2ceeb444706f4711da173e481948c54",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java"
+      }
+    ],
+    "sources": [
+      {
+        "sha256": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java"
+      },
+      {
+        "sha256": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java"
+      },
+      {
+        "sha256": "11c9378f3f0003c7e4a83eb0c3fc1aa6000e5d566c11897a9d700da02c14d04b",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java"
+      }
+    ],
+    "payloads": [
+      {
+        "sha256": "23b15557de80e398db989e40d78bb6b1849ba19f91a98f7419fb16f44ca65a0a",
+        "path": "forge/ai/ComputerUtil.class",
+        "class_name": "forge.ai.ComputerUtil"
+      },
+      {
+        "sha256": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+        "path": "forge/ai/ComputerUtilCost$1.class",
+        "class_name": "forge.ai.ComputerUtilCost$1"
+      },
+      {
+        "sha256": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+        "path": "forge/ai/ComputerUtilCost.class",
+        "class_name": "forge.ai.ComputerUtilCost"
+      },
+      {
+        "sha256": "42172f585bd4b62d8b53dda34a693736fadfdbbf8413cfdb7943c6fb1eb8cdac",
+        "path": "forge/ai/ComputerUtilMana.class",
+        "class_name": "forge.ai.ComputerUtilMana"
+      }
+    ]
+  },
+  "candidate_directory": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-held-piece-20261106-ePpUn2Iz/candidate",
+  "shadow_directory": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-held-piece-20261106-ePpUn2Iz/candidate/shadow",
+  "source_directory": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-held-piece-20261106-ePpUn2Iz/candidate/source",
+  "manifest_sha256": "ee5c65cfdcd79309ed6ff79759fef41c48680dc1285bb5d44683b1d83aca3519",
+  "identity_sha256": "cc99465265b8159dcbb55d95301319d42c00cedd26784e50234483883b33f5a5",
+  "evidence_directory": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/native-held-piece-20261106-ePpUn2Iz",
+  "qualification": {
+    "scope": "one reproduced held-piece heuristic",
+    "original_checks": {
+      "pass": 30,
+      "red": 0,
+      "errors": 0
+    },
+    "held_piece_checks": {
+      "baseline": {
+        "pass": 4,
+        "red": 2,
+        "errors": 0
+      },
+      "candidate": {
+        "pass": 6,
+        "red": 0,
+        "errors": 0
+      }
+    },
+    "added_owner_checks": {
+      "baseline_pass": 2,
+      "candidate_pass": 2,
+      "receipt_byte_parity": true
+    },
+    "published_profile": false,
+    "app_save_compatibility": false
+  }
+}

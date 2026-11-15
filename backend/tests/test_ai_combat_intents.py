@@ -175,7 +175,7 @@ def test_unknown_block_forecast_is_not_treated_as_opponent_passing(monkeypatch, 
     state.attack_targets = {}
     state.cards[attackers[0]].tapped = False
     agent = AIAgent('master')
-    monkeypatch.setattr(agent, '_search_block_assignments', lambda *args: None)
+    monkeypatch.setattr(agent, '_search_block_assignments', lambda *args, **kwargs: None)
     assert agent._search_attack_assignments(state, attackers, seat) == []
 
 

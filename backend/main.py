@@ -49,6 +49,8 @@ from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
+from forge_routes import create_forge_router
+from native_forge import ForgeManager
 from persistence.db import engine, get_session, init_db, initialize_resource_capacity
 from persistence.capacity import (DatabaseOwner, CapacityExceeded, CapacityIntegrityError,
                                   CapacityAdmissionClosed, owner_for_engine, owner_uncertain)
@@ -91,13 +93,33 @@ async def lifespan(app_instance: FastAPI):
         yield
     finally:
         try:
-            _shutdown_simulation_workers()
+            try:
+                _shutdown_simulation_workers()
+            finally:
+                native = getattr(app_instance.state, "forge_manager", None)
+                if native is not None:
+                    native.close_all()
         finally:
             owner.fence_admission()
         owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
         owner.close()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
+
+FORGE_MANAGER_LOCK = threading.Lock()
+
+
+def _forge_manager() -> ForgeManager:
+    # Opt-in and lazy: importing the app never installs or launches an engine.
+    with FORGE_MANAGER_LOCK:
+        manager = getattr(app.state, "forge_manager", None)
+        if manager is None:
+            manager = ForgeManager.from_environment()
+            app.state.forge_manager = manager
+        return manager
+
+
+app.include_router(create_forge_router(_forge_manager))
 
 
 @app.exception_handler(SimulationResourceLimit)
@@ -2066,12 +2088,16 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     if not land_moves:
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
-    # Return an offered move, not an unverified card ID from the AI.
+    # Match every chosen parameter, not just the card/face of another offer.
     picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
     if isinstance(picked, dict) and picked.get("type") == "play_land":
-        for move in land_moves:
-            if move.get("card_id") == picked.get("card_id") and move.get("selected_face_index") == picked.get("selected_face_index"):
-                return move
+        try:
+            chosen = complete_action(picked)
+            for move in land_moves:
+                if complete_action(move) == chosen:
+                    return move
+        except ActionRejected:
+            pass
     return land_moves[0]
 
 

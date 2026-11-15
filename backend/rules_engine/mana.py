@@ -387,6 +387,10 @@ def _plan_mana_sources(
 def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0, post_payment_condition=None):
     if post_payment_condition is not None and not post_payment_condition.visit():
         return None
+    if post_payment_condition is not None:
+        from rules_engine.spell_cost_witness import escape_fuel_proven_impossible
+        if escape_fuel_proven_impossible(state, player_id, post_payment_condition):
+            return None
     from rules_engine.mana_abilities import proven_missing_fixed_color
     if proven_missing_fixed_color(state, player_id, req, payment_context):
         return None
@@ -450,6 +454,11 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
 
 def _remaining_mana_score(state, player_id, payment_context):
     """Compare usable resources before the identical final cost is spent."""
+    cards = [state.cards[cid] for cid in
+             (*state.players[player_id].hand, *state.players[player_id].battlefield)]
+    # Do not discard or sacrifice extra material just to leave more mana open.
+    material = (sum(not card.is_token for card in cards),
+                sum(card.is_token for card in cards))
     weights = {color: 1 for color in MANA_COLORS}
     for cid in state.players[player_id].hand:
         for symbol in MANA_SYMBOL_RE.findall(state.cards[cid].mana_cost or ''):
@@ -460,7 +469,7 @@ def _remaining_mana_score(state, player_id, payment_context):
     for cid in state.players[player_id].battlefield:
         score += max((amount * weights[color] for color, amount in
                       mana_source_outputs(state, player_id, cid, payment_context=payment_context).items()), default=0)
-    return score + state.players[player_id].life / 10
+    return (*material, score + state.players[player_id].life / 10)
 
 
 def _planned_mana_outcomes(state, player_id, steps, *, payment_context=None, reserved_card_ids=(), protected_life=0):

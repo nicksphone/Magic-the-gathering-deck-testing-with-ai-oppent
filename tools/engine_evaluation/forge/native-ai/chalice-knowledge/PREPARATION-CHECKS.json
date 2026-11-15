@@ -1,0 +1,14 @@
+{
+  "status": "PASS_STATIC_PREPARATION_ONLY",
+  "runner_ast_parse": true,
+  "ps_no_match_exit1_handled_explicitly": true,
+  "native_exit_propagates_SystemExit": true,
+  "zero_fuzz_patch_postimage_equal": true,
+  "original_audit_bytes_unchanged": true,
+  "golden_audit_bytes_unchanged": true,
+  "canonical_programs": 6,
+  "JVM_compile_or_portable_execution": false,
+  "private_JNI_SQL_denial_claim": false,
+  "source5608_unchanged": true,
+  "parent_review_and_portable_GO_pending": true
+}

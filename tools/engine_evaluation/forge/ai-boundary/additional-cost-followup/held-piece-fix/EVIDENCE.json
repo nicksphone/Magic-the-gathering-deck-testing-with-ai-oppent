@@ -1,0 +1,35 @@
+{
+  "schema": "forge-held-piece-evidence-v1",
+  "candidate_content_id": "75d4ac3971e7f970d2e3c62ba12f25aba639eba5fd36d0ed2f930a4ea17511b7",
+  "candidate_directory": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-held-piece-20261106-ePpUn2Iz/candidate",
+  "evidence_directory": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/native-held-piece-20261106-ePpUn2Iz",
+  "archive_sha256": "85bce6ebc000049048294916ada7edbf3093123871275c21ef4d7c855d78b9db",
+  "archive_bytes": 2744320,
+  "archive_members": 565,
+  "nfs_mounted_writable": true,
+  "syncfs_attempt": "sync -f returned EIO; not treated as success",
+  "file_specific_fsync": "PASS",
+  "full_archive_readback_byte_comparison": "PASS",
+  "tar_member_content_comparison": "PASS",
+  "old_six_source_unchanged": true,
+  "old_thirty_sources_unchanged": true,
+  "baseline": {
+    "pass": 4,
+    "red": 2,
+    "errors": 0
+  },
+  "candidate": {
+    "pass": 38,
+    "red": 0,
+    "errors": 0
+  },
+  "owner_baseline": {
+    "pass": 2,
+    "red": 0,
+    "errors": 0
+  },
+  "owner_receipt_byte_parity": true,
+  "all_four_candidate_loaded_origins_hashes_before_end": "PASS",
+  "E_Q_parent_production_unchanged": true,
+  "app_or_profile_published": false
+}

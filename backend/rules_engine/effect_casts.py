@@ -26,6 +26,7 @@ def _selected_trigger_target_is_current(state, controller, payload):
 
 def materialize_cast(state, controller, card_id, targets=None):
     from ai.agent import AIAgent
+    from ai.casting_resources import _automatic_effect_cost_scope
     from rules_engine.cast_choice import build_cast_hints
     card = state.cards[card_id]
     targets = dict(targets or {})
@@ -34,11 +35,12 @@ def materialize_cast(state, controller, card_id, targets=None):
     from rules_engine.cast_choice import available_cast_options_and_hints
     from rules_engine.move_generator import _cost_option_view
     costs, hints = available_cast_options_and_hints(state, card, controller, without_mana=True)
-    return AIAgent(difficulty='strong')._materialize_action(state, {
-        'type': 'cast_spell', 'card_id': card_id, 'from_graveyard': True,
-        'target_hints': hints, 'targets': targets,
-        'cost_options': [_cost_option_view(option, state, controller, card_id) for option in costs],
-    }, controller, allow_zero_x=True)
+    with _automatic_effect_cost_scope(state, controller, card_id):
+        return AIAgent(difficulty='strong')._materialize_action(state, {
+            'type': 'cast_spell', 'card_id': card_id, 'from_graveyard': True,
+            'target_hints': hints, 'targets': targets,
+            'cost_options': [_cost_option_view(option, state, controller, card_id) for option in costs],
+        }, controller, allow_zero_x=True)
 
 
 def admit_cast(state, controller, action, payload):

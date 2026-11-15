@@ -1,0 +1,10 @@
+141910237c17f06466d0c437b1616a28a91bd3689edadf749383965022a5a114  forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java
+777af6c3a3a43a4ef7c26f8bfd980f75344d0e27589c57ba2d7491b13a1f505b  forge-ai/src/main/java/forge/ai/SpellAbilityAi.java
+908859ee3b94bff36227614240700b4e2ff5d5a0db191bdc73857aabf376ca1b  forge-ai/src/main/java/forge/ai/AiController.java
+d5a616e00cdc88646e43e48cac5fbb40812779487d362b05aa6af343d0181689  forge-ai/src/main/java/forge/ai/PlayerControllerAi.java
+585fbe7e66c15d19f178678c19d819f712409232fa94e6b4f51cddaeb2a91d7d  forge-ai/src/main/java/forge/ai/AiProfileUtil.java
+f16e9c392bcb210c137bfa36cfd0b467f08df2ee3045870069663c5f83fcf984  forge-ai/src/main/java/forge/ai/AiProps.java
+7b1ea2a98ddb10ac3fe8778c2708ebb8a57643f3d419e6809e3aba4ccd6b62a3  forge-ai/src/main/java/forge/ai/ComputerUtilCombat.java
+67ee2e101ad1355e3a8b62aa4af002737f4de7c4afe97945f6ff97c3ee9bfc28  forge-gui-desktop/src/test/java/forge/ai/AITest.java
+b208ea36e18f6d22a33f076fe4eb42f3b1e2444eb193ec7926a776af3086e0aa  forge-core/src/main/java/forge/util/MyRandom.java
+fb32c2067f30cb8820eff33024e3597a036d476ef35fb312459d0106a0c82f7d  forge-gui/res/ai/Default.ai

@@ -1,0 +1,18 @@
+{
+  "JVM_or_javac_executed_by_packager": false,
+  "actual_origin_runtime_verification": "NOT_RUN",
+  "all_old_9_sources_16_classes_unchanged": "PASS",
+  "all_three_audit_bytes_unchanged": "PASS",
+  "base_59971_before_end_enforced_by_runner": true,
+  "base_59971_resources_verified_by_packager": false,
+  "canonical_twelve_full_original_bytecmp": "PASS",
+  "exact_E5_9_16_and_candidate3_10_17_physical_payloads": "PASS",
+  "forward_reverse_zero_fuzz_patch_dry_run": "PASS",
+  "frozen_source_preimage_patch_copies": "PASS",
+  "no_S_K_or_held_roots_edited": true,
+  "portable_runner_execution": "NOT_RUN",
+  "product_qualification_counts": "PENDING_PARENT_ACTUAL_RESULTS",
+  "runner_AST_parse": "PASS",
+  "schema": 1,
+  "status": "STATIC_PASS_RUNTIME_PENDING"
+}

@@ -566,6 +566,52 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
 
 
 @scoped_query
+def effective_activated_grants(state, card_id):
+    """Resolution-created layer-six grants, interleaved with real ability losses."""
+    from rules_engine.activated_grants import validate_records
+    from rules_engine.attached_characteristics import effects_on
+    from rules_engine.basic_land_layer import prior_layer_abilities_lost
+    target = state.cards.get(card_id)
+    if target is None or not _is_battlefield(target):
+        return ()
+    grants = validate_records(target)
+    if not grants:
+        return ()
+    modifiers = sorted([*({'timestamp': r['timestamp'], 'grant': r} for r in grants),
+                        *(_resolved_keyword_modifiers(target))], key=lambda e: e['timestamp'])
+    attached_losses = {effect.source_ref[0] for effect in effects_on(state, card_id)}
+    index, out = 0, []
+    def apply(effect):
+        if 'grant' in effect:
+            out.append(effect['grant'])
+        elif effect['operation'] == 'remove' and effect['keyword'] == 'all abilities':
+            out.clear()
+    for source_id, source, active in _continuous_sources(state):
+        while index < len(modifiers) and modifiers[index]['timestamp'] <= effect_timestamp(source):
+            apply(modifiers[index])
+            index += 1
+        if source_id in attached_losses:
+            out.clear()
+        if not prior_layer_abilities_lost(state, source):
+            for scope, other, subject, removed in _iter_keyword_removals(source):
+                if ('all abilities' in removed and (not other or source_id != card_id)
+                        and _scope_controller(source.controller, scope, target.controller)
+                        and _subject_matches(state, card_id, subject)):
+                    out.clear()
+    for effect in modifiers[index:]:
+        apply(effect)
+    for source_id, source, active in _continuous_sources(state):
+        if not active:
+            continue
+        for scope, other, subject, removed in _iter_keyword_cant_removals(source):
+            if ('all abilities' in removed and (not other or source_id != card_id)
+                    and _scope_controller(source.controller, scope, target.controller)
+                    and _subject_matches(state, card_id, subject)):
+                out.clear()
+    return tuple(dict(record) for record in out)
+
+
+@scoped_query
 def effective_granted_target_abilities(state, card_id: str) -> tuple[dict, ...]:
     """Closed quoted grants in layer 6, retaining each source/clause instance."""
     from game_state.state import object_incarnation
@@ -799,6 +845,9 @@ def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
 def _self_stat_subject(card):
     name = str(card if isinstance(card, str) else getattr(card, 'name', '') or '').lower().replace('\u2019', "'")
     names = {name, name.split(',')[0], 'this creature', 'this permanent', 'this card'} - {''}
+    if not isinstance(card, str) and (getattr(card, 'is_token', False)
+            or str(getattr(card, 'type_line', '')).startswith('Token ')):
+        names.add('this token')
     return '(?:' + '|'.join(re.escape(value) for value in sorted(names)) + ')'
 
 

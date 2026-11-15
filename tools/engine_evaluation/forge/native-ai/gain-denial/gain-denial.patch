@@ -1,0 +1,178 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Derived from the Forge Team/Card-Forge AI; project modifications implement typed pending-gain valuation.
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java
+@@ -1,9 +1,12 @@
+ package forge.ai.ability;
+ 
++import com.google.common.collect.Lists;
+ import forge.ai.ComputerUtil;
+ import forge.ai.ComputerUtilCombat;
+ import forge.ai.SpellAbilityAi;
+ import forge.game.Game;
++import forge.game.ability.AbilityFactory;
++import forge.game.ability.AbilityUtils;
+ import forge.game.ability.ApiType;
+ import forge.game.card.Card;
+ import forge.game.card.CardCollectionView;
+@@ -12,12 +15,18 @@
+ import forge.game.phase.PhaseType;
+ import forge.game.player.Player;
+ import forge.game.spellability.SpellAbility;
++import forge.game.spellability.SpellAbilityVariables;
+ import forge.game.trigger.Trigger;
+ import forge.game.trigger.TriggerType;
++import forge.game.trigger.WrappedAbility;
+ import forge.game.zone.ZoneType;
+ import forge.util.MyRandom;
+ import forge.util.TextUtil;
+ 
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
+ public abstract class DamageAiBase extends SpellAbilityAi {
+     protected boolean avoidTargetP(final Player comp, final SpellAbility sa) {
+         Player enemy = comp.getWeakestOpponent();
+@@ -105,6 +114,10 @@
+             return false;
+         }
+ 
++        if (restDamage > 0 && preventsPendingBeneficialLifeGain(comp, sa, d, noPrevention)) {
++            return true;
++        }
++
+         if ((enemy.getLife() - restDamage) < 5) {
+             // drop the human to less than 5 life
+             return true;
+@@ -162,6 +175,120 @@
+         return false;
+     }
+ 
++    // A public gain-prevention effect has value now, without treating its damage as lethal.
++    protected boolean preventsPendingBeneficialLifeGain(final Player ai, final SpellAbility damage,
++            final int amount, final boolean noPrevention) {
++        if (ai == null || damage == null || ai.getOpponents().size() != 1 || ai.getGame().getStack().isEmpty()) return false;
++        final SpellAbility root = damage.getRootAbility();
++        if (!knownGainInput(ai, root.getHostCard()) || !knownGainInput(ai, damage.getHostCard())) return false;
++        if (!root.isSpell() || root.isCopied() || root.isTrigger() || root.getParent() != null
++                || root.getApi() != ApiType.Effect || !"Effect".equals(root.getParam("SP"))
++                || !"Burn".equals(root.getParam("AILogic")) || root.getSubAbility() != damage
++                || damage.getParent() != root || damage.getApi() != ApiType.DealDamage
++                || !"DealDamage".equals(damage.getParam("DB")) || damage.getSubAbility() != null
++                || !root.getAdditionalAbilities().isEmpty() || !root.getAdditionalAbilityLists().isEmpty()
++                || !damage.getAdditionalAbilities().isEmpty() || !damage.getAdditionalAbilityLists().isEmpty()
++                || !ai.equals(root.getActivatingPlayer()) || !ai.equals(damage.getActivatingPlayer())
++                || root.getHostCard() != damage.getHostCard()
++                || !root.getHostCard().isInZone(ZoneType.Hand) || !root.getHostCard().isInstant()
++                || !unconditionalGainInput(root.getConditions()) || !unconditionalGainInput(damage.getConditions())
++                || !Set.of("SP", "Cost", "AILogic", "StaticAbilities", "SubAbility", "Duration",
++                    "SpellDescription", "StackDescription").containsAll(root.getMapParams().keySet())
++                || !Set.of("DB", "NumDmg", "ValidTgts", "TgtPrompt", "TargetMin", "TargetMax",
++                    "SpellDescription", "StackDescription").containsAll(damage.getMapParams().keySet())
++                || !damage.getParamOrDefault("NumDmg", "").matches("[1-9][0-9]{0,8}")
++                || (root.hasParam("Duration") && !"EndOfTurn".equals(root.getParam("Duration")))) return false;
++        final Player enemy = ai.getOpponents().get(0);
++        if (!damage.canTarget(enemy) || avoidTargetP(ai, damage) || !enemy.canLoseLife() || amount <= 0
++                || (noPrevention ? enemy.staticReplaceDamage(amount, damage.getHostCard(), false)
++                    : ComputerUtilCombat.predictDamageTo(enemy, amount, damage.getHostCard(), false)) <= 0) return false;
++
++        boolean deniesGain = false, deniesPrevention = false;
++        for (String name : root.getParamOrDefault("StaticAbilities", "").split(",", -1)) {
++            if (!name.matches("[A-Za-z][A-Za-z0-9_]*")) return false;
++            final String definition = AbilityUtils.getSVar(root, name);
++            if (definition == null || definition.isEmpty()) return false;
++            final Map<String, String> body;
++            try {
++                body = AbilityFactory.getMapParams(definition);
++            } catch (RuntimeException unsupported) {
++                return false;
++            }
++            if ("CantGainLife".equals(body.get("Mode"))) {
++                if (deniesGain || !Set.of("Mode", "ValidPlayer", "Description").containsAll(body.keySet())
++                        || !Set.of("Player", "Opponent", "Player.Opponent").contains(body.getOrDefault("ValidPlayer", ""))
++                        || !enemy.isValid(body.get("ValidPlayer").split(","), ai, root.getHostCard(), root)) return false;
++                deniesGain = true;
++            } else if ("CantPreventDamage".equals(body.get("Mode"))) {
++                if (deniesPrevention || !Set.of("Mode", "Description").containsAll(body.keySet())) return false;
++                deniesPrevention = true;
++            } else return false;
++        }
++        if (!deniesGain) return false;
++
++        SpellAbility gain = ai.getGame().getStack().peekAbility();
++        if (!knownGainInput(ai, gain.getHostCard())) return false;
++        if (gain instanceof WrappedAbility wrapped) {
++            final Trigger trigger = wrapped.getTrigger();
++            if (trigger == null || !knownGainInput(ai, trigger.getHostCard())) return false;
++            if (wrapped.getDecider() != null || wrapped.isOptionalTrigger() || trigger.isSuppressed()
++                    || (trigger.getMode() != TriggerType.Drawn && trigger.getMode() != TriggerType.ChangesZone)
++                    || !Set.of("Mode", "ValidPlayer", "ValidCard", "Origin", "Destination", "TriggerZones",
++                        "Execute", "TriggerDescription").containsAll(trigger.getMapParams().keySet())) return false;
++            gain = wrapped.getWrappedAbility();
++        }
++        if (!knownGainInput(ai, gain.getHostCard()) || gain.isWrapper() || gain.isOptionalTrigger()
++                || gain.getApi() != ApiType.GainLife || gain.getParent() != null || gain.getSubAbility() != null
++                || !gain.getAdditionalAbilities().isEmpty() || !gain.getAdditionalAbilityLists().isEmpty()
++                || !unconditionalGainInput(gain.getConditions())
++                || !Set.of("SP", "AB", "DB", "Cost", "LifeAmount", "Defined", "ValidTgts", "TgtPrompt",
++                    "TargetMin", "TargetMax", "SpellDescription", "StackDescription").containsAll(gain.getMapParams().keySet())
++                || !gain.getParamOrDefault("LifeAmount", "").matches("[1-9][0-9]{0,8}")) return false;
++        int apiKeys = 0;
++        for (String key : List.of("SP", "AB", "DB")) {
++            if (gain.hasParam(key)) {
++                if (!"GainLife".equals(gain.getParam(key))) return false;
++                apiKeys++;
++            }
++        }
++        if (apiKeys != 1) return false;
++        final List<Player> recipients;
++        if (gain.hasParam("Defined")) {
++            if (gain.usesTargeting() || !Set.of("You", "Opponent").contains(gain.getParam("Defined"))) return false;
++            recipients = AbilityUtils.getDefinedPlayers(gain.getHostCard(), gain.getParam("Defined"), gain);
++        } else {
++            if (!gain.usesTargeting() || !gain.isTargetNumberValid() || gain.getTargets().size() != 1
++                    || !gain.canTarget(enemy, true)) return false;
++            recipients = Lists.newArrayList(gain.getTargets().getTargetPlayers());
++        }
++        return recipients.size() == 1 && recipients.get(0).equals(enemy) && enemy.canGainLife()
++                && (long) enemy.getLife() + Integer.parseInt(gain.getParam("LifeAmount")) <= Integer.MAX_VALUE
++                && ComputerUtil.lifegainPositive(enemy, gain.getHostCard());
++    }
++
++    private static boolean knownGainInput(final Player ai, final Card card) {
++        return card != null && card.getView().canBeShownTo(ai.getView())
++                && card.getView().canFaceDownBeShownTo(ai.getView());
++    }
++
++    private static boolean unconditionalGainInput(final SpellAbilityVariables variables) {
++        return !variables.isSorcerySpeed() && !variables.isInstantSpeed() && !variables.getPlayerTurn()
++                && !variables.getOpponentTurn() && variables.getPhases().isEmpty() && variables.getGameTypes().isEmpty()
++                && !variables.getFirstCombatOnly() && !variables.getAfterBlockersOnly()
++                && "You".equals(variables.getActivator()) && variables.getLimitToCheck() == null
++                && variables.getGameLimitToCheck() == null && !variables.isThreshold() && !variables.isMetalcraft()
++                && !variables.isDelirium() && !variables.isHellbent() && !variables.isRevolt()
++                && !variables.isBlessing() && !variables.isEnduringStory() && !variables.isSolved()
++                && variables.getIsPresent() == null && variables.getIsPresent2() == null
++                && variables.getPresentDefined() == null && variables.getPresentDefined2() == null
++                && variables.getPlayerDefined() == null && variables.getPlayerContains() == null
++                && variables.getsVarToCheck() == null && variables.getsVarToCheck2() == null
++                && variables.getNoDifferentColors() == null && variables.getLifeTotal() == null
++                && variables.getColorToCheck() == null && variables.getTargetValidTargeting() == null
++                && !variables.targetsSingleTarget() && variables.getClassLevel() == null
++                && variables.getManaSpent().isEmpty() && variables.getManaNotSpent().isEmpty();
++    }
++
+     private boolean isPlayerOnlySorceryPressure(final Player comp, final SpellAbility sa) {
+         final PhaseHandler phase = comp.getGame().getPhaseHandler();
+         if (!sa.isSpell() || sa.getApi() != ApiType.DealDamage || !sa.getHostCard().isSorcery()
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
+@@ -782,6 +782,7 @@
+                         || (((phase.is(PhaseType.END_OF_TURN) && phase.isPlayerNextTurn(ai))
+                         || (isSorcerySpeed(sa, ai) && phase.is(PhaseType.MAIN2))
+                         || ("BurnCreatures".equals(logic) && !enemy.getCreaturesInPlay().isEmpty())
++                        || preventsPendingBeneficialLifeGain(ai, sa, dmg, noPrevention)
+                         // Lethal damage need not wait; all ordinary target and cast gates still apply.
+                         || isLethalDamageToPlayer(enemy, source, dmg, noPrevention))
+                         && ((sa.isPwAbility() && sa.getPayCosts().hasSpecificCostType(CostPutCounter.class))

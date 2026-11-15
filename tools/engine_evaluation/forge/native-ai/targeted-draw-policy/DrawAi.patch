@@ -1,0 +1,20 @@
+--- forge-ai/src/main/java/forge/ai/ability/DrawAi.java
++++ forge-ai/src/main/java/forge/ai/ability/DrawAi.java
+@@ -53,7 +53,7 @@
+         if (sa.usesTargeting()) {
+             final Player player = sa.getTargets().getFirstTargetedPlayer();
+             if (player != null && player.isOpponentOf(ai)) {
+-                return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
++                return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+             }
+         }
+ 
+@@ -361,7 +361,7 @@
+                 }
+ 
+                 // try to mill opponent
+-                if (numCards >= oppA.getCardsIn(ZoneType.Library).size()) {
++                if (numCards > oppA.getCardsIn(ZoneType.Library).size()) {
+                     // but only it he doesn't have Laboratory Maniac
+                     // also disable it for other checks later too
+                     if (oppA.isCardInPlay("Laboratory Maniac")) {

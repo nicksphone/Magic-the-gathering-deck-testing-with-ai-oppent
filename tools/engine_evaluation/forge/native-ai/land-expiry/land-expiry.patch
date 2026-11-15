@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Derived from the Forge Team/Card-Forge AI; project modification values known expiring land access.
+--- a/forge-ai/src/main/java/forge/ai/AiController.java
++++ b/forge-ai/src/main/java/forge/ai/AiController.java
+@@ -742,6 +742,7 @@
+ 
+         // pick the land with the best score.
+         // use the evaluation plus a modifier for each new color pip and basic type
++        final Map<Card, Integer> scores = new LinkedHashMap<>();
+         Card toReturn = Aggregates.itemWithMax(IterableUtil.filter(landList, Card::hasPlayableLandFace),
+                 (card -> {
+                     // base score is for the evaluation score
+@@ -779,9 +780,51 @@
+                     // TODO utility lands only if we have enough to pay their costs
+                     // TODO Tron lands and other lands that care about land counts
+ 
++                    scores.put(card, score);
+                     return score;
+                 }));
++        // Preserve native land value; spend a proven expiring resource only when values tie.
++        if (toReturn != null && !hasExpiringLandPermission(toReturn)) {
++            for (final Card alternative : scores.keySet()) {
++                if (scores.get(alternative).equals(scores.get(toReturn)) && hasExpiringLandPermission(alternative)) {
++                    return alternative;
++                }
++            }
++        }
+         return toReturn;
++    }
++
++    private boolean hasExpiringLandPermission(final Card land) {
++        if (!land.isInZone(ZoneType.Exile) || !land.getView().canBeShownTo(player.getView())
++                || !land.getView().canFaceDownBeShownTo(player.getView())) {
++            return false;
++        }
++        boolean grantsAccess = false;
++        for (final CardPlayOption option : land.mayPlay(player)) {
++            if (!option.appliesTo(player) || !option.grantsZonePermissions()) {
++                continue;
++            }
++            final Card effect = option.getHost();
++            if (effect == null || !effect.getView().canBeShownTo(player.getView())
++                    || !effect.getView().canFaceDownBeShownTo(player.getView())
++                    || !effect.isImmutable() || !effect.isInZone(ZoneType.Command)) {
++                return false;
++            }
++            final SpellAbility creator = effect.getEffectSourceAbility();
++            if (creator == null || creator.getHostCard() == null
++                    || !creator.getHostCard().getView().canBeShownTo(player.getView())
++                    || !creator.getHostCard().getView().canFaceDownBeShownTo(player.getView())
++                    || creator.getApi() != ApiType.Effect) {
++                return false;
++            }
++            // EffectEffect's absent duration schedules EOT; other creation paths cannot establish that.
++            final String duration = creator.getParam("Duration");
++            if (duration != null && !"UntilEndOfTurn".equals(duration)) {
++                return false;
++            }
++            grantsAccess = true;
++        }
++        return grantsAccess;
+     }
+ 
+     // if return true, go to next phase

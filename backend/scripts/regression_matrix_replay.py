@@ -406,6 +406,19 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
                 bind_native_action = getattr(trace_builder, 'bind_native_action', None)
                 if bind_native_action is not None:
                     payload = bind_native_action(payload, state, pid, action, ticks)
+                # Quality builders may sort zones and omit execution operands.
+                # Preserve a separate lossless root before the checked transition.
+                from copy import deepcopy
+                if 'replay' in payload:
+                    raise ValueError('The replay trace key is reserved for native execution evidence')
+                payload = {**payload, 'replay': {
+                    'schema_version': 1, 'pid': pid, 'turn': state.turn, 'step': str(state.step),
+                    'active_player': state.active_player, 'priority_player': state.priority_player,
+                    'hand': [state.cards[cid].name for cid in state.players[pid].hand],
+                    'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield],
+                    'legal_action_types': sorted({str(move['type']) for move in legal}),
+                    'action': deepcopy(action),
+                }}
                 trace_line = (budget.trace_line(payload) if budget is not None else
                               'AI TRACE ' + json.dumps(payload, separators=(',', ':'), allow_nan=False))
                 candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',

@@ -1,0 +1,122 @@
+.ai-play-notices,
+.ai-play-notices *,
+.ai-play-notices *::before,
+.ai-play-notices *::after,
+.ai-play-notice,
+.ai-play-notice * {
+  pointer-events: none !important;
+}
+
+.ai-play-notices {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 1200;
+  display: grid;
+  gap: 8px;
+  width: min(340px, calc(100vw - 24px));
+  font-family: var(--play-font, "DejaVu Sans", sans-serif);
+}
+
+.ai-play-notices .ai-play-notice {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid #a47c57;
+  border-inline-start: 3px solid #e0b18a;
+  border-radius: 8px;
+  background: linear-gradient(120deg, #233d2c, #13251a);
+  color: #f3ecdb;
+  box-shadow: 0 8px 28px #0007;
+  animation: ai-play-arrive 150ms ease-out;
+}
+
+.ai-play-notices .ai-play-notice-art {
+  align-self: start;
+  min-width: 0;
+}
+
+.ai-play-notices .ai-play-notice-art .card-art {
+  display: block;
+  width: 56px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.ai-play-notices .card-no-art {
+  min-height: 78px;
+  padding: 4px;
+  font-size: 0.6rem;
+  overflow-wrap: anywhere;
+}
+
+.ai-play-notices .card-no-art strong,
+.ai-play-notices .card-no-art small {
+  display: none;
+}
+
+.recent-ai-plays { margin-block: 12px; }
+.recent-ai-plays ol { margin: 10px 0; padding-inline-start: 20px; }
+.recent-ai-plays li { padding-block: 6px; overflow-wrap: anywhere; }
+.recent-ai-plays li span { display: block; margin-top: 3px; color: var(--muted); font-size: .8rem; }
+
+.ai-play-notices .ai-play-notice-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ai-play-notices .ai-play-notice-context {
+  margin: 0 0 5px;
+  color: #d7b590;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.ai-play-notices .ai-play-notice-title {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.ai-play-notices .ai-play-notice-title strong {
+  display: block;
+  margin-top: 3px;
+  font: 500 1.05rem/1.25 var(--play-display, "DejaVu Serif", serif);
+  color: #fff0d4;
+}
+
+.ai-play-notices .ai-play-notice-targets {
+  margin: 6px 0 0;
+  color: #c5d2c1;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+@keyframes ai-play-arrive {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 390px) {
+  .ai-play-notices {
+    top: max(8px, env(safe-area-inset-top, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: calc(100vw - 16px);
+    gap: 6px;
+  }
+
+  .ai-play-notices .ai-play-notice {
+    gap: 10px;
+    padding: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-play-notices .ai-play-notice {
+    animation: none;
+  }
+}

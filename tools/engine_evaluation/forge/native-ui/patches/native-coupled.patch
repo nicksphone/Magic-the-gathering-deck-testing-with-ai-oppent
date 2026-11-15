@@ -1,0 +1,320 @@
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputBase.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputBase.java
+@@ -16,6 +16,9 @@
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ package forge.gamemodes.match.input;
++
++// Owned 2026-11-05 patch on Forge 61e9442: optional normal-presentation receipt.
++// Owned correction: synchronous interaction receipt after the native handler returns.
+ 
+ import forge.game.Game;
+ import forge.game.card.Card;
+@@ -85,6 +88,9 @@
+         if (!isFinished()) {
+             showSelection();
+         }
++        if (controller.getInputQueue().hasPresentationListener() && !isFinished() && !isBusy()) {
++            controller.getInputQueue().presentationCompleted(this);
++        }
+     }
+ 
+     protected abstract void showMessage();
+@@ -112,7 +118,9 @@
+     @Override
+     public final void selectPlayer(final Player player, final ITriggerEvent triggerEvent) {
+         if (isFinished()) { return; }
++        final long generation = interactionGeneration();
+         onPlayerSelected(player, triggerEvent);
++        interactionCompleted(generation);
+     }
+ 
+     @Override
+@@ -123,19 +131,40 @@
+     @Override
+     public final void selectButtonCancel() {
+         if (isFinished()) { return; }
++        final long generation = interactionGeneration();
+         onCancel();
++        interactionCompleted(generation);
+     }
+ 
+     @Override
+     public final void selectButtonOK() {
+         if (isFinished()) { return; }
++        final long generation = interactionGeneration();
+         onOk();
++        interactionCompleted(generation);
+     }
+ 
+     @Override
+     public final boolean selectCard(final Card c, final List<Card> otherCardsToSelect, final ITriggerEvent triggerEvent) {
+         if (isFinished()) { return false; }
+-        return onCardSelected(c, otherCardsToSelect, triggerEvent);
++        final long generation = interactionGeneration();
++        final boolean result = onCardSelected(c, otherCardsToSelect, triggerEvent);
++        interactionCompleted(generation);
++        return result;
++    }
++
++    protected final long interactionGeneration() {
++        final InputQueue queue = controller.getInputQueue();
++        if (!queue.hasPresentationListener()) return -1;
++        final long generation = queue.getInputGeneration();
++        return queue.isCurrentPresentation(this, generation) ? generation : -1;
++    }
++
++    // A native interaction/refresh receipt, not a general GameAction commit notification.
++    protected final void interactionCompleted(final long generation) {
++        if (generation >= 0 && !isFinished() && !isBusy()) {
++            controller.getInputQueue().interactionCompleted(this, generation);
++        }
+     }
+ 
+     protected boolean onCardSelected(final Card c, final List<Card> otherCardsToSelect, final ITriggerEvent triggerEvent) {
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputQueue.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputQueue.java
+@@ -17,6 +17,10 @@
+  */
+ package forge.gamemodes.match.input;
+ 
++// Owned 2026-11-05 patch on Forge 61e9442: optional generation-bound presentation ABI.
++// Owned correction: same-input normal-return interaction receipts reuse that ABI.
++// Owned R7 observation only: report successful popped object/generations outside monitor.
++
+ import forge.game.GameView;
+ import forge.util.IHasForgeLog;
+ import forge.player.PlayerControllerHuman;
+@@ -37,6 +41,84 @@
+ 
+     private final BlockingDeque<InputSynchronized> inputStack = new LinkedBlockingDeque<>();
+     private final GameView gameView;
++    private long inputGeneration;
++    private boolean presentationEnded;
++    private volatile PresentationListener presentationListener;
++    private record PresentationContext(Input input, long generation) { }
++    private final ThreadLocal<PresentationContext> presenting = new ThreadLocal<>();
++    public interface RemovalObserver {
++        void removed(Input input, long beforeGeneration, long afterGeneration);
++    }
++    private volatile RemovalObserver removalObserver;
++    public final void setRemovalObserver(final RemovalObserver observer) {
++        removalObserver = observer;
++    }
++
++    public interface PresentationListener {
++        void invalidated();
++        void presented(Input input, long generation);
++    }
++
++    public final void setPresentationListener(final PresentationListener listener) {
++        synchronized (this) {
++            presentationListener = listener;
++            inputChanged();
++        }
++        notifyInvalidated();
++    }
++
++    public final boolean hasPresentationListener() {
++        return presentationListener != null;
++    }
++
++    public final synchronized long getInputGeneration() {
++        return inputGeneration;
++    }
++
++    public final synchronized boolean isCurrentPresentation(final Input input, final long generation) {
++        return input != null && !presentationEnded && !gameView.isGameOver()
++                && inputGeneration == generation && inputStack.peek() == input;
++    }
++
++    // Call with the queue monitor; never call host code while holding it.
++    private void inputChanged() {
++        inputGeneration++;
++    }
++
++    private void notifyInvalidated() {
++        final PresentationListener listener = presentationListener;
++        if (listener != null) listener.invalidated();
++    }
++
++    final void presentInput(final Input input, final long generation) {
++        if (!isCurrentPresentation(input, generation)) return;
++        final PresentationContext previous = presenting.get();
++        presenting.set(new PresentationContext(input, generation));
++        try {
++            input.showMessageInitial();
++        } finally {
++            if (previous == null) presenting.remove();
++            else presenting.set(previous);
++        }
++    }
++
++    final void presentationCompleted(final Input input) {
++        final PresentationContext context = presenting.get();
++        final PresentationListener listener = presentationListener;
++        if (listener != null && context != null && context.input() == input
++                && isCurrentPresentation(input, context.generation())) {
++            listener.presented(input, context.generation());
++        }
++    }
++
++    final void interactionCompleted(final Input input, final long generation) {
++        // Initial presentation owns its later full-completion receipt.
++        if (presenting.get() != null) return;
++        final PresentationListener listener = presentationListener;
++        if (listener != null && isCurrentPresentation(input, generation)) {
++            listener.presented(input, generation);
++        }
++    }
+ 
+     public InputQueue(final GameView gameView, final InputProxy inputProxy) {
+         this.gameView = gameView;
+@@ -54,6 +136,10 @@
+ 
+     /*pfps sometimes this is being called twice for the same input */
+     public final void removeInput(final Input inp) {
++        boolean popped = false;
++        final long beforeGeneration, afterGeneration;
++        synchronized (this) {
++        beforeGeneration = inputGeneration;
+         final Input topMostInput = inputStack.isEmpty() ? null : inputStack.peek();
+ 
+         if (topMostInput != inp) {
+@@ -61,7 +147,14 @@
+         } else if (topMostInput != null) {
+             // if topMostInput is null then it means the inputstack is already empty, why this is called twice?
+            inputStack.pop();
+-        }
++           popped = true;
++        }
++        inputChanged();
++        afterGeneration = inputGeneration;
++        }
++        notifyInvalidated();
++        final RemovalObserver observer = removalObserver;
++        if (popped && observer != null) observer.removed(inp, beforeGeneration, afterGeneration);
+         updateObservers();
+     }
+ 
+@@ -69,7 +162,13 @@
+         netLog.trace("clearInputs() called, stack size = {}", inputStack.size());
+         int count = 0;
+         while(!inputStack.isEmpty()) {
+-            InputSynchronized inp = inputStack.pop();
++            final InputSynchronized inp;
++            synchronized (this) {
++                inp = inputStack.poll();
++                if (inp == null) break;
++                inputChanged();
++            }
++            notifyInvalidated();
+             netLog.trace("Stopping input #{}: {}", count, inp.getClass().getSimpleName());
+             inp.stop();
+             count++;
+@@ -96,7 +195,11 @@
+         //if (HostedMatch.getHumanCount() > 1) { //update current player if needed
+             //HostedMatch.setCurrentPlayer(game.getPlayer(input.getOwner()));
+         //}
+-        inputStack.push(input);
++        synchronized (this) {
++            inputStack.push(input);
++            inputChanged();
++        }
++        notifyInvalidated();
+         // onGameOver releases only the inputs already waiting when it runs
+         if (gameView.isGameOver()) {
+             input.relaseLatchWhenGameIsOver();
+@@ -112,6 +215,11 @@
+     }
+ 
+     public void onGameOver(final boolean releaseAllInputs) {
++        synchronized (this) {
++            presentationEnded = true;
++            inputChanged();
++        }
++        notifyInvalidated();
+         for (final InputSynchronized inp : inputStack) {
+             inp.relaseLatchWhenGameIsOver();
+             if (!releaseAllInputs) {
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputProxy.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputProxy.java
+@@ -17,6 +17,8 @@
+  */
+ package forge.gamemodes.match.input;
+ 
++// Owned 2026-11-05 patch on Forge 61e9442: bind queued presentations at enqueue time.
++
+ import forge.game.card.Card;
+ import forge.game.card.CardView;
+ import forge.game.player.Player;
+@@ -54,6 +56,26 @@
+ 
+     @Override
+     public final void update(final Observable observable, final Object obj) {
++        final InputQueue queue = controller.getInputQueue();
++        if (queue.hasPresentationListener()) {
++            final Input captured;
++            final long generation;
++            synchronized (queue) {
++                captured = queue.getActualInput(controller);
++                generation = queue.getInputGeneration();
++                input.set(captured);
++            }
++            if (!(captured instanceof InputLockUI)) controller.getGui().setCurrentPlayer(captured.getOwner());
++            FThreads.invokeInEdtLater(() -> {
++                queue.syncPoint();
++                if (captured instanceof InputLockUI) {
++                    if (getInput() == captured) captured.showMessageInitial();
++                } else {
++                    queue.presentInput(captured, generation);
++                }
++            });
++            return;
++        }
+         final Input nextInput = controller.getInputQueue().getActualInput(controller);
+ /*        if(DEBUG_INPUT) 
+             System.out.printf("%s ... \t%s on %s, \tstack = %s%n", 
+@@ -148,6 +170,13 @@
+         final Input inp = getInput();
+         if (inp != null) {
+             if (sa != null) {
++                if (inp instanceof InputSelectStackItems stackInput) {
++                    // Owned 2026-11-06: receipt only for synchronous stack-only ability clicks.
++                    final long generation = stackInput.interactionGeneration();
++                    final boolean result = inp.selectAbility(sa);
++                    stackInput.interactionCompleted(generation);
++                    return result;
++                }
+                 return inp.selectAbility(sa);
+             }
+         }
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputPayMana.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputPayMana.java
+@@ -1,3 +1,6 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Forge Team/Card-Forge upstream source, base 61e9442. See accompanying LICENSE.
++// Modified 2026-11-05: optional generation-bound receipt after native mana UI refresh.
+ package forge.gamemodes.match.input;
+ 
+ import com.google.common.collect.Lists;
+@@ -438,8 +441,18 @@
+         if (isAlreadyPaid()) {
+             done();
+             stop();
++        } else if (!getController().getInputQueue().hasPresentationListener()) {
++            FThreads.invokeInEdtNowOrLater(this::updateMessage);
+         } else {
+-            FThreads.invokeInEdtNowOrLater(this::updateMessage);
++            // Bind the resumed input before enqueueing, after any nested native prompts.
++            final long generation = interactionGeneration();
++            FThreads.invokeInEdtNowOrLater(() -> {
++                if (isFinished() || !getController().getInputQueue().isCurrentPresentation(this, generation)) {
++                    return;
++                }
++                updateMessage();
++                interactionCompleted(generation);
++            });
+         }
+     }
+ 

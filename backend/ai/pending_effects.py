@@ -7,10 +7,11 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 import json
 import pickle
+import random
 import re
-from typing import Literal, TypedDict
+from typing import Callable, Literal, TypedDict
 
-from game_state.state import CardInstance, MatchState, StackItem, Zone
+from game_state.state import CardInstance, MatchState, StackItem, Step, Zone
 from game_state.copying import copy_match_state, _copy_card_field
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
@@ -23,6 +24,7 @@ SECONDARY_EFFECT_RE = re.compile(
 )
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
+_projection_choice_path = ContextVar("ai_projection_choice_path", default=())
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
 
@@ -219,10 +221,35 @@ def reuse_position_score(state, player_id, owner, compute):
     return result
 
 
+def combat_expansion_available(*, charge=False):
+    """Query sticky denial, or debit one new native combat forecast attempt."""
+    scope = _decision_projection.get()
+    budget = scope[2].get('combat_expansions') if scope is not None else None
+    if budget is None:
+        return True
+    if budget['denied']:
+        return False
+    if charge:
+        if budget['remaining'] == 0:
+            budget['denied'] = True
+            return False
+        budget['remaining'] -= 1
+    return True
+
+
 @contextmanager
-def decision_projection_scope(state, player_id):
+def decision_projection_scope(state, player_id, combat_expansion_limit=None):
     """Memoize only the immutable root of one synchronous AI decision."""
-    token = _decision_projection.set((state, player_id, {}))
+    if combat_expansion_limit is not None and (
+            type(combat_expansion_limit) is not int or combat_expansion_limit < 0):
+        raise ValueError('Combat expansion allowance must be a nonnegative integer')
+    previous = _decision_projection.get()
+    budget = previous[2].get('combat_expansions') if previous is not None else None
+    if budget is None and combat_expansion_limit is not None:
+        budget = {'remaining': combat_expansion_limit, 'denied': False}
+    # Nested choices isolate memoized roots, but never replenish decision work.
+    cache = {'combat_expansions': budget} if budget is not None else {}
+    token = _decision_projection.set((state, player_id, cache))
     try:
         from rules_engine.query_context import rule_query_scope
         with rule_query_scope(state):
@@ -302,7 +329,8 @@ def keyword_target_value(state, card, player_id, targets):
 
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None,
-                                action: dict | None = None, own_choice_action=None, candidates=None) -> set[str]:
+                                action: dict | None = None, own_choice_action=None, candidates=None,
+                                _native_shared_baseline=False) -> set[str]:
     """Conserve pure destruction against indestructible or friendly targets."""
     if ability_text is None and not set(effective_types(state, card)).intersection({"Instant", "Sorcery"}):
         return set()
@@ -322,6 +350,13 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
     if key != "destroy_permanent":
         return set()
     excluded = set()
+    baseline_reference = None
+    if _native_shared_baseline and friendly_destruction_profit is _NATIVE_FRIENDLY_DESTRUCTION_PROFIT:
+        reference = []
+        def baseline_reference():
+            if not reference:
+                reference.append(_native_destruction_baseline(state, player_id, own_choice_action))
+            return reference[0]
     for player in state.players.values():
         for cid in player.battlefield:
             if candidates is not None and cid not in candidates:
@@ -335,8 +370,14 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
             if not friendly and not has_keyword(state, cid, 'indestructible'):
                 continue
             if friendly and action is not None:
-                profitable = friendly_destruction_profit(state, player_id,
-                    {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action)
+                if baseline_reference is not None:
+                    # Native batch: run each candidate fully against one lazy reference.
+                    profitable = _friendly_destruction_profit(state, player_id,
+                        {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action,
+                        _baseline_supplier=baseline_reference)
+                else:
+                    profitable = friendly_destruction_profit(state, player_id,
+                        {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action)
                 if profitable is not False:
                     continue
             excluded.add(cid)
@@ -350,16 +391,35 @@ def friendly_destruction_profit(state, player_id, action, *, own_choice_action=N
         own_choice_action)
 
 
+_NATIVE_FRIENDLY_DESTRUCTION_PROFIT = friendly_destruction_profit
+
+
 def _choice_free_projection(state, player_id, kind, action, compute, policy):
+    return _memoized_projection(state, player_id, kind, action, compute, policy,
+        namespace='choice_free_outcomes')
+
+
+def _native_destruction_baseline(state: MatchState, player_id: int,
+                                 policy: Callable[..., dict] | None) -> tuple[Literal['known', 'unknown'], int | None, float | None]:
+    return _memoized_projection(state, player_id, 'destruction_baseline', None,
+        lambda own_policy: _destruction_baseline(state, player_id, own_policy), policy,
+        namespace='native_reference_baselines')
+
+
+def _memoized_projection(state, player_id, kind, action, compute, policy, *, namespace):
     scope = _decision_projection.get()
     if scope is None or scope[0] is not state or scope[1] != player_id:
         return compute(policy)
+    native_reference = namespace == 'native_reference_baselines'
 
     def key():
         try:
             # Bytes remain private in this short-lived scope; never unpickle input.
             # Include RNG, object incarnations, aliases and extra gameplay fields.
-            return (pickle.dumps(state, protocol=5),
+            snapshot = pickle.dumps(state, protocol=5)
+            if native_reference:
+                snapshot = (snapshot, random.getstate())
+            return (snapshot,
                     (kind, policy is None,
                      json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False)))
         except (pickle.PicklingError, TypeError, ValueError, AttributeError, RecursionError):
@@ -368,11 +428,11 @@ def _choice_free_projection(state, player_id, kind, action, compute, policy):
     announced = key()
     if announced is None:
         return compute(policy)
-    memo = scope[2].get('choice_free_outcomes')
+    memo = scope[2].get(namespace)
     if memo is None or memo[0] != announced[0]:
         # One shared snapshot, not a complete board copy for every target.
         memo = (announced[0], {})
-        scope[2]['choice_free_outcomes'] = memo
+        scope[2][namespace] = memo
     if announced[1] in memo[1]:
         return memo[1][announced[1]]
     choice_used = False
@@ -385,12 +445,78 @@ def _choice_free_projection(state, player_id, kind, action, compute, policy):
     result = compute(choice if policy is not None else None)
     # A skipped callback must not erase mutable agent/closure side effects.
     if (not choice_used and key() == announced
-            and scope[2].get('choice_free_outcomes') is memo):
+            and scope[2].get(namespace) is memo):
         memo[1][announced[1]] = result
     return result
 
 
-def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None):
+class _DestructionBaseline(tuple):
+    """Keep the three-item baseline ABI; private summary reuses the same settlement."""
+    def __new__(cls, values, public_material=None):
+        result = tuple.__new__(cls, values)
+        result.public_material = public_material
+        return result
+
+
+def _public_destruction_material(state, player_id):
+    from ai.information import is_unknown
+    from game_state.state import object_incarnation
+    from rules_engine.continuous import effective_keywords
+    if state.delayed_triggers or state.staged_triggers or state.emblems:
+        return None
+    boards = {}
+    useful = set()
+    for pid, player in state.players.items():
+        boards[pid] = {}
+        for cid in player.battlefield:
+            card = state.cards.get(cid)
+            if card is None or is_unknown(card):
+                return None
+            key = (cid, object_incarnation(card), card.zone_change_sequence)
+            types = tuple(sorted(effective_types(state, card)))
+            stats = effective_combat_stats(state, cid) if 'Creature' in types else None
+            if stats is not None and any(type(value) is not int for value in stats):
+                return None
+            traits = (types, stats, tuple(sorted(effective_keywords(state, cid))),
+                      tuple(sorted(card.counters.items())), card.attached_to)
+            boards[pid][key] = (traits, card.tapped)
+            if (pid == player_id and stats is not None
+                    and stats[1] > max(0, card.counters.get('__damage_marked', 0))):
+                useful.add(key)
+    return dict(boards=boards, useful=useful, hand=set(state.players[player_id].hand),
+        graveyard=set(state.players[player_id].graveyard),
+        life={pid:p.life for pid,p in state.players.items()},
+        mana={pid:dict(p.mana_pool) for pid,p in state.players.items()},
+        resources={pid:(p.poison, dict(p.counters), dict(p.snow_mana_pool),
+            deepcopy(p.restricted_mana_pool), p.prevent_damage_shield, p.max_land_plays_this_turn,
+            dict(p.exile_play_until), deepcopy(p.exile_play_durations)) for pid,p in state.players.items()})
+
+
+def _uncompensated_life_material_loss(before, after, player_id, spell_id):
+    """A local material-conservation preference, not a global life price or theorem."""
+    if before is None or after is None:
+        return None
+    opponent = 3 - player_id
+    old, new = before['boards'][player_id], after['boards'][player_id]
+    if (not (before['useful'] - set(new)) or set(new) - set(old)
+            or after['life'][player_id] <= before['life'][player_id]
+            or after['life'][opponent] != before['life'][opponent]
+            or before['boards'][opponent] != after['boards'][opponent]
+            or before['resources'] != after['resources']
+            or after['hand'] - before['hand']
+            or after['graveyard'] - before['graveyard'] - {spell_id}):
+        return False
+    for key in set(old) & set(new):
+        if old[key][0] != new[key][0] or (old[key][1] and not new[key][1]):
+            return False
+    if (after['mana'][opponent] != before['mana'][opponent]
+            or any(n > before['mana'][player_id].get(color, 0)
+                   for color,n in after['mana'][player_id].items())):
+        return False
+    return True
+
+
+def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None, _baseline_supplier=None):
     from ai.heuristics import evaluate_board
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
@@ -409,13 +535,27 @@ def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[3-player_id].hand) != opposing_hand):
         return None
-    status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
-        lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
+    if _baseline_supplier is None:
+        baseline = _choice_free_projection(state, player_id, 'destruction_baseline', None,
+            lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
+    else:
+        baseline = _baseline_supplier()
+    status, winner, value = baseline
     if status == 'unknown':
         return None
     if winner is not None:
         return winner != player_id
-    return evaluate_board(projected, player_id) > value
+    profitable = evaluate_board(projected, player_id) > value
+    if not profitable:
+        return False
+    if isinstance(baseline, _DestructionBaseline):
+        material = _uncompensated_life_material_loss(baseline.public_material,
+            _public_destruction_material(projected, player_id), player_id, action.get('card_id'))
+        if material is None:
+            return None
+        if material is True:
+            return False
+    return profitable
 
 
 def _destruction_baseline(state, player_id, policy):
@@ -429,7 +569,8 @@ def _destruction_baseline(state, player_id, policy):
             for pid, player in baseline.players.items())
             or tuple(baseline.players[3-player_id].hand) != tuple(state.players[3-player_id].hand)):
         return ('unknown', None, None)
-    return ('known', None, evaluate_board(baseline, player_id))
+    return _DestructionBaseline(('known', None, evaluate_board(baseline, player_id)),
+                                _public_destruction_material(baseline, player_id))
 
 
 def pending_counter_gain(state, player_id, stack_id):
@@ -515,25 +656,49 @@ def _opaque_acquisition_items(state):
     return [item, *items]
 
 
+def _opaque_acquisition_steps(state):
+    """Read complete native sequences without making partial or synthetic items."""
+    items = _opaque_acquisition_items(state)
+    if items is None:
+        return None
+    steps = []
+
+    def visit(item, key, payload, depth):
+        if depth >= 8:
+            return False
+        if key == 'effect_sequence':
+            children = payload.get('effects')
+            return isinstance(children, list) and bool(children) and all(
+                isinstance(child, dict) and isinstance(child.get('payload'), dict)
+                and visit(item, child.get('effect_key'), child['payload'], depth+1)
+                for child in children)
+        steps.append((item, key, payload))
+        return True
+
+    if not all(visit(item, item.effect_key, item.payload, 0) for item in items):
+        return None
+    return steps
+
+
 def _opaque_acquisition_stack(state, player_id):
     """Admit full, unfiltered typed acquisitions, not partial Oracle matches."""
     if getattr(state, 'ai_information_player', None) != player_id:
         return False
-    items = _opaque_acquisition_items(state)
-    if items is None:
+    steps = _opaque_acquisition_steps(state)
+    if steps is None:
         return False
     acquisitions = {'draw_cards', 'look_top_select_hand', 'look_top_choose'}
-    if (not any(item.effect_key in acquisitions for item in items)
-            or any(item.effect_key not in acquisitions | {'counter_spell', 'counter_ability'}
-                   for item in items)):
+    if (not any(key in acquisitions for _, key, _ in steps)
+            or any(key not in acquisitions | {'counter_spell', 'counter_ability', 'gain_life',
+                                             'scry', 'surveil', 'put_hand_on_library'}
+                   for _, key, _ in steps)):
         return False
     from rules_engine.oracle_effects import _parse_count_token
     allowed_payload = {'top_n', 'play_exiled_until', 'mana_spent_to_cast', 'mana_spent',
                        'snow_mana_spent', 'snow_mana_colors'}
-    for item in items:
-        if item.effect_key != 'look_top_choose':
+    for item, key, payload in steps:
+        if key != 'look_top_choose':
             continue
-        payload = item.payload
         if any(not key.startswith('__') and key not in allowed_payload for key in payload):
             return False
         source = state.cards.get(item.source_card_id)
@@ -559,19 +724,80 @@ def _opaque_acquisition_stack(state, player_id):
     return True
 
 
+def _unsupported_forecast_combat(projected):
+    from rules_engine.combat_constraints import combat_rule_view
+    return any(combat_rule_view(projected, cid)['unsupported']
+               for player in projected.players.values() for cid in player.battlefield
+               if 'Creature' in effective_types(projected, projected.cards[cid]))
+
+
+def _has_forecast_response(projected, player_id, rules):
+    response = planning_copy(projected)
+    response.priority_player = player_id
+    try:
+        # Even a mana ability may sacrifice a creature or cause public triggers.
+        return any(move['type'] != 'pass_priority' for move in rules.legal_moves(response, player_id))
+    except (UncertainSimulation, ValueError):
+        return True
+
+
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
-                           own_choice_action=None, opaque_hand_choices=False) -> bool:
+                           own_choice_action=None, opaque_hand_choices=False,
+                           settle_declared_combat=False, stop_at_private_action_frontier=False,
+                           retained_stack: tuple[str, ...] | None = None) -> bool:
     rules = RulesEngine()
+    combat = settle_declared_combat is True
+    if combat and player_id not in projected.players:
+        return False
+    if stop_at_private_action_frontier and player_id not in projected.players:
+        return False
+    initial_hand = set(projected.players[player_id].hand) if stop_at_private_action_frontier else set()
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
+        if retained_stack is not None:
+            if projected.winner is not None:
+                return True
+            current = tuple(item.id for item in projected.stack)
+            if current == retained_stack:
+                return not (projected.pending_mechanic_choice or projected.pending_replacement_choice
+                            or projected.pending_trigger_order)
+            # Older frames are a hard frontier, never a forecast of their hidden effects.
+            if len(current) <= len(retained_stack) or current[:len(retained_stack)] != retained_stack:
+                return False
+        # A newly acquired hand can answer the remaining stack. Passing that
+        # opportunity is not an immediate hard-loss proof, even for opaque cards.
+        if (stop_at_private_action_frontier and projected.winner is None
+                and set(projected.players[player_id].hand) - initial_hand):
+            return False
+        if combat and _unsupported_forecast_combat(projected):
+            return False
+        if combat and projected.winner is not None:
+            return True
         choice = projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order
         if choice:
+            if combat:
+                return False
             chooser = choice.get("player_id", choice.get("current_controller"))
             action = _opaque_selection_choice(projected) if opaque_hand_choices else None
             if action is None:
                 if own_choice_action is None or chooser != player_id:
                     return False
-                action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+                path = _projection_choice_path.get()
+                if len(path) >= 8:
+                    return False
+                try:
+                    position = (player_id, pickle.dumps(choice, protocol=5))
+                except (pickle.PicklingError, TypeError, ValueError, AttributeError, RecursionError):
+                    return False
+                # A counterfactual can change the board but revisit the same choice.
+                # Keep that cyclic/deep forecast unknown, not a resolved payoff.
+                if position in path:
+                    return False
+                token = _projection_choice_path.set(path + (position,))
+                try:
+                    action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+                finally:
+                    _projection_choice_path.reset(token)
             if action.get("type") == "pass_priority":
                 return False
             try:
@@ -579,8 +805,17 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
             except UncertainSimulation:
                 return False
             continue
-        if projected.winner is not None or not projected.stack:
+        if projected.winner is not None:
             return True
+        if not projected.stack:
+            if not combat or projected.step == Step.END_COMBAT:
+                return True
+            if (projected.step not in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE}
+                    or not projected.blockers_declared):
+                return False
+        if (combat and projected.priority_player == player_id
+                and _has_forecast_response(projected, player_id, rules)):
+            return False
         try:
             simulation_take_action(rules, projected, projected.priority_player, {"type": "pass_priority"}, reject_invalid=True)
         except UncertainSimulation:
@@ -588,9 +823,11 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
     return False
 
 
-def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, own_choice_action=None) -> bool | None:
+def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *,
+                          own_choice_action=None, settle_declared_combat=False) -> bool | None:
     """Evaluate a legal announced line, never optimize from hidden-zone changes."""
-    outcome = _unanswered_action_outcome(state, player_id, action, own_choice_action=own_choice_action)
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        own_choice_action=own_choice_action, settle_declared_combat=settle_declared_combat)
     return None if outcome is None else outcome == "win"
 
 
@@ -598,9 +835,9 @@ def _opaque_draw_count_changes(state, projected, player_id):
     from ai.information import is_unknown
     if not _opaque_acquisition_stack(state, player_id):
         return False
-    items = _opaque_acquisition_items(state)
-    may_reorder = any(item.effect_key in {'look_top_select_hand', 'look_top_choose'} for item in items)
-    may_exile = any(item.effect_key == 'look_top_choose' for item in items)
+    steps = _opaque_acquisition_steps(state)
+    may_reorder = any(key in {'look_top_select_hand', 'look_top_choose'} for _, key, _ in steps)
+    may_exile = any(key == 'look_top_choose' for _, key, _ in steps)
     for pid, original in state.players.items():
         final = projected.players[pid]
         removed = set(original.library) - set(final.library)
@@ -625,7 +862,8 @@ def _opaque_draw_count_changes(state, projected, player_id):
     return True
 
 
-def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False) -> MatchState | None:
+def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False,
+                            stop_at_private_action_frontier=False) -> MatchState | None:
     """Forecast declared effects; opt-in opaque hand counts never reveal identities."""
     if not state.stack and not (state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order):
         return state
@@ -634,7 +872,8 @@ def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_co
     opposing_hand = tuple(state.players[opponent].hand)
     projected = _projection_copy(state)
     opaque_selection = opaque_draw_counts and _opaque_acquisition_stack(state, player_id)
-    if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection):
+    if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection,
+                                  stop_at_private_action_frontier=stop_at_private_action_frontier):
         return None
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[opponent].hand) != opposing_hand):
@@ -654,15 +893,35 @@ def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_co
     return projected
 
 
-def unanswered_action_loses(state: MatchState, player_id: int, action: dict) -> bool | None:
+def unanswered_action_loses(state: MatchState, player_id: int, action: dict, *,
+                           settle_declared_combat=False) -> bool | None:
     """Unknown choices/hidden-zone changes never establish a certain loss."""
-    outcome = _unanswered_action_outcome(state, player_id, action)
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        settle_declared_combat=settle_declared_combat)
     return None if outcome is None else outcome == "loss"
 
 
-def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *, own_choice_action=None):
+def unanswered_action_classification(state: MatchState, player_id: int, action: dict, *,
+                                     settle_declared_combat=False,
+                                     own_choice_action=None) -> tuple[bool | None, bool | None]:
+    """Classify one complete forecast; a known win needs no loss question."""
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        settle_declared_combat=settle_declared_combat, own_choice_action=own_choice_action)
+    win = None if outcome is None else outcome == "win"
+    loss = outcome == "loss" if win is False else None
+    return win, loss
+
+
+def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *,
+                               own_choice_action=None, settle_declared_combat=False):
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
+    log_start = len(projected.log)
+    combat = (settle_declared_combat is True and state.step == Step.DECLARE_BLOCKERS
+              and state.active_player != player_id)
+    # Coverage must be established before a last-chance pass can resolve damage.
+    if combat and _unsupported_forecast_combat(projected):
+        return None
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opponent = 3 - player_id
     opposing_hand = tuple(state.players[opponent].hand)
@@ -672,7 +931,12 @@ def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, 
         return None
     except ActionRejected:
         return "rejected"
-    if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
+    options = {'player_id': player_id, 'own_choice_action': own_choice_action}
+    if combat:
+        options['settle_declared_combat'] = True
+    if not _settle_announced_stack(projected, **options):
+        return None
+    if combat and any(line.startswith('Oracle effect not inferred') for line in projected.log[log_start:]):
         return None
     if any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items()) or tuple(projected.players[opponent].hand) != opposing_hand:
         return None

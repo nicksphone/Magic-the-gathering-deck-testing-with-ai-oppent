@@ -1,0 +1,47 @@
+{
+  "scope": "SCOPED_COMPONENT_NOT_AI_READY_OR_LIVE_PROFILE",
+  "candidate_content_id": "d47eee87846bda289c3a855f4ad12095155379177bd1f4581659ec1ba7ce66cb",
+  "profile_build_id": "b8e83f7c45aad95682d05a858bc2f2e7f3213ae59316ad1b04f9b704eb7453ba",
+  "schema": 11,
+  "sources": 14,
+  "classes": 23,
+  "inherited13_sources_21_classes_byte_exact": true,
+  "original_gameplay_java_sha256": "774377d9eb2333b03d8efcc75150ca1a180dbe622940aab801cb7bea91ec482d",
+  "protocol_java_sha256": "127412b32b6da23077e2771d12a26a0033e8f04e592ad60beedffdfa55044f45",
+  "final_checks": {
+    "original_policy10": {
+      "pass": 10,
+      "policy_red": 0,
+      "harness_errors": 0,
+      "native_exit": 0,
+      "manual_substitutions": 0
+    },
+    "labelled_internal_protocol24": {
+      "pass": 24,
+      "protocol_red": 0,
+      "harness_errors": 0,
+      "native_exit": 0,
+      "ordinary_AI_callbacks": 0
+    },
+    "unchanged_regressions186": {
+      "pass": 186,
+      "runner_exit": 0,
+      "wall_seconds": 330.9,
+      "includes_labelled_observations": true
+    },
+    "profile_unit42": {
+      "pass": 42,
+      "runner_exit": 0,
+      "original38_function_bodies_unchanged": true
+    },
+    "fixed_matched_natural4": {
+      "completed": 4,
+      "native_errors": 0,
+      "incomplete": 0,
+      "same_seeds_decks_budgets_as_archived_C8": true,
+      "expert_or_winrate_claim": false
+    }
+  },
+  "no_live_profile_switch": true,
+  "AI_done": false
+}

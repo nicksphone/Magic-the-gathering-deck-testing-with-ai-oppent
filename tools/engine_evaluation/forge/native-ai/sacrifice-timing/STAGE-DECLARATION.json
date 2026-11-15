@@ -1,0 +1,11 @@
+{
+  "scope": "Parent working copy repinned from immutable package stage3 to finalcandidate4; originalJava3tests unchanged",
+  "audit_rows": 22,
+  "mandatory_JVMs": 3,
+  "native_budget_seconds": 300,
+  "sources": 12,
+  "classes": 20,
+  "content_id": "7998ea519b319759b22abe1db526229be053914ffce643aa7d6f802e366a77d9",
+  "no_natural_or_expert_games": true,
+  "no_native_SQL_denial_claim": true
+}

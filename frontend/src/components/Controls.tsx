@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
+import { combatDraftGuidance, selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 import { TriggerOrderPicker } from "./TriggerOrderPicker";
+import { TurnCommandBar } from "./TurnCommandBar";
+import { cardStates } from "./table-model";
 
 // Includes engine-supported generic selections not yet listed in LegalMove.kind.
 const supportedMechanicControls = new Set<string>([
@@ -53,6 +55,9 @@ type Props = {
   responseCountdown: number | null;
   autoResponsePaused: boolean;
   onToggleAutoResponsePause: () => void;
+  autoProgressPaused?: boolean;
+  onToggleAutomaticPlay?: () => void;
+  automaticPlayDisabled?: boolean;
   legalMoves: LegalMove[];
   match: MatchState | null;
   combatDraft?: CombatDraft;
@@ -135,6 +140,7 @@ export function Controls(props: Props) {
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
   const [attackReviewRequired, setAttackReviewRequired] = useState(false);
   const selectedAttackers = (attackMove?.options ?? []).filter(id => !excludedAttackers.includes(id));
+  const combatGuidance = combatDraftGuidance(props.combatDraft, attackMove, blockMove);
   const attackNeedsPayment = selectedAttackers.some(id => {
     const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
     const cost = attackMove?.attack_costs?.[id]?.[defender];
@@ -202,12 +208,16 @@ export function Controls(props: Props) {
           ? "A response window exists, but auto-response is not currently counting down."
           : "No stack item or interruptible window is currently waiting.";
 
+  const seatLabel = (seat: 1 | 2) => props.startMode === "player_vs_ai"
+    ? (props.humanSeat ?? 1) === seat ? "Your deck" : "Opponent's deck"
+    : `Player ${seat}`;
   return (
     <section className="panel controls">
-      <h2>{props.match ? "Command the turn" : "Choose your matchup"}</h2>
+      <h2>{props.match ? "Choices & match details" : "Choose your matchup"}</h2>
+      {!props.match ? <p className="setup-hint">Choose your deck and an opponent. Start checks deck support before creating a match.</p> : null}
       <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
-        <label className="setup-seat"><span>Seat 01 <small>Deck A</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
+        <label className="setup-seat"><span>{seatLabel(1)} <small>Deck A</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
           <option value="">Deck A</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -215,7 +225,7 @@ export function Controls(props: Props) {
             </option>
           ))}
         </select></label>
-        <label className="setup-seat"><span>Seat 02 <small>Deck B</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
+        <label className="setup-seat"><span>{seatLabel(2)} <small>Deck B</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
           <option value="">Deck B</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -225,7 +235,7 @@ export function Controls(props: Props) {
         </select></label>
       </div>
       <div className="row">
-        <label className="setup-setting">Seats<select aria-label="Match mode" value={props.startMode} onChange={(e) => {
+        <label className="setup-setting">Who's playing?<select aria-label="Match mode" value={props.startMode} onChange={(e) => {
           const mode = e.currentTarget.value;
           if (mode === "player_vs_ai" || mode === "ai_vs_ai" || mode === "human_vs_human") {
             props.setStartMode(mode);
@@ -235,6 +245,9 @@ export function Controls(props: Props) {
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
         </select></label>
+      </div>
+      <details className="setup-options"><summary>Match options: best-of-{props.bestOf}, {props.difficulty}</summary>
+      <div className="row">
         {props.startMode === "player_vs_ai" ? <label className="setup-setting">Human seat<select aria-label="Human seat" value={props.humanSeat ?? 1} onChange={(e) => {
           const seat = e.currentTarget.value;
           if (seat === "1" || seat === "2") props.setHumanSeat(Number(seat) as 1 | 2);
@@ -255,6 +268,7 @@ export function Controls(props: Props) {
           <option value={9}>Best-of-9</option>
         </select></label>
       </div>
+      </details>
       <button disabled={props.startDisabled} onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
       {!props.match && (!props.selectedA || !props.selectedB) ? <p className="setup-hint">Choose a deck for each seat to take the table.</p> : null}
       </details>
@@ -332,7 +346,7 @@ export function Controls(props: Props) {
             return <button type="button" key={cid} data-legend-keeper-id={cid}
               onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>
               Keep {mechanicMove.option_labels?.[cid] ?? cid} ({cid})
-              {permanent ? <span> - {permanent.tapped ? "Tapped" : "Untapped"}{permanent.summoning_sick ? ", summoning sick" : ""}
+              {permanent ? <span> - {permanent.tapped ? "Tapped" : "Untapped"}{cardStates(permanent, {}).includes("Summoning sick") ? ", summoning sick" : ""}
                 {permanent.power !== null && permanent.toughness !== null ? `, ${permanent.power}/${permanent.toughness}` : ""}
                 {Object.entries(permanent.counters ?? {}).map(([name, count]) => `, ${name}: ${count}`).join("")}</span> : null}
             </button>;
@@ -517,10 +531,18 @@ export function Controls(props: Props) {
           </div>
         </details>
       ) : null}
+      {props.match ? <TurnCommandBar match={props.match} moves={props.legalMoves}
+        actor={props.actingPlayerId ?? props.match.priority_player}
+        passDisabled={currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}
+        onPassPriority={props.onPassPriority}
+        combatForm={blockMove ? "block-declaration" : attackMove ? "attack-declaration" : undefined}
+        combatDisabled={blockMove ? blockNeedsPayment : attackNeedsPayment}
+        choiceRequired={replacementPaused || triggerOrderPaused || mechanicPaused || triggerTargetMoves.length > 0 || optionalEffectMoves.length > 0 || Boolean(props.match.pregame_pending)}
+        draftGuidance={combatGuidance} autoProgressPaused={props.autoProgressPaused ?? false}
+        onToggleAutomaticPlay={props.onToggleAutomaticPlay} automaticPlayDisabled={props.automaticPlayDisabled} /> : null}
+      <details className="advanced-turn-controls"><summary>Advanced turn controls</summary>
+      <p>Manual stepping and batched AI progression. Human card and target choices still need your input.</p>
       <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match || currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}>
-          Pass Priority
-        </button>
         <button onClick={props.onNextStep} title="Pass priority toward the next step. Both players must pass; stack objects resolve first."
           disabled={!props.match || props.match.winner !== null || replacementPaused || triggerOrderPaused || mechanicPaused || (currentController === "human" && !props.legalMoves.some(move => move.type === "pass_priority"))}>
           Next Step
@@ -532,8 +554,9 @@ export function Controls(props: Props) {
           AI Step x30
         </button>
       </div>
+      </details>
       {props.match?.pregame_pending && !mechanicMove && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
-        <div className="block-panel">
+        <div className="block-panel" id="opening-hand-choice" tabIndex={-1}>
           <h3>London Mulligan</h3>
           <p>Player {pregameActor} declares next. Redraws wait until all players declare.</p>
           <p>
@@ -554,7 +577,7 @@ export function Controls(props: Props) {
       ) : null}
 
       {blockMove ? (
-        <form id="block-declaration" className="block-panel" onSubmit={event => {
+        <form id="block-declaration" tabIndex={-1} className="block-panel" onSubmit={event => {
           event.preventDefault();
           if (blockNeedsPayment) return;
           const choices = selectedBlockers.flatMap(id => {
@@ -564,6 +587,7 @@ export function Controls(props: Props) {
           props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, ids]) => ids.length > 0)), choices.length ? choices : undefined);
         }}>
           <h3>Declare Blockers</h3>
+          {combatGuidance ? <p className="combat-draft-status" role="status">{combatGuidance}</p> : null}
           {props.combatDraft ? <p>Click a blocker, then its attacker, or drag the blocker onto an attacker. Confirm the assignments together.</p> : null}
           {props.onCombatDraftChange ? <button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, blocks: {}, selectedBlocker: null }))}>Clear blocks</button> : null}
           <details open={props.combatDraft ? undefined : true}>
@@ -613,7 +637,7 @@ export function Controls(props: Props) {
       ) : null}
 
       {attackMove ? (
-        <form id="attack-declaration" className="block-panel" onSubmit={event => {
+        <form id="attack-declaration" tabIndex={-1} className="block-panel" onSubmit={event => {
           event.preventDefault();
           if (attackNeedsPayment) return;
           const attackers = selectedAttackers;
@@ -632,6 +656,7 @@ export function Controls(props: Props) {
           props.onSubmitAttack(attackers, targets, bands, choices.length ? choices : undefined);
         }}>
           <h3>Declare Attackers</h3>
+          {combatGuidance ? <p className="combat-draft-status" role="status">{combatGuidance}</p> : null}
           <p>{props.combatDraft ? "Click creatures on the battlefield to select them. Drag an eligible attacker onto another to form a legal band. Confirm when ready." : "Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without."}</p>
           <div className="row">
             <button type="button" disabled={!attackMove.options?.length} onClick={() => {

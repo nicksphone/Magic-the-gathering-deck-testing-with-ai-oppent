@@ -65,13 +65,17 @@ def _profile(row):
     for spec in profile.ability_specs:
         if spec['kind'] != 'spell_effect' or spec['condition'] or spec['cost']:
             return None
-        if spec['effects']:
+        start, end = spec['source_span']
+        body = inputs['oracle_text'][start:end].strip()
+        # The estimator compiles this clause without its target domain, so it is
+        # still proven by the whole-raw template below, never by the compiled effect.
+        whole_template = (re.fullmatch(r'destroy target nonartifact creature\.', body, re.I)
+                          and {effect['effect_key'] for effect in spec['effects']} <= {'destroy_permanent'})
+        if spec['effects'] and not whole_template:
             covered.append(spec)
             continue
         # Missing estimator effects need positive whole raw-clause coverage;
         # no prefix, erased reminder or physical target supplies that proof.
-        start, end = spec['source_span']
-        body = inputs['oracle_text'][start:end].strip()
         if not set(profile.types) & {'instant', 'sorcery'}:
             return None
         if complete_self_counter_prohibition(body, inputs['name']):

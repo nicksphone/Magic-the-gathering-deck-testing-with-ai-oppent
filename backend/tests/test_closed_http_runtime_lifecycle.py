@@ -1,9 +1,12 @@
 """Controlled public roots only; no backend, SQL, network or native process."""
 import importlib
 import json
+import os
 from pathlib import Path
 import signal
+import sys
 import tarfile
+from contextlib import contextmanager
 from types import SimpleNamespace
 
 import pytest
@@ -177,3 +180,129 @@ def test_foreign_or_unsupported_roots_are_never_deleted(tmp_path, fault):
         h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
     assert runtime.exists() and foreign.is_dir()
     assert (foreign / 'sentinel').read_bytes() == b'PRESERVE PUBLIC USER DATA'
+
+
+def _empty_protected_file(path):
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    os.close(descriptor)
+
+
+@contextmanager
+def _no_protected_body_open(*paths):
+    active, attempts = [True], []
+    protected = set(paths)
+    def guard(event, args):
+        if active[0] and event == 'open' and isinstance(args[0], (str, bytes)) and Path(os.fsdecode(args[0])) in protected:
+            attempts.append('body-open')
+            raise AssertionError('Protected fixture body must never be opened')
+    sys.addaudithook(guard)
+    try:
+        yield attempts
+    finally:
+        active[0] = False
+
+
+@pytest.mark.parametrize('cold', [False, True])
+def test_owner_lock_is_metadata_only_and_never_opened_before_closed_roots_removed(tmp_path, cold):
+    h = helper()
+    server, runtime, data, evidence = roots(tmp_path, cold)
+    lock = (data if cold else runtime / 'backend') / 'state.sqlite3.capacity-owner.lock'
+    _empty_protected_file(lock)
+    before = lock.lstat()
+    with _no_protected_body_open(lock) as attempts:
+        receipt = h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
+    assert attempts == []
+    assert not runtime.exists() and (data is None or not data.exists())
+    member = 'data/state.sqlite3.capacity-owner.lock' if cold else 'runtime/backend/state.sqlite3.capacity-owner.lock'
+    assert receipt['metadata_only_members'] == [member]
+    with tarfile.open(receipt['archive']) as tar:
+        assert member not in tar.getnames(), 'A lock must have no copied tar payload'
+        inventory = json.loads(tar.extractfile('OWNED_INVENTORY.json').read())
+        label, relative = member.split('/', 1)
+        assert inventory[label][relative] == ['owner-lock-metadata', before.st_dev, before.st_ino,
+            before.st_mode, 0, before.st_mtime_ns, before.st_ctime_ns, None]
+        assert tar.extractfile('runtime/backend/public.txt').read() == b'PUBLIC FAKE\x00\xff'
+        if cold:
+            assert tar.extractfile('data/state.sqlite3').read() == b'FAKE BYTES, NOT SQLITE'
+        assert receipt['byte_members'] == sum(node.isfile() for node in tar.getmembers()) - 1
+    assert receipt['byte_member_inode_verified'] is True
+
+
+@pytest.mark.parametrize('name', ['MODEL.private.json', 'FEATURES.private.json'])
+def test_protected_model_names_fail_before_body_access_or_original_deletion(tmp_path, name):
+    h = helper()
+    server, runtime, data, evidence = roots(tmp_path)
+    protected = runtime / 'backend' / name
+    _empty_protected_file(protected)
+    with _no_protected_body_open(protected) as attempts:
+        with pytest.raises(RuntimeError, match='HTTP_RUNTIME_PROTECTED_MEMBER'):
+            h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
+    assert attempts == []
+    assert runtime.is_dir() and data.is_dir() and not list(evidence.iterdir())
+
+
+@pytest.mark.parametrize('fault', ['mode', 'size', 'links'])
+def test_unsafe_owner_lock_metadata_fails_without_body_access_or_cleanup(tmp_path, fault):
+    h = helper()
+    server, runtime, data, evidence = roots(tmp_path)
+    lock = data / 'state.sqlite3.capacity-owner.lock'
+    _empty_protected_file(lock)
+    if fault == 'mode':
+        lock.chmod(0o644)
+    elif fault == 'size':
+        os.truncate(lock, 1)
+    else:
+        os.link(lock, tmp_path / 'owned-empty-hardlink')
+    with _no_protected_body_open(lock) as attempts:
+        with pytest.raises(RuntimeError, match='HTTP_RUNTIME_UNSAFE_OWNER_LOCK'):
+            h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
+    assert attempts == []
+    assert runtime.is_dir() and data.is_dir() and not list(evidence.iterdir())
+
+
+def test_late_owner_lock_inode_substitution_retains_both_roots_without_body_access(tmp_path, monkeypatch):
+    h = helper()
+    server, runtime, data, evidence = roots(tmp_path)
+    lock = data / 'state.sqlite3.capacity-owner.lock'
+    _empty_protected_file(lock)
+    before = lock.lstat()
+    verify = h._verify_archive
+    def replaced(*args):
+        verify(*args)
+        replacement = data / 'replacement.capacity-owner.lock'
+        _empty_protected_file(replacement)
+        replacement.replace(lock)
+    monkeypatch.setattr(h, '_verify_archive', replaced)
+    with _no_protected_body_open(lock) as attempts:
+        with pytest.raises(RuntimeError, match='HTTP_RUNTIME_CHANGED'):
+            h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
+    assert attempts == [] and lock.lstat().st_ino != before.st_ino
+    assert runtime.is_dir() and data.is_dir()
+
+
+@pytest.mark.parametrize('name,error', [
+    ('late.capacity-owner.lock', 'HTTP_RUNTIME_CHANGED'),
+    ('MODEL.private.json', 'HTTP_RUNTIME_PROTECTED_MEMBER'),
+    ('FEATURES.private.json', 'HTTP_RUNTIME_PROTECTED_MEMBER'),
+    ('unlisted-public.txt', 'HTTP_RUNTIME_CHANGED'),
+])
+def test_late_unlisted_member_is_rejected_before_tar_body_access_or_cleanup(tmp_path, monkeypatch, name, error):
+    h = helper()
+    server, runtime, data, evidence = roots(tmp_path)
+    late = runtime / 'backend' / name
+    add = h.tarfile.TarFile.add
+    observed = []
+    def inserted(tar, path, *args, **kwargs):
+        if Path(path) == runtime:
+            # First inventory is complete; the new member is not authorized.
+            _empty_protected_file(late)
+            with _no_protected_body_open(late) as attempts:
+                observed.append(attempts)
+                return add(tar, path, *args, **kwargs)
+        return add(tar, path, *args, **kwargs)
+    monkeypatch.setattr(h.tarfile.TarFile, 'add', inserted)
+    with pytest.raises(RuntimeError, match=error):
+        h.archive_closed_http_runtime(server, runtime=runtime, data=data, evidence_root=evidence)
+    assert observed == [[]]
+    assert runtime.is_dir() and data.is_dir()
+    assert not list(evidence.rglob('VERIFIED.json'))

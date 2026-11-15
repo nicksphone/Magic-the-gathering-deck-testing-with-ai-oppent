@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "seed": 2026110617,
+  "seed_boundary": "Once before model initialization; no later reset",
+  "runtime_baseline": "current d36d seven-class shadow plus qualified592 base",
+  "runtime_candidate": "new two-class pressure layer before unchanged current prefix and base",
+  "cohort_order": ["unchanged-chain2-check-method", "new-controls", "unchanged-lethal26-check-method"],
+  "seats": [0, 1],
+  "new_scenes": ["pressure1", "pressure2", "pressure3", "axe", "pw-kill", "creature-kill", "flexible-hold", "instant-hold", "activated-hold", "main1-hold", "upkeep-hold", "opponent-turn-hold", "prevention-hold", "no-prevention-lethal", "hexproof-hold", "unfunded-hold", "tax-hold", "backlash-hold", "selfdamage-hold", "fixed-life-hold", "lifegain-hold"],
+  "positive_method": "actual fresh Default choice, native payment and stack resolution; no forced action or outcome",
+  "pressure_expected": "every original Lava Spike paid/resolved; hand0 and opponent20 minus3 per spell, nonterminal",
+  "scope": "canonical constructed scenes, not natural-game or profile/app qualification"
+}

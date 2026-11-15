@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Modified 2026-11-06: empty observer-scoped source lists have no payment choice.
+# Forge Team/Card-Forge; applies after the frozen known-mana increment.
+--- a/forge-ai/src/main/java/forge/ai/ComputerUtilMana.java
++++ b/forge-ai/src/main/java/forge/ai/ComputerUtilMana.java
+@@ -314,6 +314,9 @@
+             Collection<SpellAbility> maList, boolean checkCosts, Predicate<Card> knownCard) {
+         if (knownCard != null) {
+             maList = maList.stream().filter(ma -> knownCard.test(ma.getHostCard())).collect(Collectors.toList());
++            if (maList.isEmpty()) {
++                return null;
++            }
+         }
+         Card saHost = sa.getHostCard();
+ 

@@ -18,13 +18,14 @@ or overwritten. Inputs must remain immutable during generation. On an I/O error,
 an incomplete new bundle may remain; the manifest is written last. Do not stage
 an incomplete bundle or reuse its destination.
 
-This revision accepts twelve finite public file digests, explicitly listed in
-the script. The eight `source_module_pins` match the frozen c259 source plus the
-reviewed Task1.3 seed API migration: `main`, `decks.bootstrap`,
+This revision accepts sixteen finite public file digests, explicitly listed in
+the script. The eight `source_module_pins` bind the reviewed source modules:
+`main`, `decks.bootstrap`,
 `card_data.hydration`, `card_data.display`, `card_data.placeholders`,
 `card_data.seed_cards`, `decks.expansion_top_decks`, and `persistence.capacity`.
-The other inputs are the built-in deck definitions, the historical catalog
-helper, and the two committed canonical JSON files. A source change requires a
+The other inputs bind the built-in deck definitions, historical catalog helper
+and data, seed data, sync mapper, browser guard, and the initial-database
+canonical JSON/provenance pair. A source change requires a
 new finite pin review. Syntax compilation executes no project module.
 
 The existing seed alias functions, historical-entry functions, expansion `_entry`,
@@ -34,6 +35,14 @@ a standard-library namespace. No module imports `main`, creates an application,
 runs a lifespan, opens SQL, starts a child process, or contacts Scryfall. The
 public historical catalog is read solely to reconstruct the expansion global;
 its card data are not emitted as an additional placeholder authority.
+
+The seed helper now returns caller-owned snapshots. Alias binding compares the
+complete typed structural JSON facts, rather than requiring Python object
+identity. The finite seed-module pin is
+`ddd392f11ea66ccc440ba5b5d551576df1feb903025e8c80f116dd5c6ac121c5`;
+all other accepted input digests remain unchanged. The reviewed before/after
+bundles have identical media entries and structural facts, with only this one
+source-module pin changed. See [snapshot isolation](offline-seed-snapshots.md).
 
 The manifest uses the guard's existing schema exactly:
 
@@ -45,13 +54,16 @@ The manifest uses the guard's existing schema exactly:
   `name`, `type_line`, `seed_row_sha256`, `content`, and the SVG UTF-8 `sha256`.
 
 The public inventory has 11 built-in decks, 53 expansion entries, and 149 distinct
-printed startup names. Every name joins an actual seed row. The bundle includes
+printed shipped startup names. Every shipped name joins an actual seed row. The bundle includes
 all 155 seed entries and their exact canonical-name aliases, a finite superset
 of those startup inputs; it does not claim that every fixture is written at
 startup. Unknown names, fabricated back faces, missing fields, modified rows,
 and modified helper bytes cannot expand this set. The old convenience lookup of
 `Delver of Secrets // Bogus Face` does not emit an artifact row for that name.
 Committed Oracle, provenance, RAW, and face fields remain unchanged.
+The separate pinned initial-database Shock record remains included with its
+existing RAW/provenance checks and a null seed-row digest; it is not added to the
+155-card seed. The complete current media inventory contains 164 entries.
 
 This bundle establishes reproducibility and consistency, not runtime authority.
 The existing guard remains unchanged: actual frames, repository/owner identity,

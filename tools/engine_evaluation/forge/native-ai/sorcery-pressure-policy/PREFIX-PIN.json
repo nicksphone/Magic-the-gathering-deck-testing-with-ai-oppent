@@ -1,0 +1,70 @@
+{
+  "content_id": "d36d96612e9b770575dd7de4a40b17fce8bccc23ec8dac66002e557d9e7b3d29",
+  "identity": {
+    "schema": "forge-known-mana-public-lki-lethal-v1",
+    "base_build_id": "59228745bfcbec403b038019815d8e94f74273fd4494a2e5799479d61abd3605",
+    "required_base_launch_sha256": "ee58d6110017448391e210c1722d6f1450904c239cc297282f34e4ed4c588562",
+    "knowledge_parent": "75d4ac3971e7f970d2e3c62ba12f25aba639eba5fd36d0ed2f930a4ea17511b7",
+    "stack_source_commit": "ca81c3b74e477e5557f6642fc7d1d5994ff367c2",
+    "tactical_parent": "4547d4420e424139ea89fcb4e842a51d0f7dda6795ea019c236cbd8364acfa54",
+    "sources": [
+      {
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java",
+        "sha256": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6"
+      },
+      {
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java",
+        "sha256": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1"
+      },
+      {
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java",
+        "sha256": "11c9378f3f0003c7e4a83eb0c3fc1aa6000e5d566c11897a9d700da02c14d04b"
+      },
+      {
+        "path": "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java",
+        "sha256": "53e892f046cad6b62ce709dd6a788f04cb13f9195672b38cba8759454c23d3df"
+      },
+      {
+        "path": "tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java",
+        "sha256": "1c0b194a1b011cdb26a24298c1453a508ec5fbb8cac0e8e9f6fafd9639f991e3"
+      }
+    ],
+    "payloads": [
+      {
+        "path": "forge/ai/ComputerUtil.class",
+        "sha256": "23b15557de80e398db989e40d78bb6b1849ba19f91a98f7419fb16f44ca65a0a",
+        "class_name": "forge.ai.ComputerUtil"
+      },
+      {
+        "path": "forge/ai/ComputerUtilCost$1.class",
+        "sha256": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+        "class_name": "forge.ai.ComputerUtilCost$1"
+      },
+      {
+        "path": "forge/ai/ComputerUtilCost.class",
+        "sha256": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+        "class_name": "forge.ai.ComputerUtilCost"
+      },
+      {
+        "path": "forge/ai/ComputerUtilMana.class",
+        "sha256": "42172f585bd4b62d8b53dda34a693736fadfdbbf8413cfdb7943c6fb1eb8cdac",
+        "class_name": "forge.ai.ComputerUtilMana"
+      },
+      {
+        "path": "forge/ai/ability/DamageDealAi.class",
+        "sha256": "50a0d76548c8a53b1b90d7d51105ffcf9e01559526a934b853a63733486218a6",
+        "class_name": "forge.ai.ability.DamageDealAi"
+      },
+      {
+        "path": "forge/evaluation/ActorBoundary$Pending.class",
+        "sha256": "45f765eff2f776dca7b2a70c1cb76af150abf85dfae66df76561515cca2dfda8",
+        "class_name": "forge.evaluation.ActorBoundary$Pending"
+      },
+      {
+        "path": "forge/evaluation/ActorBoundary.class",
+        "sha256": "265a05dfdd9fa90ce5a50730059030f3528fed88b6bbc867c5109510823b4613",
+        "class_name": "forge.evaluation.ActorBoundary"
+      }
+    ]
+  }
+}

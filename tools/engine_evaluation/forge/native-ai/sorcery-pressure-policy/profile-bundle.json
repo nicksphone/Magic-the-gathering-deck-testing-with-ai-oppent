@@ -1,0 +1,21 @@
+{
+  "schema": 4,
+  "sources": {
+    "forge-ai/src/main/java/forge/ai/ComputerUtil.java": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java": "11c9378f3f0003c7e4a83eb0c3fc1aa6000e5d566c11897a9d700da02c14d04b",
+    "forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java": "70312adb62cbf3ab8a0f06d0405c2be9c0858715bcb6c2d86818b1ec03cde8bd",
+    "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java": "bac01d37456a32978a406fc5875ab5f5ab0305461bcdb1f157916589ca73a129",
+    "tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java": "1c0b194a1b011cdb26a24298c1453a508ec5fbb8cac0e8e9f6fafd9639f991e3"
+  },
+  "classes": {
+    "forge/ai/ComputerUtil.class": "23b15557de80e398db989e40d78bb6b1849ba19f91a98f7419fb16f44ca65a0a",
+    "forge/ai/ComputerUtilCost$1.class": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+    "forge/ai/ComputerUtilCost.class": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+    "forge/ai/ComputerUtilMana.class": "42172f585bd4b62d8b53dda34a693736fadfdbbf8413cfdb7943c6fb1eb8cdac",
+    "forge/ai/ability/DamageAiBase.class": "45a6feaea78d0a7321cf29879a67a2ede0d658b50c189d38c9d002c0ac6cfa7e",
+    "forge/ai/ability/DamageDealAi.class": "546e795cd1ea20e0de5912127f9b5e3a93a6214693df87882066a8e705c2567f",
+    "forge/evaluation/ActorBoundary$Pending.class": "45f765eff2f776dca7b2a70c1cb76af150abf85dfae66df76561515cca2dfda8",
+    "forge/evaluation/ActorBoundary.class": "265a05dfdd9fa90ce5a50730059030f3528fed88b6bbc867c5109510823b4613"
+  }
+}

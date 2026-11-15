@@ -68,6 +68,20 @@ def test_ensure_builtin_decks_refreshes_current_list_without_changing_ids() -> N
     assert all(item["name"] != "Tempo" for item in repo.saved)
 
 
+def test_builtin_refresh_reclassifies_midrange_without_replacing_saved_deck() -> None:
+    repo = _FakeRepo()
+    saved = _DeckRow(42, "Midrange", "builtin", json.dumps([
+        {"quantity": 60, "card_name": "Forest"}]))
+    saved.archetype_guess = "Ramp"
+    repo._rows = [saved]
+
+    ensure_builtin_decks(repo)  # type: ignore[arg-type]
+
+    assert repo._rows[0] is saved and saved.id == 42
+    assert saved.archetype_guess == "Midrange"
+    assert all(item["name"] != "Midrange" for item in repo.saved)
+
+
 def test_deck_parser_accepts_common_sideboard_headers() -> None:
     repo = _FakeRepo()
     repo.list_cards = lambda: [type("C", (), {"name": "Island"})(), type("C", (), {"name": "Negate"})()]  # type: ignore[assignment]

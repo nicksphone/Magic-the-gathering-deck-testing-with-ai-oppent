@@ -1,0 +1,43 @@
+# November 8 dependency advisory finding
+
+**RC blocker: the frontend pins vulnerable Vite 6.4.4.** The manifest, lockfile
+and reused installed package all report that version.
+
+The maintainer's
+[GHSA-8g5g-mxqh-grgj](https://github.com/vitejs/vite/security/advisories/GHSA-8g5g-mxqh-grgj),
+published October 21, identifies 6.4.4 as affected and 6.4.5 as patched. It describes
+a development-server deny-list bypass, conditional on network exposure and
+relevant sensitive files within allowed directories. `frontend/vite.config.ts`
+binds the dev server to `0.0.0.0`; no private-file contents or exploit probes were
+used to investigate the finding. This is not a finding about the Caddy production
+static server. The official
+[6.4.5 release](https://github.com/vitejs/vite/releases/tag/v6.4.5) is available.
+
+The connected search service can read the primary advisory after the earlier
+web-API attempts failed. This corrects an evidence-access limitation, not the
+dependency. The local npm cache lists only a Vite 8.2.0 tarball, and the shell
+previously failed npm/GitHub name resolution. The registry metadata request also
+failed through the web tool. No guessed integrity, hand-built package contents,
+major-version substitute or manifest-only remediation is represented as a fix.
+
+The GitHub connector additionally verifies the signed release tag points to
+`83ab40b53969349d5c4ed259313fff367bb86827`, and its
+[publish workflow](https://github.com/vitejs/vite/actions/runs/39549994290)
+succeeds. The release has no downloadable package assets and neither the publish
+nor CI run retains artifacts. The npm publish log names `vite-6.4.5.tgz` and gives
+SHA-1 `8da9987120422f92e432b6d25535b82cee867dad`, but truncates the SHA-512 integrity.
+These primary-source checks establish publication, not possession of the package
+or installation of its fixed contents. Intake metadata remains private evidence.
+
+A scoped workspace metadata search finds twelve installed Vite packages, versions
+5.4.21, 6.4.3, 6.4.4 and 8.2.0; none is the required 6.4.5 package. Browser,
+credential and configuration stores are excluded. This does not establish global
+artifact absence or remediate the pin; the actual upgrade remains pending.
+
+Next work: obtain authoritative registry metadata and the patched Vite package,
+update the exact dependency and complete lockfile, then qualify an actual clean
+install, frontend contracts, lint/build and relevant served-file controls. Preserve
+the current failed offline-install receipt and verify the installed version after
+the upgrade. A successful build using reused 6.4.4 dependencies cannot qualify the
+patched dependency. The whole dependency advisory gate remains open; this narrow
+finding is not a complete direct/transitive audit.

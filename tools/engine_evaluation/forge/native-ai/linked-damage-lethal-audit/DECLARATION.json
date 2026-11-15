@@ -1,0 +1,22 @@
+{
+  "label": "CANONICAL-LINKED-DAMAGE-LETHAL-BASELINE",
+  "seed": 2026110623,
+  "ai_scenes": [
+    {"name": "landfall-stomper", "landfall": true, "creature": "Topiary Stomper", "expect_win": true},
+    {"name": "nonlandfall-stomper", "landfall": false, "creature": "Topiary Stomper", "expect_win": true},
+    {"name": "landfall-bear", "landfall": true, "creature": "Runeclaw Bear", "expect_win": true},
+    {"name": "no-creature", "landfall": true, "creature": "", "expect_win": false},
+    {"name": "player-hexproof", "landfall": true, "creature": "Topiary Stomper", "expect_win": false},
+    {"name": "unfunded", "landfall": true, "creature": "Topiary Stomper", "expect_win": false}
+  ],
+  "seats": [0, 1],
+  "ai_cases": 12,
+  "manual_separate_game_controls": ["landfall-stomper", "nonlandfall-stomper", "landfall-bear"],
+  "manual_controls": 6,
+  "choice_contract": "One fresh Default chooser invocation per AI game, before diagnostic legality/damage/cost queries; no retry, forced AI action, or later RNG reset.",
+  "pose": "Own MAIN2, actor20/opponent1, one canonical Searing Blaze in hand, two existing untapped Mountains, existing canonical creature if declared. Landfall scenes legally play a third Mountain from hand using Player.playLand; unfunded then taps all three as the declared pose. No landfall SVar, history, or land counter assignments.",
+  "manual_contract": "Separate games after all 12 AI cases; explicitly declare source/player/creature targets, verify native target legality, pay RR using playWithRollback and native cost payment, then resolve/SBA. Never count these as AI successes.",
+  "limits": {"engine_jvms_concurrent": 1, "outer_seconds": 180, "heap_mb": 1500, "active_processors": 1, "native_clocks": "unchanged"},
+  "natural_game_reproduction": false,
+  "production_changes": false
+}

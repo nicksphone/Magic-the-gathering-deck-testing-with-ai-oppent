@@ -53,6 +53,34 @@ def reconstruct_game(deck_a: list[dict], deck_b: list[dict], game: dict, *,
                 or trace['pid'] not in (1, 2) or not isinstance(trace.get('action'), dict)
                 or not isinstance(trace['action'].get('type'), str)):
             raise ReplayMismatch(decisions, 'trace', 'actor and action object', 'invalid trace')
+        if 'replay' in trace:
+            envelope = trace['replay']
+            required = {'schema_version', 'pid', 'turn', 'step', 'active_player',
+                        'priority_player', 'hand', 'battlefield', 'legal_action_types', 'action'}
+            if (not isinstance(envelope, dict) or not required <= envelope.keys()
+                    or type(envelope['schema_version']) is not int or envelope['schema_version'] != 1
+                    or any(type(envelope[key]) is not int or envelope[key] not in (1, 2)
+                           for key in ('pid', 'active_player', 'priority_player'))
+                    or type(envelope['turn']) is not int or envelope['turn'] < 1
+                    or not isinstance(envelope['step'], str)
+                    or any(not isinstance(envelope[key], list)
+                           or not all(isinstance(name, str) for name in envelope[key])
+                           for key in ('hand', 'battlefield', 'legal_action_types'))
+                    or not isinstance(envelope['action'], dict)
+                    or not isinstance(envelope['action'].get('type'), str)):
+                raise ReplayMismatch(decisions, 'replay', 'complete version-one execution envelope', 'invalid envelope')
+            # Measurement/display metadata cannot contradict its execution root.
+            for key in ('pid', 'turn', 'step', 'active_player', 'priority_player'):
+                if key in trace:
+                    compare('replay.' + key,
+                            json.dumps(envelope[key], sort_keys=True), json.dumps(trace[key], sort_keys=True))
+            for key, value in trace['action'].items():
+                if key != 'card_name':  # Native announcement label, not an engine operand.
+                    if key not in envelope['action']:
+                        raise ReplayMismatch(decisions, 'replay.action.' + key, 'recorded execution operand', 'missing')
+                    compare('replay.action.' + key,
+                            json.dumps(envelope['action'][key], sort_keys=True), json.dumps(value, sort_keys=True))
+            trace = envelope
         pid = trace['pid']
         compare('actor', pregame_actor(state) if state.pregame_pending else state.priority_player, pid)
         for field, actual in [('turn', state.turn), ('step', str(state.step)),

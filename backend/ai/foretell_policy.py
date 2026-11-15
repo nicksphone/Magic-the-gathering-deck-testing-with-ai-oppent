@@ -4,6 +4,7 @@ from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.costs import collect_cost_options
 from rules_engine.foretell import take_special_action
 from ai.pending_effects import planning_copy
+from ai.interaction_reservation import affordable_interactions, preserves_interactions
 
 
 def choose_effect_foretell_card(agent, state, player_id, options, reduction):
@@ -30,14 +31,7 @@ def idle_foretell_action(agent, state, moves, player_id):
     if (state.stack or state.active_player != player_id
             or state.step not in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}):
         return None
-    answers = []
-    for cid in state.players[player_id].hand:
-        card = state.cards[cid]
-        if {'counter', 'removal'} & agent._spell_tags(card):
-            for option in collect_cost_options(state, player_id, card):
-                if can_pay_with_pool_and_lands(state, player_id, option.mana_cost,
-                                              spell_types=card.types, source_card_id=cid):
-                    answers.append((cid, option.mana_cost, card.types))
+    answers = affordable_interactions(agent, state, player_id)
     candidates = []
     for move in moves:
         if move['type'] != 'foretell':
@@ -48,8 +42,7 @@ def idle_foretell_action(agent, state, moves, player_id):
         sim = planning_copy(state)
         if not take_special_action(sim, player_id, cid):
             continue
-        if any(not can_pay_with_pool_and_lands(sim, player_id, cost, spell_types=types, source_card_id=source)
-               for source, cost, types in answers):
+        if not preserves_interactions(sim, player_id, cid, answers):
             continue
         sim.turn += 1
         from rules_engine.mana import mana_value

@@ -1,0 +1,21 @@
+Derived from Forge Team / Card-Forge, revision
+61e9442c433711a82258daca3236f936a1d6f70e.
+Upstream: https://github.com/Card-Forge/forge
+
+The complete AiController.java and SpellAbilityAi.java preimages, modified full
+files, patch, and complete canonical native programs are Forge-derived material
+distributed under GPL-3.0-or-later. LICENSE contains the GNU General Public
+License version 3. Existing upstream source material and attribution are retained.
+
+Local correction scope: narrowly recognized immediate native sacrifice-cost
+death-drain wins and their associated AI preference admission. This is not a
+general multi-step planner or game-engine replacement.
+
+The three native audit sources are copied byte-unchanged, retaining their original
+SPDX notices and historical fixture legends. They use the Forge native AITest
+harness; they are constructed fixture audits, not natural or expert games.
+The portable runner follows the existing Counter/Chalice-family pinning, local
+read-only bwrap, shared-budget, and class-origin structure.
+
+No claim of authorship of Forge, private guarded qualification, execution of this
+package, general AI correctness, or closure of the separate two-action gap is made.

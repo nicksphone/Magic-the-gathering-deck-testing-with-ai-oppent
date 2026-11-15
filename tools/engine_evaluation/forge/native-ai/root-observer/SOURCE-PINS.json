@@ -1,0 +1,19 @@
+{
+  "source": {
+    "forge-ai/src/main/java/forge/ai/AiController.java": {
+      "before": "b683bfc5a70958efb59db0988c5c60c349c7ac947708e50ad19ee58fffc16113",
+      "after": "3eb6ea65611f652adc390f9d6bf7716168052f538d00f335c818eb41bd42ef20"
+    }
+  },
+  "emitted_classes": {
+    "forge/ai/AiController$1.class": "5a4a92d717e4bc9c8394bbd0c2aee21afc4a285e5eb1f51245c15417318666a6",
+    "forge/ai/AiController$DecisionVisit.class": "6b8eaf77206f825dca29291581e3f270fd795ccd263e316f95fa0b558c212cab",
+    "forge/ai/AiController$DecisionTrace.class": "5dc6ca47b334672d2a0cc29748a01604590c39ced6c845b678e4a687ce68a9ed",
+    "forge/ai/AiController$DecisionAction.class": "d597cc6e496fb62d36a7089aa7ed66936d923fc14d81ce8f83ac3e41876640cd",
+    "forge/ai/AiController.class": "be641f72a0d614f927c9ca457b8f83916505d20941d25ab44c57255f1ae912ed",
+    "forge/ai/AiController$DecisionCollector.class": "4d9ef336795c08f1b4362443e9449249e0c696172ef65fb775dd0dd001ab545d"
+  },
+  "parent_content_id": "940a13aa7bd0a5bd56d19117a4c9bba4913575255e259f1f48feb14899c4f193",
+  "complete_source_count": 15,
+  "complete_class_count": 28
+}

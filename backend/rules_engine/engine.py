@@ -242,6 +242,8 @@ class RulesEngine:
             state.discards_this_turn = {1: 0, 2: 0}
             state.land_entries_this_turn = {1: 0, 2: 0}
             state.land_entry_history_known = True
+            state.life_lost_this_turn = {pid: 0 for pid in state.players}
+            state.life_loss_history_known = True
             state.players_with_permanent_departure = set()
             state.loyalty_activated_this_turn = set()
             state.trigger_once_seen_this_turn = set()
@@ -341,6 +343,8 @@ class RulesEngine:
         elif state.step == Step.PRECOMBAT_MAIN:
             self._advance_sagas(state)
         elif state.step == Step.END_STEP:
+            from rules_engine.card_faces import expire_exile_play_durations
+            expire_exile_play_durations(state, boundary='end_step')
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.END_COMBAT:
             emit_event(state, "begin_step", {"step": "end_combat", "active_player": state.active_player})
@@ -356,6 +360,8 @@ class RulesEngine:
         self._clear_prevention_shields(state)
         self._revert_expired_control_changes(state)
         self._revert_crew_vehicles(state)
+        from rules_engine.card_faces import expire_exile_play_durations
+        expire_exile_play_durations(state)
         state.pending_entry_counters = [
             entry
             for entry in getattr(state, "pending_entry_counters", [])
@@ -570,7 +576,7 @@ class RulesEngine:
             if split_second_active(state):
                 reject("Split second prevents spells and nonmana activated abilities")
                 return
-        if kind in {'activate_ability', 'activate_loyalty', 'equip', 'crew'}:
+        if kind in {'activate_loyalty', 'equip', 'crew'}:
             from rules_engine.continuous import printed_abilities_suppressed
             if printed_abilities_suppressed(state, action.get('card_id')):
                 reject("This permanent has lost its printed abilities")
@@ -954,37 +960,41 @@ class RulesEngine:
                 if (entry_options and entry_choice not in entry_options) or (not entry_options and entry_choice is not None):
                     reject("Unavailable land-entry choice")
                     return
-                if from_exile:
-                    leave_exile(state, cid)
-                    departures = []
-                elif from_graveyard:
-                    from rules_engine.resource_events import capture_graveyard_departures
-                    departures = capture_graveyard_departures(state, [cid])
-                    player.graveyard.remove(cid)
+                if 'Saga' in face.type_line and extract_saga_chapters(face.oracle_text):
+                    from rules_engine.entry_counters import begin_land_entry
+                    begin_land_entry(state, player_id, card, face, action, used_land_plays, permission_key)
                 else:
-                    player.hand.remove(cid)
-                    departures = []
-                if not state.trigger_staging:
-                    state.trigger_staging = True
-                    state.trigger_staging_event = "land_play"
-                apply_cast_face(card, face)
-                card.controller = player_id
-                apply_entry_choice(state, player_id, card, choice=entry_choice or "tapped")
-                player.battlefield.append(cid)
-                player.lands_played_this_turn = used_land_plays + 1
-                player.land_plays_recorded_on_turn = used_land_plays + 1
-                player.last_land_play_turn = state.turn
-                card.move_to_zone(Zone.BATTLEFIELD)
-                state.cards[cid].summoning_sick = True
-                assign_static_order_on_battlefield_entry(state, cid)
-                state.log.append(f"{player.name} plays {state.cards[cid].name}.")
-                if permission_key:
-                    from rules_engine.graveyard_permissions import record_graveyard_permission
-                    record_graveyard_permission(state, permission_key)
-                if departures:
-                    from rules_engine.resource_events import emit_graveyard_departures
-                    emit_graveyard_departures(state, departures)
-                emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
+                    if from_exile:
+                        leave_exile(state, cid)
+                        departures = []
+                    elif from_graveyard:
+                        from rules_engine.resource_events import capture_graveyard_departures
+                        departures = capture_graveyard_departures(state, [cid])
+                        player.graveyard.remove(cid)
+                    else:
+                        player.hand.remove(cid)
+                        departures = []
+                    if not state.trigger_staging:
+                        state.trigger_staging = True
+                        state.trigger_staging_event = "land_play"
+                    apply_cast_face(card, face)
+                    card.controller = player_id
+                    apply_entry_choice(state, player_id, card, choice=entry_choice or "tapped")
+                    player.battlefield.append(cid)
+                    player.lands_played_this_turn = used_land_plays + 1
+                    player.land_plays_recorded_on_turn = used_land_plays + 1
+                    player.last_land_play_turn = state.turn
+                    card.move_to_zone(Zone.BATTLEFIELD)
+                    state.cards[cid].summoning_sick = True
+                    assign_static_order_on_battlefield_entry(state, cid)
+                    state.log.append(f"{player.name} plays {state.cards[cid].name}.")
+                    if permission_key:
+                        from rules_engine.graveyard_permissions import record_graveyard_permission
+                        record_graveyard_permission(state, permission_key)
+                    if departures:
+                        from rules_engine.resource_events import emit_graveyard_departures
+                        emit_graveyard_departures(state, departures)
+                    emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
 
         elif kind == 'activate_mana_ability':
             from rules_engine.mana_abilities import activate_mana_ability
@@ -1331,10 +1341,14 @@ class RulesEngine:
             if not cid or cid not in state.cards:
                 apply_state_based_actions(state)
                 return
-            abilities = extract_activated_abilities(state.cards[cid])
+            abilities = extract_activated_abilities(state.cards[cid], state=state)
             ability_index = int(action.get("ability_index", -1))
             ability = next((item for item in abilities if item["index"] == ability_index), None)
             from rules_engine.oracle_effects import activation_source_eligible
+            from rules_engine.continuous import printed_abilities_suppressed
+            if ability is not None and '__granted_ability' not in ability and printed_abilities_suppressed(state, cid):
+                reject("This permanent has lost its printed abilities")
+                return
             if ability is None or not activation_source_eligible(state, player_id, cid, ability):
                 apply_state_based_actions(state)
                 return

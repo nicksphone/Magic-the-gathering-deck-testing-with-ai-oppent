@@ -63,7 +63,11 @@ def backup_database(source, destination, *, timeout=5.0):
 
 
 def _backup_validated_database(source, destination, *, timeout=5.0):
-    """Private IO core; offline paths or registered application owner validate first."""
+    """Private IO core; offline paths or registered application owner validate first.
+
+    Timeout cooperatively bounds unfinished copying, not total wall time. A native
+    step can finish late; completed copies still require all verification below.
+    """
     _number(timeout, "timeout", positive=True)
     if source == destination:
         raise ValueError("source and destination must differ")
@@ -79,9 +83,11 @@ def _backup_validated_database(source, destination, *, timeout=5.0):
             before = fingerprint(src)
             deadline = time.monotonic() + timeout
             def progress(status, remaining, total):
-                if time.monotonic() > deadline:
+                if (status != sqlite3.SQLITE_DONE or remaining != 0) and time.monotonic() > deadline:
                     raise TimeoutError("SQLite backup exceeded timeout")
             with closing(sqlite3.connect(destination, timeout=timeout)) as dst:
+                if time.monotonic() > deadline:
+                    raise TimeoutError("SQLite backup exceeded timeout")
                 src.backup(dst, pages=128, progress=progress, sleep=0.01)
                 dst.execute("PRAGMA trusted_schema=OFF")
                 if fingerprint(dst) != before:

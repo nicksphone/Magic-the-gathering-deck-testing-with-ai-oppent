@@ -1,0 +1,20 @@
+{
+  "schema": "forge-conditional-mana-source-evidence-v1",
+  "result": "SOURCE_EXCLUDED",
+  "candidate_content_id": "75d4ac3971e7f970d2e3c62ba12f25aba639eba5fd36d0ed2f930a4ea17511b7",
+  "evidence_directory": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/native-conditional-mana-20261106-lNZfmFXF",
+  "archive_sha256": "bb554fef58ea74c28f057279371868b610ced8edea2f1e7ecde5c24cf21421f9",
+  "archive_bytes": 768000,
+  "archive_members": 26,
+  "nfs_mounted_writable": true,
+  "file_specific_fsync": "PASS",
+  "full_archive_readback_byte_comparison": "PASS",
+  "tar_member_content_comparison": "PASS",
+  "input_pins_before_end_unchanged": true,
+  "game_JVMs": 0,
+  "native_decision_checks": 0,
+  "controller_callbacks": 0,
+  "red": 0,
+  "pass": 0,
+  "new_production_edits": 0
+}

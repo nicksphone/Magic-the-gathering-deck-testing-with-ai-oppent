@@ -1,0 +1,23 @@
+{
+  "accepted_public_commit": "530bac216012b2ec6ed5f0e7e5c20d97b630165b",
+  "previous_accepted_public_commit": "9b82651ab9e97a87924447ced572b3ea5d7ff212",
+  "source": "main.py",
+  "accepted_main_delta": {
+    "old_sha256": "70e637100bea9ddcc1eabd23bad17a07fd37725f7b16f40103511298b77c7143",
+    "new_sha256": "4bc041adc47412fb97f0b4527ada9ca2f823c27dea4bb999fd9b95cee997512c",
+    "hunks": [
+      {
+        "start": 2068,
+        "end": 2069,
+        "old": "    # Return an offered move, not an unverified card ID from the AI.\n",
+        "new": "    # Match every chosen parameter, not just the card/face of another offer.\n"
+      },
+      {
+        "start": 2071,
+        "end": 2078,
+        "old": "        for move in land_moves:\n            if move.get(\"card_id\") == picked.get(\"card_id\") and move.get(\"selected_face_index\") == picked.get(\"selected_face_index\"):\n                return move\n",
+        "new": "        try:\n            chosen = complete_action(picked)\n            for move in land_moves:\n                if complete_action(move) == chosen:\n                    return move\n        except ActionRejected:\n            pass\n"
+      }
+    ]
+  }
+}

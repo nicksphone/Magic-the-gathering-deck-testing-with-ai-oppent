@@ -10,6 +10,7 @@ from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited, replace_die_zone
 from rules_engine.zone_actions import is_departed_token, put_into_graveyard
+from rules_engine.query_context import rule_query_scope
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
@@ -482,6 +483,12 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
         ordinary_methods.append(CostOption(id='prototype', label='Prototype', mana_cost=prototype['mana_cost']))
     if alt:
         ordinary_methods.append(CostOption(id='alternate', label=f'Alternate {alt.group(1)}', mana_cost=alt.group(1)))
+    from rules_engine.oracle_text import without_reminder_text
+    spectacle = re.search(r'^spectacle[ \t]+((?:\{[^}]+\})+)\.?[ \t]*$',
+                          without_reminder_text(card.oracle_text or ''), re.I | re.M)
+    if (spectacle and not without_mana
+            and state.life_lost_this_turn.get(3-player_id, 0) > 0):
+        ordinary_methods.append(CostOption(id='spectacle', label='Spectacle', mana_cost=spectacle[1]))
     if without_mana:
         options = [base]
         # Prototype changes characteristics, unlike an alternative mana cost.
@@ -753,6 +760,12 @@ def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]
 
 
 def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature", *, payment_kind: str = 'spell') -> list[str]:
+    # All eligibility reads share one view; discard it before caller payment.
+    with rule_query_scope(state):
+        return _eligible_sacrifice_ids_query(state, player_id, kind, payment_kind=payment_kind)
+
+
+def _eligible_sacrifice_ids_query(state: MatchState, player_id: int, kind: str = "creature", *, payment_kind: str = 'spell') -> list[str]:
     from rules_engine.colors import card_color_names
     from rules_engine.library_permissions import creature_types
     eligible: list[str] = []

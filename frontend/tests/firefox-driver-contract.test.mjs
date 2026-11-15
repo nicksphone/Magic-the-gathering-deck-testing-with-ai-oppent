@@ -3,6 +3,7 @@ import {mkdir, mkdtemp, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {test} from 'node:test';
+import {visibleCardPoint} from './visible-card-point.mjs';
 
 let sequence = 0;
 async function loadDriver(name) {
@@ -290,8 +291,8 @@ async function callerHelpers(name,uiInput,command,evaluate){
    take('async function pointer(selector)','async function recoverDroppedResponse');
  const exports=name.includes('direct-combat')?'pointerClick':name.includes('redesign')?'key,pointerClick,capture':'key,pointer';
  const module=await import('data:text/javascript,'+encodeURIComponent(
-  `export function bind(uiInput,command,evaluate){const evidence='inert';const card=id=>id;const writeFile=async()=>{};${declarations}\nreturn {${exports}};}`));
- return module.bind(uiInput,command,evaluate);
+  `export function bind(uiInput,command,evaluate,visibleCardPoint){const evidence='inert';const card=id=>id;const writeFile=async()=>{};${declarations}\nreturn {${exports}};}`));
+ return module.bind(uiInput,command,evaluate,visibleCardPoint);
 }
 for(const name of ['./browser-ui-v2.mjs','./browser-ui-redesign.mjs','./browser-direct-combat.mjs']){
  test(name+': original Chromium keyboard and pointer command tuples are preserved',async()=>{

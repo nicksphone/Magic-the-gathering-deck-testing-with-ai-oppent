@@ -27,6 +27,80 @@ assert CURRENT_MAIN['source'] == 'main.py'
 CURRENT_MAIN_DELTA = CURRENT_MAIN['accepted_main_delta']
 assert CURRENT_MAIN_DELTA['old_sha256'] == ACCEPTED_MAIN_DELTA['new_sha256']
 
+LAND_CHOICE_MAIN_PATH = PATH.with_name('accepted_530_main_delta.json')
+land_choice_main_raw = LAND_CHOICE_MAIN_PATH.read_bytes()
+assert hashlib.sha256(land_choice_main_raw).hexdigest() == '801c67183bcd84d68ef6ef032a37c1e8299715b4e5ef29efe73611b9f7b6a434'
+LAND_CHOICE_MAIN = json.loads(land_choice_main_raw)
+assert LAND_CHOICE_MAIN['accepted_public_commit'] == '530bac216012b2ec6ed5f0e7e5c20d97b630165b'
+assert LAND_CHOICE_MAIN['previous_accepted_public_commit'] == CURRENT_MAIN['accepted_public_commit']
+assert LAND_CHOICE_MAIN['source'] == 'main.py'
+LAND_CHOICE_MAIN_DELTA = LAND_CHOICE_MAIN['accepted_main_delta']
+assert LAND_CHOICE_MAIN_DELTA['old_sha256'] == CURRENT_MAIN_DELTA['new_sha256']
+
+# Exact public 74356fcfbec00ba66877adabe47734c3a48ff44a inverse; old witnesses stay unchanged.
+NATIVE_FORGE_MAIN_DELTA = {
+    'old_sha256': '4bc041adc47412fb97f0b4527ada9ca2f823c27dea4bb999fd9b95cee997512c',
+    'new_sha256': '3b3adaa2503c574420dee33d71231fab456c4c24b0c2cf9a84b81917b089693a',
+    'hunks': [
+        {'start': 51, 'end': 53,
+         'new': ('from forge_routes import create_forge_router\n'
+                 'from native_forge import ForgeManager\n'),
+         'old': ''},
+        {'start': 95, 'end': 101,
+         'new': ('            try:\n'
+                 '                _shutdown_simulation_workers()\n'
+                 '            finally:\n'
+                 '                native = getattr(app_instance.state, "forge_manager", None)\n'
+                 '                if native is not None:\n'
+                 '                    native.close_all()\n'),
+         'old': '            _shutdown_simulation_workers()\n'},
+        {'start': 102, 'end': 107,
+         'new': ('            try:\n'
+                 '                owner.fence_admission()\n'
+                 '                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                 '            finally:\n'
+                 '                owner.close()\n'),
+         'old': ('            owner.fence_admission()\n'
+                 '        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                 '        owner.close()\n')},
+        {'start': 110, 'end': 125,
+         'new': ('FORGE_MANAGER_LOCK = threading.Lock()\n'
+                 '\n'
+                 '\n'
+                 'def _forge_manager() -> ForgeManager:\n'
+                 '    # Opt-in and lazy: importing the app never installs or launches an engine.\n'
+                 '    with FORGE_MANAGER_LOCK:\n'
+                 '        manager = getattr(app.state, "forge_manager", None)\n'
+                 '        if manager is None:\n'
+                 '            manager = ForgeManager.from_environment()\n'
+                 '            app.state.forge_manager = manager\n'
+                 '        return manager\n'
+                 '\n'
+                 '\n'
+                 'app.include_router(create_forge_router(_forge_manager))\n'
+                 '\n'),
+         'old': ''},
+    ],
+}
+assert NATIVE_FORGE_MAIN_DELTA['old_sha256'] == LAND_CHOICE_MAIN_DELTA['new_sha256']
+
+# The retention-only correction has one exact inverse; the native witness above stays intact.
+LIFECYCLE_RETENTION_MAIN_DELTA = {
+    'old_sha256': NATIVE_FORGE_MAIN_DELTA['new_sha256'],
+    'new_sha256': '97dd7e0c0629c01eaa546048470e292995e268159f38b30a39d81cdfe3ce3c44',
+    'hunks': [{
+        'start': 102, 'end': 105,
+        'new': ('            owner.fence_admission()\n'
+                '        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                '        owner.close()\n'),
+        'old': ('            try:\n'
+                '                owner.fence_admission()\n'
+                '                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                '            finally:\n'
+                '                owner.close()\n'),
+    }],
+}
+
 REPOSITORY_DELTA_PATH = PATH.with_name('accepted_phase1_repository_delta.json')
 repository_raw = REPOSITORY_DELTA_PATH.read_bytes()
 assert hashlib.sha256(repository_raw).hexdigest() == '7617e4b9dbf6f1512bfd7bba51dc5a5e2506ade3163c28dca035e90c53b0e144'
@@ -35,6 +109,24 @@ assert REPOSITORY_DELTAS['source'] == 'persistence/repository.py'
 assert REPOSITORY_DELTAS['accepted_public_commits'] == [
     'cd271b9edac81018e68a64cafd35ec9ca1b71530', '357680de093b0048b96f1f8596defae0f19f5b9d']
 ACCEPTED_REPOSITORY_DELTA = REPOSITORY_DELTAS['accepted_repository_delta']
+
+SPECTACLE_COST_PATH = PATH.with_name('accepted_spectacle_cost_delta.json')
+spectacle_cost_raw = SPECTACLE_COST_PATH.read_bytes()
+assert hashlib.sha256(spectacle_cost_raw).hexdigest() == 'aa8eed59662da52702084af7d166fb1facd554bbfad8ae098266c4ea5f11ddaf'
+SPECTACLE_COST = json.loads(spectacle_cost_raw)
+assert SPECTACLE_COST['accepted_public_commit'] == '3d691056ba34b9f578f6d038b871c233a41fe869'
+assert SPECTACLE_COST['source'] == 'rules_engine/costs.py'
+ACCEPTED_SPECTACLE_COST_DELTA = SPECTACLE_COST['accepted_delta']
+
+SACRIFICE_QUERY_COST_PATH = PATH.with_name('accepted_sacrifice_query_cost_delta.json')
+sacrifice_query_cost_raw = SACRIFICE_QUERY_COST_PATH.read_bytes()
+assert hashlib.sha256(sacrifice_query_cost_raw).hexdigest() == 'c0dc7ef0dbb013f3e21a5ee0c5db4ffb355da842ec95bc228a168fc26626399b'
+SACRIFICE_QUERY_COST = json.loads(sacrifice_query_cost_raw)
+assert SACRIFICE_QUERY_COST['accepted_public_commit'].startswith('cc29147b')
+assert SACRIFICE_QUERY_COST['previous_accepted_public_commit'] == SPECTACLE_COST['accepted_public_commit']
+assert SACRIFICE_QUERY_COST['source'] == 'rules_engine/costs.py'
+ACCEPTED_SACRIFICE_QUERY_COST_DELTA = SACRIFICE_QUERY_COST['accepted_delta']
+assert ACCEPTED_SACRIFICE_QUERY_COST_DELTA['old_sha256'] == ACCEPTED_SPECTACLE_COST_DELTA['new_sha256']
 
 FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
 finite_raw = FINITE_PATH.read_bytes()
@@ -84,11 +176,60 @@ SMOTHERING_INVERSE = {
 assert SMOTHERING_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[SMOTHERING_IDENTITY]
 
 
+CONTROLLER_ETB_IDENTITY = (
+    'test_events_apnap.py:'
+    'test_controller_scoped_etb_trigger_does_not_fire_for_opponent_creature')
+# Exact source-hash reconstruction only; the historical constructor stays inert.
+CONTROLLER_ETB_INVERSE = {
+    'old_sha256': '0b88c9de7bf599b7c2c181464d9a65079214c7a3500cdee117f66563cfbe4080',
+    'new_sha256': 'a8349da5504a270a632e4d2ee94bfafb61f652b1838d6194bcb30bd667cb5a3b',
+    'hunks': [{
+        'start': 7, 'end': 8,
+        'new': '    state.cards["p1"] = _controller_etb_card(1)\n',
+        'old': ('    state.cards["p1"] = CardInstance(\n'
+                '        id="p1",\n'
+                '        name="Soul Warden",\n'
+                '        owner=1,\n'
+                '        controller=1,\n'
+                '        zone=Zone.BATTLEFIELD,\n'
+                '        types=["Creature"],\n'
+                '        oracle_text="Whenever a creature enters the battlefield under your control, you gain 1 life.",\n'
+                '    )\n'),
+    }],
+}
+assert CONTROLLER_ETB_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[CONTROLLER_ETB_IDENTITY]
+
+
+# Public38389136 changed only this assertion after the canonical fixture inverse.
+# The obsolete turn-number assertion is inert reconstruction text, never executed.
+CONTROLLER_NEXT_TURN_IDENTITY = (
+    'test_oracle_effects.py:'
+    'test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission')
+CONTROLLER_NEXT_TURN_INVERSE = {
+    'old_sha256': '7da9b68bcddbcb870ec13b88c0a316b9dbb7a4a9b972249e4cb608490e2a66f4',
+    'new_sha256': 'a248fcf85394619977cb9c929a1b54a81a4989b26ba82591ca1c61abfb20adca',
+    'hunks': [{
+        'start': 13, 'end': 19,
+        'new': ('    from rules_engine.card_faces import ordinary_exile_permission\n'
+                '    from rules_engine.source_linked_exile import reference\n'
+                '    assert state.players[1].exile_play_durations[top_id] == {\n'
+                "        'version': 1, 'duration': 'controller_next_turn', 'grant_turn': state.turn,\n"
+                "        'reference': reference(state.cards[top_id])}\n"
+                '    assert ordinary_exile_permission(state, 1, top_id)'),
+        'old': '    assert state.players[1].exile_play_until[top_id] == state.turn + 1',
+    }],
+}
+assert CONTROLLER_NEXT_TURN_INVERSE['old_sha256'] == (
+    FINITE['functions'][CONTROLLER_NEXT_TURN_IDENTITY]['new_sha256'])
+
+
 def _restore(text, recipe):
     if hashlib.sha256(text.encode()).hexdigest() == recipe['old_sha256']:
         return text
     lines = text.splitlines(keepends=True)
     for hunk in reversed(recipe['hunks']):
+        start, end = hunk['start'], hunk['end']
+        assert type(start) is int and type(end) is int and 0 <= start <= end <= len(lines), 'Invalid approved hunk span'
         assert ''.join(lines[hunk['start']:hunk['end']]) == hunk['new'], 'Approved hunk changed'
         lines[hunk['start']:hunk['end']] = hunk['old'].splitlines(keepends=True)
     result = ''.join(lines)
@@ -113,10 +254,19 @@ def compatible_product_hash(name, current, historical):
 def restore_reviewed_source(name, current, historical):
     recipes = {'main.py': ACCEPTED_MAIN_DELTA,
                'persistence/repository.py': ACCEPTED_REPOSITORY_DELTA,
+               'rules_engine/costs.py': ACCEPTED_SPECTACLE_COST_DELTA,
                'tests/private_choice_boundary_fixture_server.py': ACCEPTED_DELTAS['accepted_private_fixture_delta']}
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'rules_engine/costs.py' and hashlib.sha256(current).hexdigest() == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']:
+        current = _restore(current.decode(), ACCEPTED_SACRIFICE_QUERY_COST_DELTA).encode()
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == LIFECYCLE_RETENTION_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), LIFECYCLE_RETENTION_MAIN_DELTA).encode()
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == NATIVE_FORGE_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), NATIVE_FORGE_MAIN_DELTA).encode()
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == LAND_CHOICE_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), LAND_CHOICE_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() not in {
             recipe['old_sha256'], recipe['new_sha256']}:
         current = _restore(current.decode(), CURRENT_MAIN_DELTA).encode()
@@ -148,7 +298,8 @@ def restore_printed_protocol_source(module, text):
     assert module in {identity.split(':')[0] for identity in EXPECTED_FUNCTIONS}, 'Unknown protected module'
     nodes = ast.parse(text).body
     recipes = {**FINITE['functions'], **FIXTURE_INVERSES,
-               SMOTHERING_IDENTITY: SMOTHERING_INVERSE}
+               SMOTHERING_IDENTITY: SMOTHERING_INVERSE,
+               CONTROLLER_ETB_IDENTITY: CONTROLLER_ETB_INVERSE}
     for identity, recipe in recipes.items():
         filename, name = identity.split(':')
         if filename != module:
@@ -157,7 +308,13 @@ def restore_printed_protocol_source(module, text):
         assert len(matches) == 1, 'Protected function missing or duplicated'
         segment = ast.get_source_segment(text, matches[0])
         assert text.count(segment) == 1, 'Protected function source is ambiguous'
-        restored = _restore(segment, recipe)
+        reviewed = segment
+        if identity == CONTROLLER_NEXT_TURN_IDENTITY:
+            measured = hashlib.sha256(segment.encode()).hexdigest()
+            if measured not in {recipe['old_sha256'], recipe['new_sha256']}:
+                assert measured == CONTROLLER_NEXT_TURN_INVERSE['new_sha256'], 'Unapproved duration assertion'
+                reviewed = _restore(segment, CONTROLLER_NEXT_TURN_INVERSE)
+        restored = _restore(reviewed, recipe)
         text = text.replace(segment, restored, 1)
         nodes = ast.parse(text).body
     return text

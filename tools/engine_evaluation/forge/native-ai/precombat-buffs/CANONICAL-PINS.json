@@ -1,0 +1,37 @@
+{
+  "upstream_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "files": {
+    "canonical/elvish_clancaller.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/e/elvish_clancaller.txt",
+      "sha256": "0e71f3fd56cacb7ba45f45857a54646e2f836c2d0caa9f636d7e01076fa1e764"
+    },
+    "canonical/elvish_visionary.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/e/elvish_visionary.txt",
+      "sha256": "8185757fa9428cc22e8c14390b167444bff882a7d1e1878d868502e350665c7e"
+    },
+    "canonical/forest.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/f/forest.txt",
+      "sha256": "9a574ea2a8136e588ab77ff8bf260075a94572d8099a7d0d98c62590479aa5a6"
+    },
+    "canonical/humility.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/h/humility.txt",
+      "sha256": "0cda8a0a27b320b89b560ae3165dd8b430c1a76bd2f07ca3dc2c8bfc9b92adbf"
+    },
+    "canonical/grizzly_bears.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/g/grizzly_bears.txt",
+      "sha256": "31964bb8465c2e815f106b34838e8b1a8d5c567c420ad6f88ed915427fafb651"
+    },
+    "canonical/llanowar_elves.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/l/llanowar_elves.txt",
+      "sha256": "f8eab9c6d1b3bc9c180228a150d3a386248c10b8563f2ac54319129d7570e7f3"
+    },
+    "canonical/elvish_archdruid.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/e/elvish_archdruid.txt",
+      "sha256": "5935d95fb0f637b0c98771dd3b9e8db7fc213c0eebd78f9ed2184e52d4385657"
+    },
+    "canonical/leaf_crowned_visionary.txt": {
+      "upstream_path": "forge-gui/res/cardsfolder/l/leaf_crowned_visionary.txt",
+      "sha256": "2c24f1b18a9d40c570cb3fcfbcd1ef82f586b485a2a9cb6651ec127df78413c6"
+    }
+  }
+}

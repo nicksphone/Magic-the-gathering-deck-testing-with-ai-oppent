@@ -476,9 +476,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     from rules_engine.oracle_effects import activation_source_eligible
     for cid in [*player.battlefield, *player.hand, *player.graveyard]:
         card = state.cards[cid]
-        if printed_abilities_suppressed(state, cid):
-            continue
-        for ability in extract_activated_abilities(card):
+        for ability in extract_activated_abilities(card, state=state):
             if not activation_source_eligible(state, player_id, cid, ability):
                 continue
             if not can_activate_in_current_timing(state, ability["text"], player_id):

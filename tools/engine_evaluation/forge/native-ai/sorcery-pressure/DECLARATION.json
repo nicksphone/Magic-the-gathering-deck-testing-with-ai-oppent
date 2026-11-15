@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "label": "CANONICAL-DEFAULT-SORCERY-PRESSURE-CONTROLLED-POSITIONS",
+  "seed": 2026110617,
+  "seed_boundary": "Once before model initialization or any native game; no later reset",
+  "profile": "Default",
+  "hand": ["Lava Spike", "Lava Spike", "Lava Spike"],
+  "red_sources": ["Mountain", "Mountain", "Mountain"],
+  "own_life": 20,
+  "ordinary_creature_boards": "empty on both sides",
+  "strict_style_expectation": "At least one recognized, actually paid and resolved Lava Spike in the funded nonlethal own MAIN2 position; not a universal spend-all-mana policy",
+  "cases": [
+    {"seat": 0, "scene": "pressure", "phase": "MAIN2", "enemy_life": 20, "funded": true, "expect_cast": true},
+    {"seat": 0, "scene": "lethal", "phase": "MAIN2", "enemy_life": 3, "funded": true, "expect_cast": true},
+    {"seat": 0, "scene": "unfunded-lethal", "phase": "MAIN2", "enemy_life": 3, "funded": false, "expect_cast": false},
+    {"seat": 0, "scene": "upkeep-lethal", "phase": "UPKEEP", "enemy_life": 3, "funded": true, "expect_cast": false},
+    {"seat": 1, "scene": "pressure", "phase": "MAIN2", "enemy_life": 20, "funded": true, "expect_cast": true},
+    {"seat": 1, "scene": "lethal", "phase": "MAIN2", "enemy_life": 3, "funded": true, "expect_cast": true},
+    {"seat": 1, "scene": "unfunded-lethal", "phase": "MAIN2", "enemy_life": 3, "funded": false, "expect_cast": false},
+    {"seat": 1, "scene": "upkeep-lethal", "phase": "UPKEEP", "enemy_life": 3, "funded": true, "expect_cast": false}
+  ]
+}

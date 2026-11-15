@@ -11,7 +11,7 @@ import signal
 import subprocess
 
 from decks.builtin_decks import BUILTIN_DECKS
-from training.environment import TrainingEnvironment
+from training.environment import TrainingEnvironment, _deck
 from training.dataset import (DECISION_DATASET_VERSION, DatasetRun, HeuristicTeacher, MAX_BYTES, MAX_EPISODES,
                               MAX_TICKS, digest, episode_groups, episode_records,
                               grouped_split_report)
@@ -50,6 +50,8 @@ def main(argv=None):
     parser.add_argument('--ticks', type=int, default=16)
     parser.add_argument('--max-bytes', type=int, default=MAX_BYTES)
     parser.add_argument('--difficulty', choices=['strong', 'master'], default='strong')
+    parser.add_argument('--deck-aware-teacher', action='store_true',
+                        help='Detect own style and reciprocal opponent profile from the declared public builtin matchup')
     parser.add_argument('--family-a', help='Declare the shared family for deck variants')
     parser.add_argument('--family-b', help='Declare the shared family for deck variants')
     parser.add_argument('--resume', action='store_true')
@@ -67,7 +69,12 @@ def main(argv=None):
     path = output_path(args.out, args.ci_temp)
     environment = TrainingEnvironment()
     environment.reset(args.deck_a, args.deck_b, seed=args.seeds[0])
-    teacher = HeuristicTeacher(args.difficulty)
+    archetypes = None
+    if args.deck_aware_teacher:
+        from ai.deck_analysis import guess_archetype
+        archetypes = {seat: guess_archetype(_deck(name))
+                      for seat, name in enumerate((args.deck_a, args.deck_b), 1)}
+    teacher = HeuristicTeacher(args.difficulty, archetypes=archetypes)
     metadata = teacher.provenance(environment)
     families = [args.family_a or args.deck_a, args.family_b or args.deck_b]
     config = {'seeds': args.seeds, 'decks': [args.deck_a, args.deck_b], 'families': families,
@@ -76,6 +83,8 @@ def main(argv=None):
         config['decision_frame'] = True
     if args.public_context:
         config['public_context'] = True
+    if args.deck_aware_teacher:
+        config['deck_aware_teacher'] = True
     manifest = {'configuration_hash': digest(config), **metadata}
     version = {'dataset_version': DECISION_DATASET_VERSION} if args.decision_frame else {}
     run = DatasetRun(path, manifest, resume=args.resume, max_bytes=args.max_bytes, **version)
@@ -92,7 +101,7 @@ def main(argv=None):
                 break
             environment.reset(args.deck_a, args.deck_b, seed=args.seeds[index])
             # Stateless teacher instances per episode make boundary resume reproducible.
-            teacher = HeuristicTeacher(args.difficulty)
+            teacher = HeuristicTeacher(args.difficulty, archetypes=archetypes)
             groups = episode_groups(args.seeds[index], families, metadata['deck_hashes'])
             end = run.write_episode(episode_records(environment, teacher,
                 episode=f'episode-{index:04d}', groups=groups, tick_budget=args.ticks,

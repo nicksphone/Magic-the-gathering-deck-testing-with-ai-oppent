@@ -1,5 +1,247 @@
 # MTG Deck Testing Lab
 
+AI progress: [what is implemented, what remains, and current game coverage](AI-STATUS.md).
+Working features and passing regressions are not a claim that AI playing strength
+or RC acceptance is complete.
+
+The [target mana-value correction](docs/testing/target-mana-value-20261110.md)
+uses rules mana value for hybrid and snow target restrictions. A missing legal
+counter target reproduces before the fix; all183tests across seven whole modules
+pass afterward, including50new native cases. Payment and target-stack X stay intact.
+Full RC and expert-AI acceptance remain open.
+
+The [incomplete block-search correction](docs/testing/unknown-block-survival-20261109.md)
+preserves a legal fallback when a hidden death-draw makes another block unknown,
+rather than selecting a completed losing line. The native failure reproduces
+before the fix; 79 collected tests pass afterward, including 16 new cases.
+Search limits and hidden-card guards stay intact. Full RC and expert-AI acceptance remain open.
+
+The [native animated-blocker qualification](docs/testing/effective-blocker-types-20261109.md)
+passes99collected tests across six whole modules, including26new paid-animation,
+restored AI combat and exclusion cases. An isolated source mutation demonstrates
+test sensitivity. Production is unchanged; the suspected blocker omission does
+not reproduce for these two families. Full RC and expert-AI requirements remain open.
+
+The [bounded graveyard destruction extension](docs/testing/graveyard-destruction-coverage-20261109.md)
+adds complete creature-destruction clauses while preserving unknown-text and
+permission vetoes. All167cases across four whole component modules pass, including
+42new canonical payment, targeting, attack and conservative-boundary cases.
+The full backend, general inventory and all RC/expert-AI requirements remain open.
+
+The [native HTTP wake-up prerequisite](docs/testing/native-http-resource-boundary-20261109.md) now has an independent
+negative result: a native Unix socketpair one-byte send raises PermissionError
+without guard or monitor. Plain TestClient/AnyIO controls stall; all seven
+supervised control groups close. Thirty-one preflight commands and a pure
+evidence audit pass, including a foreign native-socketpair guard correction.
+HTTP lifecycle and original-worker integration remain unqualified, and no new
+original backend entry runs. The prior170-pass entry remains the latest original
+evidence; all release/AI/data/thirteen-style requirements stay open.
+
+The [native fault-factory URI boundary](docs/testing/native-fault-uri-boundary-20261109.md)
+passes the original rollback test and all seven restore/prune CLI invocations
+with clean receipts. A new whole backend attempt collects all36,739 nodes and
+passes170 calls before a socket guard denies HTTP integration setup. All171
+attempted teardowns pass and closure is normal;27 boundary audits pass. The full
+backend and all original RC, AI/data and thirteen-style requirements remain open.
+
+The [native pipe/child boundary](docs/testing/native-pipe-child-boundary-20261109.md)
+passes all four original restore CLI invocations in a new full backend attempt.
+All 36,739 nodes collect; 108 calls pass before a SQL path/URI rejection in the
+rollback fault test. All 109 attempted setups/teardowns pass, and four independent
+child receipts are clean. Seven restore/prune invocations also pass separate
+inert controls. Twenty-four boundary audits pass after a reviewed child-mutation
+correction; that correction is qualified by inert controls only. The original
+attempt stays unchanged, and full backend and RC acceptance remain open.
+
+The [native SQL-loading boundary](docs/testing/native-sql-loading-boundary-20261109.md)
+passes the previously blocked SQLite restart in a new full backend attempt.
+All 36,739 nodes collect; 77 calls pass before a CLI pipe descriptor is rejected.
+All 78 attempted setups/teardowns pass, with 25 authorized SQL request/handle
+events and normal process closure. Fourteen boundary audits pass. The full backend
+attempt remains failed/incomplete; all original RC and expert-AI work stays open.
+
+The [native backend execution boundary](docs/testing/native-backend-execution-boundary-20261109.md)
+attempts the unchanged full36,739-node backend declaration. Collection passes;
+68 calls pass before an unregistered native SQLAlchemy loading adapter rejects
+the next SQL constructor. All69 attempted setups/teardowns pass and the owned
+process closes normally. Twelve boundary audits pass after a reviewed template
+admission fix; its qualification is inert-only. The retained full attempt remains
+failed/incomplete, with all original RC and expert-AI requirements open.
+
+The [native fixture collection boundary](docs/testing/native-fixture-collection-boundary-20261109.md)
+now collects all36,739 backend nodes with zero deselections/denials and zero test
+phases. Exact native source/import/pytest identities admit original fixture reads;
+tooling uses1,818 public inputs and960 metadata-only references. Six failed
+admission epochs remain retained. Eight audits pass; full backend execution,
+expert AI and all original release gates remain open.
+
+The [native fixture-consumer boundary](docs/testing/native-fixture-consumer-boundary-20261109.md)
+passes separate unchanged whole9/65 AI modules. Original tests consume their own
+controlled snapshots through exact native reader/test/dispatcher identities;
+tooling binds metadata without reading, hashing or copying those bodies. All222
+phases and twelve audits pass under unchanged caps. The CPU-limited partial and
+intermediate gates remain preserved; full RC and expert-strength work stay open.
+
+The [positive fixture-input boundary](docs/testing/positive-fixture-input-admission-20261109.md)
+now passes the original whole28 and whole97 groups in separate guarded executions,
+with exact nodes, zero denials and normal closure. Public code/card inputs are
+explicitly admitted; excluded bodies remain omitted and bound by metadata only.
+The earlier observer breach remains nonconforming history. Full backend and every
+original release requirement remain open.
+
+The [Reanimator target correction](docs/testing/ai-reanimation-target-outcomes-20261109.md)
+uses native outcomes to avoid a proved-losing automatic target, retain uncertain
+alternatives and decline an all-losing line. Separate whole28/97 executions pass
+functionally, but their observers breached the required snapshot-body exclusion;
+the evidence is retained as nonconforming for that boundary. Future verification
+uses positive public inputs and metadata-only excluded-body bindings.
+The full-backend attempt hits its CPU bound with final counts unknown. All original
+release and expert-AI requirements remain open.
+
+The [card-data continuity audit](docs/testing/card-data-source-continuity-20261109.md)
+finds the earlier833 suite's seventeen test modules unchanged, but four production
+dependencies changed. Their component evidence stays separate; there is no current
+833-case or full-suite pass claim. The next intake maps actual evidence to the
+still-open thirteen-style AI requirement.
+
+Current RC corrections and open checks are tracked in the
+[November 8 audit](docs/testing/rc-readiness-20261108.md). Custom evaluator traces
+now retain [complete actions for strict replay](docs/testing/action-reconstruction.md)
+alongside their quality measurements; older compact traces remain unsupported.
+
+The current [Master winning-block correction](docs/testing/master-winning-death-block-20261108.md)
+preserves a canonical immediate death-trigger win in both Master modes and seats;
+it is not a general AI-strength certificate. The latest
+[guarded backend entry](docs/testing/current-backend-synthetic-owner-20261108.md)
+passes 230 cases, including eight HTTP cases using a new empty synthetic owner
+fixture and the seven original restore/prune CLI calls. It stops before an
+unadmitted replay CLI command launches. Full-suite and release gates remain open.
+A separate [replay CLI qualification](docs/testing/current-replay-cli-qualification-20261108.md)
+then passes all ten original CLI cases with clean child receipts; it preserves
+the earlier incomplete run and leaves the remaining backend scope unqualified.
+The next [activation and legacy-snapshot component](docs/testing/activated-timing-qualification-20261108.md)
+passes both whole modules, including four original Master choices and one HTTP
+case. Cold-process restart and the full RC scope remain open.
+The [closed-runtime test archiver](docs/testing/closed-http-owner-metadata-20261108.md)
+now preserves owner-lock metadata without reading or copying its body, rejects
+protected/unlisted payloads, and passes both complete archive modules. Actual
+cold-process qualification and the full-suite/RC gates remain open.
+The following [hand-land/raw-binding component](docs/testing/handland-raw-qualification-20261108.md)
+passes 71 unchanged cases across two whole modules, including native SQLite
+reloads and actual paid actions. A separate allowed native TCP constructor
+returns EPERM before a socket is built, leaving cold-process HTTP unexecuted.
+The subsequent [hint-copy serializer qualification](docs/testing/hint-serializer-qualification-20261108.md)
+passes its unchanged 22-case whole module and verifies all 22 original native
+serializer children under exact admission. Cold HTTP and full RC scope remain open.
+The following [activation selection/payment component](docs/testing/activation-selection-payments-20261108.md)
+passes 190 unchanged cases across five whole modules, including ten original
+Strong choices and eight in-process HTTP cases. All original release gates remain open.
+The early-November9 [additional-cost/mana component](docs/testing/additional-costs-additive-mana-20261109.md)
+passes 233 unchanged cases across four whole modules under the corrected v2 guard,
+with zero SQL, policy choices or child launches. Full RC scope remains open.
+The following [annihilator native restart component](docs/testing/annihilator-native-recovery-20261109.md)
+passes all 28 unchanged cases, with 60 verified original codec children and eight
+owned SQL repositories. Its in-process HTTP checks leave cold TCP and RC gates open.
+The next [affinity/Aftermath component](docs/testing/affinity-aftermath-qualification-20261109.md)
+passes 99 unchanged cases across two whole modules, including two original native
+Master choices. Full backend, playing-strength and release gates remain open.
+The following [admission/affinity HTTP component](docs/testing/admission-affinity-http-qualification-20261109.md)
+passes 16 unchanged cases with native lifecycle/shutdown, five metadata-only owner
+fixtures and 88 authorized SQL returns. Cold TCP and all RC gates remain open.
+The following [AI affinity, contracts and horizon component](docs/testing/ai-affinity-contract-horizon-qualification-20261109.md)
+passes 95 unchanged cases across five whole modules in two separate runs of 89
+and six cases. All 73 original native AI choices and 84 other direct native calls
+return under the original assertions and budgets. Full backend, Oracle/data,
+playing strength and release gates remain open.
+The next [beneficiary/Burn efficiency component](docs/testing/ai-beneficiary-burn-qualification-20261109.md)
+passes both entire unchanged modules:68 recipient/copy cases and28 Burn cases,
+including60 original native choices and52 direct materializations. This remains
+controlled component evidence; all original release gates stay open.
+The following [Burn sequence/diagnostic component](docs/testing/ai-burn-sequence-qualification-20261109.md)
+passes all20 original sequence cases and10 diagnostic cases in separate runs,
+including96 native Master choices and26 direct damage-plan calls. Original
+continuation/search limits remain; all original RC gates stay open.
+The next [casting-resource component](docs/testing/ai-cast-resource-qualification-20261109.md)
+passes all63 original cases across three whole modules, including72 native
+call/return spans. Parameter capture before test bodies preserves legitimate
+branch rebinding without inspecting later state-derived values. RC remains open.
+
+The following [counterability/cast-surface component](docs/testing/ai-counter-surface-qualification-20261109.md)
+passes all47 unchanged cases across both whole modules, with32 original choices
+and105 verified native call/return spans. Original counter repetitions,
+reservation privacy/reload checks and genuine selected-face payments remain.
+Full backend, Oracle/data, expert strength and original RC gates stay open.
+
+The following [canonical knowledge-consumer component](docs/testing/ai-knowledge-consumer-qualification-20261109.md)
+passes its entire unchanged23-case module. All102 direct native/helper returns
+and the original memory-SQL connection/native close verify, preserving private-
+view/reload assertions and paid Adventure/hybrid actions. No AI policy choice or
+private diagnostic trace occurs. All original release gates remain open.
+
+A [GitHub branch reconciliation](docs/testing/github-branch-reconciliation-20261109.md)
+accounts for the four nonancestor heads in the returned88-branch inventory:
+documentation supersession, a retained equivalent fixture patch and represented
+milestone changes. No additional runtime patch is identified by the source audit;
+no merge or application test runs. All original release gates remain open.
+
+A [canonical controller-entry fixture correction](docs/testing/canonical-controller-etb-20261109.md) replaces the
+wrong Soul Warden/controller-only Oracle pairing with pinned full RAW Ajani's
+Welcome born through MatchFactory. All47 cases pass across four complete affected
+modules, including both-seat native trigger resolution and exact inert source
+inverse checks. Original86 APNAP assertions, golden inputs and production code
+remain unchanged. This fixes one fixture; fullRC and literal global Task1.3
+acceptance remain open.
+
+The [knowledge-carrier qualification](docs/testing/ai-knowledge-carrier-qualification-20261109.md) passes all41 original cases
+across three complete unchanged modules, including16 Strong choices and63 native
+returns through the original instance wrappers. Paid actions, modal/private-view
+and forged-carrier assertions remain. A prior CPU-limited attempt stays
+unqualified; the indexed instrumentation run passes under the same caps.
+Repository/rulings, expert strength and every original RC gate remain open.
+
+The [real repository-pipeline qualification](docs/testing/ai-knowledge-repository-qualification-20261109.md) passes all three
+original cases:155 canonical seed cards persist through native memory SQL and
+hydrate310 Factory carriers; both paid Strong choices return after database
+disposal with the original connect forbidders intact. Three native SQL closes,
+161 ingestion/mock-response pairs and three profiler returns verify. This is an
+offline committed-corpus integration check; complete data, expert strength and
+all original release gates remain open.
+
+The [profile-repository qualification](docs/testing/knowledge-profile-repository-qualification-20261109.md)
+passes all four original cases, preserving26 assertions: two-card timestamp/
+payload idempotence, both invalid-row controls and full155-card RAW/profile
+roundtrips. Four native memory-SQL closes and six profiler returns verify.
+This adds persistence evidence; complete knowledge, expert AI and RC gates remain open.
+
+The [knowledge-domain qualification](docs/testing/knowledge-domain-boundaries-qualification-20261109.md)
+passes all34 original cases, preserving nine assertions: invalid values reject
+before writes, valid domains roundtrip and legacy rows remain readable.
+All33 native memory-SQL lifecycles and selected installed-input pins verify.
+These schema controls leave complete knowledge, expert AI and RC gates open.
+
+The [JSON-boundary qualification](docs/testing/knowledge-json-boundaries-qualification-20261109.md)
+passes all254 original cases, preserving34 assertions and all raises/forbidder
+checks. Native fixture lifecycles verify111 memory and111 file databases, plus32
+SQL-free cases and exact JSON text/legacy compatibility. A CPU-limited attempt
+stays unqualified; corrected metadata instrumentation passes under the same caps.
+Complete data, expert AI and every original RC gate remain open.
+
+External engine evaluation credits the **Forge Team/Card-Forge contributors** and
+**XMage contributors** for their card/rules implementations. See the
+[comparison](docs/testing/external-engine-card-knowledge.md),
+[credited test code](tools/engine_evaluation/README.md) and
+[third-party license notices](THIRD-PARTY-NOTICES.md). Neither engine has replaced
+the running backend; their work is not represented as ours.
+The [native-engine integration status](docs/testing/native-engine-integration-status.md)
+distinguishes the reusable implementation from the bridge work still needed.
+An [opt-in native app table](docs/testing/forge-app-session.md) adds separate
+session ownership, native choices and reload reconnection. It requires an
+operator-configured runtime and does not switch the live Python service.
+An isolated [native AI knowledge correction](docs/testing/native-ai-knowledge-boundary.md)
+now filters unknown card identities and mana-source inputs in the tested combat
+forecast. This is bounded correction evidence, not a claim of expert or globally
+fair native AI.
+
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
 the original corpus retained and both-seat paid copy/blink regressions. The new
@@ -127,6 +369,8 @@ to claim support.
   The original eight two-faced cards retain ten canonical and six
   provenance-backed derived color facts. Metadata admission is not rules support.
   Generic exact-printing loyalty recovery avoids named exceptions.
+  Seed lookups return independent metadata trees, so editing returned faces or
+  colors cannot change the canonical seed used by later hydration calls.
 - The offline exporter preserves all 155 records and the explicit 17-fact
   preservation ledger through validated cache/bulk and cache/knowledge routes.
   Repeated CLI outputs are byte-identical. Interrupted publication has explicit

@@ -23,3 +23,19 @@ assert.equal(landPlayHint({...main,pending_mechanic_choice:{}},1),'Complete the 
 assert.equal(landPlayHint({...main,winner:2},1),'Game over');
 assert.equal(landPlayHint({...main,players:{1:{}}},1),'No legal land play available');
 console.log('PASS explicit land timing, priority, allowance and legacy-server hints');
+
+// Synthetic public-view vectors: keywords are effective, base_keywords are not.
+const fresh = Object.freeze({id:'fresh',name:'Protocol creature',types:Object.freeze(['Creature']),
+  tapped:false,summoning_sick:true,power:2,toughness:2,keywords:Object.freeze(['haste'])});
+assert.deepEqual(cardStates(fresh,{}),[],'effective haste bypasses the sickness restriction badge');
+assert.equal(fresh.summoning_sick,true,'presentation must preserve the raw condition');
+assert.deepEqual(cardStates({...fresh,tapped:true},{attackers:['fresh'],blocks:{enemy:['fresh']}},true,true),
+  ['Tapped','Attacking','Blocking','Targetable','Selected'],'haste must not remove other state badges');
+const lostHaste = {...fresh,keywords:[],base_keywords:['haste'],oracle_text:'Haste'};
+assert.deepEqual(cardStates(lostHaste,{}),['Summoning sick'],'losing effective haste restores the badge despite printed/base haste');
+assert.deepEqual(cardStates({...lostHaste,keywords:['haste']},{}),[],'regaining effective haste bypasses the badge without clearing raw sickness');
+assert.deepEqual(cardStates({...fresh,keywords:undefined},{}),['Summoning sick'],'ordinary fresh creatures retain the badge');
+assert.deepEqual(cardStates({...fresh,keywords:['flying']},{}),['Summoning sick'],'other effective keywords do not bypass sickness');
+assert.deepEqual(cardStates({...lostHaste,summoning_sick:false},{}),[],'an established creature remains unaffected');
+assert.deepEqual(cardStates({...fresh,types:['Artifact'],keywords:[]},{}),[],'noncreatures do not acquire a sickness badge');
+console.log('PASS 9 haste-badge checks: effective keywords, keyword loss/regain, raw condition and other states preserved');

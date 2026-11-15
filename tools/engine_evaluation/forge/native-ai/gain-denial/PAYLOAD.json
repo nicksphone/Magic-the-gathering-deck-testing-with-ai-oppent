@@ -1,0 +1,41 @@
+{
+  "classes": {
+    "forge/ai/AiController$1.class": "72b309e05e75cba642a8a1dfc15c8509f16dc15e943d7cf22befaaf758d556b0",
+    "forge/ai/AiController.class": "bff0060ecba49e3237dbe61689638d5bee2f6d956ce0d4d28381acd5582cf8a5",
+    "forge/ai/ComputerUtil.class": "c198a18b6837a0daf7dbc2d98c63f0f6f0b29a2219ad76edce158bac106e0eb2",
+    "forge/ai/ComputerUtilCost$1.class": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+    "forge/ai/ComputerUtilCost.class": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+    "forge/ai/ComputerUtilMana.class": "42172f585bd4b62d8b53dda34a693736fadfdbbf8413cfdb7943c6fb1eb8cdac",
+    "forge/ai/SpellAbilityAi.class": "1a33adf0b335d794b2b68fb0090b698eb8f0d95bff21fe62f917c042a861ccdc",
+    "forge/ai/ability/CounterAi.class": "baf7d165ef2115d475a29438e9280fcec27b5007228548a4b20dea5852a2b823",
+    "forge/ai/ability/DamageAiBase.class": "bf64ff8e6a592c51a43d360f5fee839b731817847f4d97a098219cd607cdd072",
+    "forge/ai/ability/DamageDealAi.class": "1dea2b9bfd645d1db9b15f6eeb0cd7d1992385c78af65b112e787dd06119e3bf",
+    "forge/ai/ability/DrawAi.class": "d43f96c518a9ffc1a8e362a1609953f155f1a75c50dd4c4e99db651c61ab88f7",
+    "forge/ai/ability/PermanentAi.class": "bb532065e50b3ead54c2711bc73c9d6a2d18d37b5e67fc5fad61d28c7c15298d",
+    "forge/evaluation/ActorBoundary$Pending.class": "45f765eff2f776dca7b2a70c1cb76af150abf85dfae66df76561515cca2dfda8",
+    "forge/evaluation/ActorBoundary.class": "265a05dfdd9fa90ce5a50730059030f3528fed88b6bbc867c5109510823b4613",
+    "forge/evaluation/NativeHumanWorker$1.class": "bf04754f0048daed59c32c8b5236ebe05d3d839a6193a551b2170eede2c1d35a",
+    "forge/evaluation/NativeHumanWorker$2.class": "dae57ce042bfc70adc8dc11277764ac5f9d3d4914869da01b19f7cbaf091cd22",
+    "forge/evaluation/NativeHumanWorker$3.class": "0d2c14318c6b9d4d0261ad405175c516a7bc54b86812cdd2e84cace323746e7c",
+    "forge/evaluation/NativeHumanWorker$Answer.class": "e2309a59431567d96a9407ff11d7457d0e5625cf6ef8ead85502bf2d37e96a5a",
+    "forge/evaluation/NativeHumanWorker$Input.class": "c3567265dbf4c6cab1c840769eb38f196211ab9c04d13669d2c81dcae17f69fc",
+    "forge/evaluation/NativeHumanWorker.class": "0ee8f0d8702c8fcc8ffc8ac94bf0707fe0e74172141ddbe65228ec0ff90777b3",
+    "forge/game/trigger/TriggerHandler.class": "33c3419795efcf8850d74dc489bb716a222131d32ebb85431ce9c2f015306e4b"
+  },
+  "schema": 10,
+  "sources": {
+    "forge-ai/src/main/java/forge/ai/AiController.java": "599dc8a999f36b482c0fb40a482c0072278b80280815a3c8ccf154ac0e02f630",
+    "forge-ai/src/main/java/forge/ai/ComputerUtil.java": "257cb44971161566ea23296c179e7728827a96f5f63ffa339fcf5ad61ba055ff",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+    "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java": "11c9378f3f0003c7e4a83eb0c3fc1aa6000e5d566c11897a9d700da02c14d04b",
+    "forge-ai/src/main/java/forge/ai/SpellAbilityAi.java": "b8e4cd6e55049b7fd13c4c82d22f9c109c7ba5142126e85adf9063f1d2fc19b8",
+    "forge-ai/src/main/java/forge/ai/ability/CounterAi.java": "fa781549b9272dd3b8fc05e80febc9baf470722cb5edce67a2ae4c9e3e423659",
+    "forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java": "dd7646033c9817e531ef7dde51838a6402b36942b019b52df0e6a0ddc78a13f7",
+    "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java": "6237f0491d82781b8c4e242d7bd49b9bc7b83c08cbcb570a7d93cf5c9c94dc7d",
+    "forge-ai/src/main/java/forge/ai/ability/DrawAi.java": "72a8924d91ec688f62564ece3b21483792068717e41d8dd43aa29d9b59dcd626",
+    "forge-ai/src/main/java/forge/ai/ability/PermanentAi.java": "5608d80db5a78f164dbdf582c13a887968fc52c7c0e5e628e66709dae7b26fc2",
+    "forge-game/src/main/java/forge/game/trigger/TriggerHandler.java": "b67f3b109c5714dbd7268fb7cdbebad609fec716c3ded91fcda13e57fdd49e39",
+    "tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java": "1c0b194a1b011cdb26a24298c1453a508ec5fbb8cac0e8e9f6fafd9639f991e3",
+    "tools/engine_evaluation/forge/stdio/NativeHumanWorker.java": "d99165d5aeb8f17ff2c10e95bb500121ddf05ad6224cf1995d3d4adb6c15ce6a"
+  }
+}

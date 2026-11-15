@@ -1,0 +1,245 @@
+--- a/forge-ai/src/main/java/forge/ai/AiController.java
++++ b/forge-ai/src/main/java/forge/ai/AiController.java
+@@ -1925,7 +1925,8 @@
+                 return true;
+             }
+             final Card h = spellAbility.getHostCard();
+-            return h != null && ComputerUtilCard.isCardRemAIDeck(h) && !flatMc;
++            return h != null && ComputerUtilCard.isCardRemAIDeck(h) && !flatMc
++                    && !SpellAbilityAi.isKnownWinningSacrificeCost(player, spellAbility);
+         });
+         //removed skipped SA
+         skipped = saList.stream().filter(SpellAbility::isSkip).collect(Collectors.toList());
+--- a/forge-ai/src/main/java/forge/ai/SpellAbilityAi.java
++++ b/forge-ai/src/main/java/forge/ai/SpellAbilityAi.java
+@@ -3,6 +3,7 @@
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ import java.util.function.Predicate;
+ 
+ import com.google.common.collect.Iterables;
+@@ -11,6 +12,9 @@
+ import forge.card.ICardFace;
+ import forge.card.mana.ManaCost;
+ import forge.game.GameEntity;
++import forge.game.GameObject;
++import forge.game.ability.AbilityFactory;
++import forge.game.ability.ApiType;
+ import forge.game.ability.SpellAbilityEffect;
+ import forge.game.card.Card;
+ import forge.game.card.CardCollection;
+@@ -18,6 +22,10 @@
+ import forge.game.card.CardState;
+ import forge.game.card.CounterType;
+ import forge.game.cost.Cost;
++import forge.game.cost.CostPart;
++import forge.game.cost.CostPartMana;
++import forge.game.cost.CostSacrifice;
++import forge.game.cost.CostTap;
+ import forge.game.mana.ManaCostBeingPaid;
+ import forge.game.phase.PhaseHandler;
+ import forge.game.phase.PhaseType;
+@@ -29,6 +37,12 @@
+ import forge.game.spellability.OptionalCostValue;
+ import forge.game.spellability.SpellAbility;
+ import forge.game.spellability.SpellAbilityCondition;
++import forge.game.replacement.ReplacementEffect;
++import forge.game.replacement.ReplacementType;
++import forge.game.staticability.StaticAbility;
++import forge.game.staticability.StaticAbilityMode;
++import forge.game.trigger.Trigger;
++import forge.game.trigger.TriggerType;
+ import forge.game.zone.ZoneType;
+ import forge.util.MyRandom;
+ import forge.util.collect.FCollectionView;
+@@ -80,6 +94,7 @@
+ 
+     private AiAbilityDecision canPlayWithoutRestrict(final Player ai, final SpellAbility sa) {
+         final Card source = sa.getHostCard();
++        final boolean winningSacrifice = hasKnownWinningSacrificeCost(ai, sa);
+ 
+         if (sa.hasParam("AILogic")) {
+             final String logic = sa.getParam("AILogic");
+@@ -88,16 +103,20 @@
+             if (!checkAiLogic(ai, sa, logic)) {
+                 return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+             }
+-            if (!alwaysOnDiscard && !checkPhaseRestrictions(ai, sa, ai.getGame().getPhaseHandler(), logic)) {
++            if (!alwaysOnDiscard && !winningSacrifice && !checkPhaseRestrictions(ai, sa, ai.getGame().getPhaseHandler(), logic)) {
+                 return new AiAbilityDecision(0, AiPlayDecision.MissingPhaseRestrictions);
+             }
+-        } else if (!checkPhaseRestrictions(ai, sa, ai.getGame().getPhaseHandler())) {
++        } else if (!winningSacrifice && !checkPhaseRestrictions(ai, sa, ai.getGame().getPhaseHandler())) {
+             return new AiAbilityDecision(0, AiPlayDecision.MissingPhaseRestrictions);
+         } else if (ComputerUtil.preventRunAwayActivations(sa)) {
+             return new AiAbilityDecision(0, AiPlayDecision.StopRunawayActivations);
+         }
+ 
+         AiAbilityDecision decision = checkApiLogic(ai, sa);
++        if (winningSacrifice && (decision.decision() == AiPlayDecision.WillPlay
++                || decision.decision() == AiPlayDecision.CantPlayAi) && hasLegalAnnouncedTargets(sa)) {
++            decision = new AiAbilityDecision(100, AiPlayDecision.WillPlay);
++        }
+         if (!decision.willingToPlay()) {
+             return decision;
+         }
+@@ -118,6 +137,157 @@
+             }
+         }
+         return decision;
++    }
++
++    // Project modification of Forge Team's AI (GPL-3.0-or-later): costs can win
++    // before the advertised token/scry effect. Do not postpone that public win.
++    static boolean isKnownWinningSacrificeCost(final Player ai, final SpellAbility sa) {
++        return hasKnownWinningSacrificeCost(ai, sa);
++    }
++
++    private static boolean hasKnownWinningSacrificeCost(final Player ai, final SpellAbility sa) {
++        // Visibility comes before inspecting the ability's API, cost or subabilities.
++        if (ai == null || sa == null || !knownTo(ai, sa.getHostCard())) return false;
++        if (sa.isTrigger() || sa.isManaAbility() || (!sa.isSpell() && !sa.isActivatedAbility())
++                || sa.getPayCosts() == null || ai.getOpponents().size() != 1
++                || sa.getParent() != null || !sa.getAdditionalAbilities().isEmpty()
++                || !sa.getAdditionalAbilityLists().isEmpty()) {
++            return false;
++        }
++        CostSacrifice sacrifice = null;
++        for (CostPart part : sa.getPayCosts().getCostParts()) {
++            if (part instanceof CostSacrifice sac) {
++                if (sacrifice != null || !"1".equals(sac.getAmount())
++                        || !(Set.of("Creature", "Creature.Other", "Creature.YouCtrl", "Creature.Other+YouCtrl")
++                                .contains(sac.getType()) || sac.payCostFromSource())) return false;
++                sacrifice = sac;
++            } else if (part instanceof CostPartMana mana) {
++                if (mana.getMana().countX() != 0 || mana.getMana().hasPhyrexian()) return false;
++            } else if (!(part instanceof CostTap)) {
++                return false;
++            }
++        }
++        if (sacrifice == null) return false;
++        final Player opponent = ai.getOpponents().get(0);
++        if (opponent.getLife() <= 0 || ai.getLife() <= 0) return false;
++        final CardCollection sources = new CardCollection();
++        for (Card card : ai.getGame().getCardsIn(ZoneType.STATIC_ABILITIES_SOURCE_ZONES)) {
++            if (!knownTo(ai, card) || card.isPhasedOut()) continue;
++            sources.add(card);
++            for (ReplacementEffect replacement : card.getReplacementEffects()) {
++                if (replacement.isSuppressed() || !replacement.zonesCheck(ai.getGame().getZoneOf(card))) continue;
++                final ReplacementType mode = replacement.getMode();
++                if (mode == ReplacementType.GameLoss || mode == ReplacementType.GameWin
++                        || mode == ReplacementType.GainLife || (mode == ReplacementType.LifeReduced
++                            && !"True".equals(replacement.getParam("IsDamage")))
++                        || (mode == ReplacementType.Moved
++                            && mayIncludeZone(replacement.getParam("Origin"), ZoneType.Battlefield)
++                            && mayIncludeZone(replacement.getParam("Destination"), ZoneType.Graveyard))) {
++                    return false;
++                }
++            }
++            for (StaticAbility ability : card.getStaticAbilities()) {
++                if (ability.isSuppressed() || (ability.getActiveZone() != null
++                        && !ability.getActiveZone().contains(card.getZone().getZoneType()))) continue;
++                if (ability.getMode().contains(StaticAbilityMode.DisableTriggers)
++                        || ability.getMode().contains(StaticAbilityMode.CantTarget)
++                        || ability.getMode().contains(StaticAbilityMode.MustTarget)
++                        || ability.getMode().contains(StaticAbilityMode.CantLoseLife)
++                        || ability.getMode().contains(StaticAbilityMode.CantChangeLife)) return false;
++            }
++        }
++        boolean candidate = false;
++        for (Card victim : ai.getCardsIn(ZoneType.Battlefield)) {
++            if (!knownTo(ai, victim) || !victim.canBeSacrificedBy(sa, false)) continue;
++            if (sacrifice.payCostFromSource() ? victim != sa.getHostCard()
++                    : !victim.isValid(sacrifice.getType().split(";"), ai, sa.getHostCard(), sa)) continue;
++            if (!victim.isCreature()) return false;
++            candidate = true;
++            long lifeLoss = 0;
++            for (Card card : sources) {
++                for (Trigger trigger : card.getTriggers()) {
++                    if (trigger.isSuppressed() || !trigger.zonesCheck(ai.getGame().getZoneOf(card))) continue;
++                    if (trigger.getMode() == TriggerType.ChangesZone) {
++                        if (!mayIncludeZone(trigger.getParam("Origin"), ZoneType.Battlefield)) continue;
++                        if (!mayIncludeZone(trigger.getParam("Destination"), ZoneType.Graveyard)) continue;
++                    } else {
++                        // Unknown simultaneous cost triggers may alter the supposedly terminal line.
++                        return false;
++                    }
++                    if (!trigger.getParamOrDefault("ValidCard", "").matches(
++                            "(?:Card\\.Self|Creature(?:\\.Other)?(?:\\+YouCtrl)?)(?:,Creature\\.Other(?:\\+YouCtrl)?)?")) return false;
++                    if (!trigger.matchesValidParam("ValidCard", victim)) continue;
++                    if (!card.getController().equals(ai)
++                            || !Set.of("Mode", "Origin", "Destination", "ValidCard", "TriggerZones", "Execute", "TriggerDescription")
++                                .containsAll(trigger.getMapParams().keySet())
++                            || !"Battlefield".equals(trigger.getParam("Origin"))
++                            || !"Graveyard".equals(trigger.getParam("Destination"))
++                            || !trigger.hasParam("Execute") || !trigger.hasSVar(trigger.getParam("Execute"))) return false;
++                    // The native executor prefers an effective override to the printed SVar.
++                    // Inspect an existing one without ensureAbility(), caching, or allocating an ability.
++                    final SpellAbility effective = trigger.getOverridingAbility();
++                    if (effective != null && (effective.getClass() != AbilitySub.class
++                            || effective.getApi() != ApiType.LoseLife || effective.isWrapper() || effective.getParent() != null
++                            || !effective.getAdditionalAbilities().isEmpty()
++                            || !effective.getAdditionalAbilityLists().isEmpty())) return false;
++                    final Map<String, String> loss = effective == null
++                            ? AbilityFactory.getMapParams(trigger.getSVar(trigger.getParam("Execute")))
++                            : effective.getMapParams();
++                    if (!Set.of("DB", "LifeAmount", "Defined", "ValidTgts", "SubAbility").containsAll(loss.keySet())
++                            || !"LoseLife".equals(loss.get("DB"))
++                            || !loss.getOrDefault("LifeAmount", "").matches("[1-9][0-9]{0,8}")) return false;
++                    final boolean targeted = "Player".equals(loss.get("ValidTgts")) && !loss.containsKey("Defined");
++                    if (!targeted && !("Player.Opponent".equals(loss.get("Defined")) && !loss.containsKey("ValidTgts"))) return false;
++                    if (targeted && !Iterables.isEmpty(opponent.getKeywords())) return false;
++                    if (effective != null && ((effective.getSubAbility() != null) != loss.containsKey("SubAbility"))) return false;
++                    if (loss.containsKey("SubAbility")) {
++                        if (!trigger.hasSVar(loss.get("SubAbility"))) return false;
++                        final SpellAbility child = effective == null ? null : effective.getSubAbility();
++                        if (child != null && (child.getClass() != AbilitySub.class
++                                || child.getApi() != ApiType.GainLife || child.getSubAbility() != null
++                                || !child.getAdditionalAbilities().isEmpty()
++                                || !child.getAdditionalAbilityLists().isEmpty())) return false;
++                        final Map<String, String> gain = child == null
++                                ? AbilityFactory.getMapParams(trigger.getSVar(loss.get("SubAbility"))) : child.getMapParams();
++                        if (!Set.of("DB", "Defined", "LifeAmount").equals(gain.keySet())
++                                || !"GainLife".equals(gain.get("DB")) || !"You".equals(gain.get("Defined"))
++                                || !gain.get("LifeAmount").matches("[1-9][0-9]{0,8}")) return false;
++                    }
++                    lifeLoss += Integer.parseInt(loss.get("LifeAmount"));
++                }
++            }
++            // Every eligible payment must win: don't forecast one victim then pay with another.
++            if (lifeLoss < opponent.getLife()) return false;
++        }
++        return candidate;
++    }
++
++    private static boolean knownTo(final Player ai, final Card card) {
++        return card != null && card.getView().canBeShownTo(ai.getView())
++                && card.getView().canFaceDownBeShownTo(ai.getView());
++    }
++
++    private static boolean mayIncludeZone(final String zones, final ZoneType wanted) {
++        if (zones == null) return true;
++        for (String zone : zones.split(",", -1)) {
++            if ("Any".equals(zone) || wanted.toString().equals(zone)) return true;
++            try {
++                ZoneType.valueOf(zone);
++            } catch (IllegalArgumentException unknown) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    private static boolean hasLegalAnnouncedTargets(final SpellAbility root) {
++        for (SpellAbility ability = root; ability != null; ability = ability.getSubAbility()) {
++            if (!ability.isTargetNumberValid()) return false;
++            for (GameObject target : ability.getTargets()) {
++                if (!ability.canTarget(target, true)) return false;
++            }
++        }
++        return true;
+     }
+ 
+     protected boolean checkConditions(final Player ai, final SpellAbility sa) {

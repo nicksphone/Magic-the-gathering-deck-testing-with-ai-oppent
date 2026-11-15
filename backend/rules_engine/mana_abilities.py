@@ -22,7 +22,12 @@ def _printed_specs(name, type_line, oracle_text, is_land):
     from rules_engine.oracle_text import without_reminder_text
     from rules_engine.mana import _land_colors, DUAL_LAND_NAME_COLORS
     rows = []
-    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(oracle_text))):
+    text = without_reminder_text(oracle_text)
+    from rules_engine.activated_grants import top_level_offsets
+    offsets = top_level_offsets(text)
+    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(text)):
+        if offsets is None or not offsets[match.start()]:
+            continue
         cost, effect = match[1].strip(), match[2].strip()
         parsed = parse_activated_cost(cost)
         if parsed.supported and (parsed.tap_source or parsed.sacrifice_source
@@ -46,7 +51,7 @@ def _printed_specs(name, type_line, oracle_text, is_land):
     return tuple(rows)
 
 
-def mana_ability_specs(card, state=None, *, entering=False):
+def _printed_mana_ability_specs(card, state=None, *, entering=False):
     from rules_engine.land_types import effective_type_line, printed_land_abilities_lost
     line = getattr(card, 'type_line', '') or ''
     rows = _printed_specs(getattr(card, 'name', ''), line,
@@ -74,6 +79,15 @@ def mana_ability_specs(card, state=None, *, entering=False):
                 if not any(cost == '{T}' and existing == effect for _, cost, existing in rows):
                     rows.append((max((row[0] for row in rows), default=-1) + 1, '{T}', effect))
     return tuple(rows)
+
+
+def mana_ability_specs(card, state=None, *, entering=False):
+    from rules_engine.activated_grants import mana_specs
+    from rules_engine.continuous import printed_abilities_suppressed
+    rows = (_printed_mana_ability_specs(card, state, entering=entering)
+            if state is None or not printed_abilities_suppressed(state, card.id, include_land_types=False)
+            else ())
+    return (*rows, *mana_specs(card, state))
 
 
 def _mana_self_damage_instruction(card, spec):
@@ -272,7 +286,7 @@ def source_ready(state, card, spec=None):
     from rules_engine.costs import parse_activated_cost
     needs_tap = spec is None or parse_activated_cost(spec[1]).tap_source
     return (card.zone == Zone.BATTLEFIELD
-            and not printed_abilities_suppressed(state, card.id, include_land_types=False)
+            and (spec in mana_ability_specs(card, state) if spec is not None else bool(mana_ability_specs(card, state)))
             and (not needs_tap or (not card.tapped
                  and ('Creature' not in effective_types(state, card) or not card.summoning_sick
                       or has_keyword(state, card.id, 'haste')))))
@@ -312,7 +326,7 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.paid_triggers import resolution_mana_ability_allowed
-    if printed_abilities_suppressed(state, card.id, include_land_types=False) or (not ignore_readiness and not source_ready(state, card)):
+    if not ignore_readiness and not source_ready(state, card):
         return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
@@ -477,9 +491,19 @@ def _activation_choice_hints(state, card, spec):
                 'sacrifice_card_count': sacrifice, 'hybrid_choice_count': len(hybrid)}}
 
 
+def _granted_single_output_choice(state, card, spec):
+    from rules_engine.activated_grants import mana_specs
+    if spec not in mana_specs(card, state):
+        return {}
+    options = advertised_output_options(state, card, spec)
+    return ({'color': options[0]['color'], 'output_bundle': options[0]['output_bundle']}
+            if len(options) == 1 else {})
+
+
 def mana_ability_views(state, card):
     from rules_engine.costs import activated_cost_available
     return [{'ability_index': spec[0], 'cost_text': spec[1], 'outputs': outputs,
+             **_granted_single_output_choice(state, card, spec),
              **_activation_choice_hints(state, card, spec),
              'output_options': advertised_output_options(state, card, spec),
              'base_output_bundles': list({tuple(sorted(row['output_bundle'].items())):

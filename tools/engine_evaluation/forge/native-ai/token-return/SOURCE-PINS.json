@@ -1,0 +1,14 @@
+{
+  "forge-ai/src/main/java/forge/ai/AiController.java": {
+    "postimage": "599dc8a999f36b482c0fb40a482c0072278b80280815a3c8ccf154ac0e02f630",
+    "preimage": "e8a7ae4d39b73a9f95c70dbae2b5c54e75b3c1a7cdfb14c6fa2e013026b563e7"
+  },
+  "forge-ai/src/main/java/forge/ai/SpellAbilityAi.java": {
+    "postimage": "b8e4cd6e55049b7fd13c4c82d22f9c109c7ba5142126e85adf9063f1d2fc19b8",
+    "preimage": "e3ae29b8137219293c28a7597579fd75c3c6088d637b6415b96cb0c73312a5c2"
+  },
+  "forge-game/src/main/java/forge/game/trigger/TriggerHandler.java": {
+    "postimage": "b67f3b109c5714dbd7268fb7cdbebad609fec716c3ded91fcda13e57fdd49e39",
+    "preimage": "db7af9f04b37ad27cd30de16d38de4b0cdb2df2252f454ea4f510eeed6dc7c87"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "canonical_prefix": "canonical",
+  "card_programs": 15,
+  "files": [
+    {
+      "bytes": 612,
+      "path": "canonical/forge-gui/res/cardsfolder/b/blood_artist.txt",
+      "sha256": "010f5d73f93116a287960c18fa06e01695db0639648e281515f03e7aadd6b1ec",
+      "source_relative_path": "forge-gui/res/cardsfolder/b/blood_artist.txt"
+    },
+    {
+      "bytes": 885,
+      "path": "canonical/forge-gui/res/cardsfolder/c/cauldron_familiar.txt",
+      "sha256": "5ee429e104621646a12c21b52d6c882f6832beced6281d425fef1470bd8dfb6a",
+      "source_relative_path": "forge-gui/res/cardsfolder/c/cauldron_familiar.txt"
+    },
+    {
+      "bytes": 553,
+      "path": "canonical/forge-gui/res/cardsfolder/d/disciple_of_the_vault.txt",
+      "sha256": "89f338710ca836e30792bd70691d89c868c8c3c6b1f676ca5d004deb354d0fae",
+      "source_relative_path": "forge-gui/res/cardsfolder/d/disciple_of_the_vault.txt"
+    },
+    {
+      "bytes": 76,
+      "path": "canonical/forge-gui/res/cardsfolder/f/forest.txt",
+      "sha256": "9a574ea2a8136e588ab77ff8bf260075a94572d8099a7d0d98c62590479aa5a6",
+      "source_relative_path": "forge-gui/res/cardsfolder/f/forest.txt"
+    },
+    {
+      "bytes": 870,
+      "path": "canonical/forge-gui/res/cardsfolder/g/gilded_goose.txt",
+      "sha256": "8417953ec84f4739b3601b4fd0f14b4aabeaf05f6ba8e7dbd52c0541a20de1df",
+      "source_relative_path": "forge-gui/res/cardsfolder/g/gilded_goose.txt"
+    },
+    {
+      "bytes": 599,
+      "path": "canonical/forge-gui/res/cardsfolder/g/grafdiggers_cage.txt",
+      "sha256": "8177cb67ab3142367a9ec30a6e4b425eb91b17eef6c9dca68c6b1b9f18649ee4",
+      "source_relative_path": "forge-gui/res/cardsfolder/g/grafdiggers_cage.txt"
+    },
+    {
+      "bytes": 67,
+      "path": "canonical/forge-gui/res/cardsfolder/g/grizzly_bears.txt",
+      "sha256": "31964bb8465c2e815f106b34838e8b1a8d5c567c420ad6f88ed915427fafb651",
+      "source_relative_path": "forge-gui/res/cardsfolder/g/grizzly_bears.txt"
+    },
+    {
+      "bytes": 632,
+      "path": "canonical/forge-gui/res/cardsfolder/h/hushbringer.txt",
+      "sha256": "75c6d6cbda112a8d02b0b5b8d1c4eaa9d6f7d341cf58e3763a1c6cce3fe3f9cc",
+      "source_relative_path": "forge-gui/res/cardsfolder/h/hushbringer.txt"
+    },
+    {
+      "bytes": 76,
+      "path": "canonical/forge-gui/res/cardsfolder/i/island.txt",
+      "sha256": "e590434de75aa3e39a03555d0c91788cdabe37f5fdf91ce7c1a189c79f4cade6",
+      "source_relative_path": "forge-gui/res/cardsfolder/i/island.txt"
+    },
+    {
+      "bytes": 283,
+      "path": "canonical/forge-gui/res/cardsfolder/j/jade_mage.txt",
+      "sha256": "4e3f462e3b57de8e944371acd3e8515ec9d0da40dd7671e91cc682553bd94a30",
+      "source_relative_path": "forge-gui/res/cardsfolder/j/jade_mage.txt"
+    },
+    {
+      "bytes": 80,
+      "path": "canonical/forge-gui/res/cardsfolder/m/mountain.txt",
+      "sha256": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+      "source_relative_path": "forge-gui/res/cardsfolder/m/mountain.txt"
+    },
+    {
+      "bytes": 501,
+      "path": "canonical/forge-gui/res/cardsfolder/p/platinum_angel.txt",
+      "sha256": "aa191deaeda5eaaf9a0861e72c3d98f62ee5f916b95ed269bfe9a817e74aa93f",
+      "source_relative_path": "forge-gui/res/cardsfolder/p/platinum_angel.txt"
+    },
+    {
+      "bytes": 74,
+      "path": "canonical/forge-gui/res/cardsfolder/s/swamp.txt",
+      "sha256": "96a473942577dee4fffe52906874ef343a7e8d1413872334baa576066112d252",
+      "source_relative_path": "forge-gui/res/cardsfolder/s/swamp.txt"
+    },
+    {
+      "bytes": 732,
+      "path": "canonical/forge-gui/res/cardsfolder/w/witchs_oven.txt",
+      "sha256": "fcfc1613c389c9d4040420466d33ffb089ac58be0eb354440212195211194467",
+      "source_relative_path": "forge-gui/res/cardsfolder/w/witchs_oven.txt"
+    },
+    {
+      "bytes": 216,
+      "path": "canonical/forge-gui/res/tokenscripts/c_a_food_sac.txt",
+      "sha256": "7b6aa427661e3a0cb1b50e7eb9a25a10f1a13ca83dde81eebc07ea345eebdadf",
+      "source_relative_path": "forge-gui/res/tokenscripts/c_a_food_sac.txt"
+    },
+    {
+      "bytes": 91,
+      "path": "canonical/forge-gui/res/tokenscripts/g_1_1_saproling.txt",
+      "sha256": "74da18b8471182796dfe868597eb0e510dbb051fd5d51f6f7fe1f63df4c7d7e6",
+      "source_relative_path": "forge-gui/res/tokenscripts/g_1_1_saproling.txt"
+    },
+    {
+      "bytes": 465,
+      "path": "canonical/forge-gui/res/cardsfolder/r/rite_of_replication.txt",
+      "sha256": "15548b53206b902f4bfc4af030c1c65dcfc8884c1f9a721102ab4f511d20c2f6",
+      "source_relative_path": "forge-gui/res/cardsfolder/r/rite_of_replication.txt"
+    }
+  ],
+  "schema": 1,
+  "source_root_variable": "F",
+  "token_programs": 2,
+  "upstream": {
+    "commit": "61e9442c433711a82258daca3236f936a1d6f70e",
+    "repository": "https://github.com/Card-Forge/forge"
+  }
+}

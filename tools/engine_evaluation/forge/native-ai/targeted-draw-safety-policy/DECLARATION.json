@@ -1,0 +1,18 @@
+{
+  "schema": "native-targeted-draw-safety-34-v1",
+  "seed": 2026110683,
+  "seed_boundary": "Once before model initialization per fresh baseline/candidate JVM; no late restore/search/retry",
+  "ai_cases": {"unchanged_original_audit": 12, "unchanged_first_policy_safety": 10, "unchanged_replacement_audit": 8, "new_multiplier_and_bounced_jace": 4, "total": 34},
+  "trusted_controls": "Four unchanged separate Jace/Spirit explicit-target controls from replacement audit; not AI passes. Old22 archive's four exact-library controls remain immutable, not re-counted here.",
+  "new_scenes_both_seats": ["teferi-multiplier-positive", "jace-left-battlefield-positive"],
+  "teferi": "Opponent genuinely pays/casts full canonical Teferi's Ageless Insight, actor fresh Default chooses Inspiration targeting opponent and produces native Milled victory",
+  "jace_left": "Unchanged replacement pose genuinely paid/cast Jace with printed loyalty4; opponent adds two Islands and legally pays for Into the Roil targeting its own Jace, no kicker; verify current Jace in hand and actual bounce source graveyard; actor fresh Default chooses Inspiration targeting enemy and wins",
+  "setup_label": "Constructed trusted legal paid setup, not a natural game or an AI setup choice. Actor has no prior chooser/cost probes in fixture setup.",
+  "new_phases": "Teferi actor MAIN2, bounced-Jace opponent END_OF_TURN; actual setPriority(actor) before the single fresh actor chooser",
+  "product_after_baseline_only": true,
+  "product_scope": "One new full DrawAi source/class over frozen first draft, zero-fuzz patch; no edits to original gates/audits/nativebase/profile/app/CI/graph",
+  "query": "Source visibility and face visibility before ability access; unsuppressed active-zone native Draw replacements matching ValidPlayer; native ensureAbility typed WinsGame main/sub/additional children, without transient requirementsCheck; no hidden identities or future library mutation",
+  "draw_permission": "Only opponent decking branch requires canDraw(opponentLibrarySize+1), not full requested count",
+  "limits": "Conservative potential-WinsGame guard, not arbitrary replacement beneficiary/condition forecasting or all-card/fairness certification; no printed cap2 native fixture claimed",
+  "bounds": {"engine_workers": 1, "seconds_per_gate": 180, "heap_mb": 1500, "processors": 1, "native_clock": "unchanged"}
+}

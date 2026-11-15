@@ -1,0 +1,56 @@
+--- run.py
++++ run.py
+@@ -19,7 +19,9 @@
+ 
+ def main():
+     identity_path, parent, out = (Path(value).resolve() for value in sys.argv[1:4])
+-    candidate = Path(sys.argv[4]).resolve() if len(sys.argv) == 5 else None
++    candidate = Path(sys.argv[4]).resolve() if len(sys.argv) >= 5 else None
++    reference = Path(sys.argv[5]).resolve() if len(sys.argv) == 6 else None
++    assert candidate is None and len(sys.argv) == 4 or candidate is not None and reference is not None
+     identity = json.loads(identity_path.read_text())
+     assert sha(identity_path) == 'cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0'
+     assert not out.exists(), 'Use a fresh evidence root; never retry an expired gate'
+@@ -38,8 +40,21 @@
+         pins[str(directory / 'MANIFEST.json')] = sha(directory / 'MANIFEST.json')
+         pins.update({str(directory / 'shadow' / path): digest for path, digest in data['classes'].items()})
+         pins.update({str(directory / 'source' / path): digest for path, digest in data['sources'].items()})
+-    for name in ('NativeFogActivationAudit.java', 'NativeFogActivationControls.java', 'DECLARATION.json'):
++    for name in ('NativeFogActivationAudit.java', 'NativeFogActivationControls.java', 'DECLARATION.json', 'run.py'):
+         pins[str(HERE / name)] = sha(HERE / name)
++    if reference is not None:
++        prior = json.loads((reference / 'RESULT.json').read_text())
++        prior_pins = json.loads((reference / 'BEFORE.json').read_text())['pins']
++        assert prior['runtime_content_id'] == BASE and prior['summary']['baseline_reference_only'] is True
++        assert prior['summary']['original8'] == {'pass': 6, 'policy_red': 2}
++        assert prior['summary']['supplement8'] == {'pass': 8}
++        assert prior['summary']['control_fail'] == 0 and prior['summary']['harness_errors'] == 0
++        for name in ('NativeFogActivationAudit.java', 'NativeFogActivationControls.java', 'DECLARATION.json', 'run.py'):
++            assert prior_pins[str(HERE / name)] == sha(HERE / name)
++        for path in [reference / 'RESULT.json', reference / 'BEFORE.json',
++                     *sorted((reference / 'reports').glob('supplement-*.private.json'))]:
++            pins[str(path)] = sha(path)
++        assert len(list((reference / 'reports').glob('supplement-*.private.json'))) == 8
+     assert sha(HERE / 'NativeFogActivationAudit.java') == '14890b4f97de6b1a575913ef0296c702d757a4f7bd7144009ea8051c08bde2ae'
+     forge, jdk, cache = (Path(identity[key]) for key in ('forge', 'jdk', 'cache'))
+     for path in (HERE / 'canonical').glob('*.txt'):
+@@ -67,6 +82,8 @@
+             '--unshare-ipc', '--unshare-uts', '--die-with-parent', '--new-session']
+     for path in ['/usr', '/lib', '/lib64', '/bin', '/etc', str(cache), str(identity_path.parent), str(parent), str(runtime)]:
+         argv += ['--ro-bind', path, path]
++    if reference is not None:
++        argv += ['--ro-bind', str(reference), str(reference)]
+     argv += ['--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--ro-bind', str(out), str(out)]
+     for name in ('home', 'tmp', 'reports'):
+         argv += ['--bind', str(out / name), str(out / name)]
+@@ -76,7 +93,9 @@
+              '-Duser.home=' + str(out / 'home'), '-Djava.io.tmpdir=' + str(out / 'tmp'), '-Dsentry.dsn=',
+              '-Xlog:class+load=info:file=' + str(out / 'reports/class-load.log') + ':uptime,level,tags',
+              '--add-opens', 'java.base/java.lang=ALL-UNNAMED', '-cp', str(out / 'classes') + ':' + cp,
+-             'forge.evaluation.NativeFogActivationControls', str(out / 'reports')]
++             'forge.evaluation.NativeFogActivationControls', str(out / 'reports'), 'candidate' if candidate else 'baseline']
++    if reference is not None:
++        argv += [str(reference / 'reports')]
+     save('ARGV.json', argv)
+     started = time.monotonic()
+     with (out / 'stdout.private.log').open('wb') as stdout, (out / 'stderr.private.log').open('wb') as stderr:

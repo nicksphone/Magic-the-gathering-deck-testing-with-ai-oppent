@@ -1,0 +1,24 @@
+{
+  "upstream_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "parent_candidate": "a721ca75042823349ad3a37bbbfb18d4311b92914ca81ddb213df6e8e9f655d9",
+  "source": {
+    "path": "forge-ai/src/main/java/forge/ai/ComputerUtilAbility.java",
+    "before_sha256": "23ce38a88283568641b51b815e550512de0584a6aa1608ccecc88cd4eac5e8b4",
+    "after_sha256": "fe2c3b54c83181ee3ea7042814ae1cf092bad2877f373106765702b3c50ea587"
+  },
+  "classes": {
+    "forge/ai/ComputerUtilAbility.class": "eb1af8d48f50d83396918dc431d76e09f0136c49764de287e3f95502c3d229e1",
+    "forge/ai/ComputerUtilAbility$SortKey.class": "693a8bc024c30260dba3f4c2e68e599af13c6ce5c136a8f84790446c495f6e1a"
+  },
+  "old_sources": 13,
+  "old_classes": 21,
+  "old_source_class_bytes_unchanged": true,
+  "base_build_identity_sha256": "cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0",
+  "base_resource_manifest_sha256": "acc7567174ff29e05a392d246b6c54e9b65a14d3e145dd661e60ec34739c624a",
+  "base_classes": {
+    "forge/ai/ComputerUtilAbility.class": "af9be7b50d180461e27b764b99aa46eb2b8daee84cf0ff2c0a490182645b9530",
+    "forge/ai/ComputerUtilAbility$SortKey.class": "29239827af590bd30e80f37fbbe5ab575783845dcb47f7c0a825e9484bbe7337"
+  },
+  "candidate_content_id": "d47eee87846bda289c3a855f4ad12095155379177bd1f4581659ec1ba7ce66cb",
+  "profile_build_id": "b8e83f7c45aad95682d05a858bc2f2e7f3213ae59316ad1b04f9b704eb7453ba"
+}

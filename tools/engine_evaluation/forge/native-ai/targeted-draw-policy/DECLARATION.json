@@ -1,0 +1,18 @@
+{
+  "schema": "native-targeted-draw-policy-22-v1",
+  "seed": 2026110641,
+  "seed_boundary": "Once before FModel in each fresh baseline/candidate JVM; no reset, search or retry",
+  "upstream": "Forge Team/Card-Forge 61e9442c433711a82258daca3236f936a1d6f70e; GPL-3.0-or-later; LICENSE",
+  "ai_gate": {"unchanged_audit_cases": 12, "new_cases": 10, "total": 22},
+  "new_scenes_both_seats": ["inspiration-equal", "opportunity-equal", "empty-enemy", "unfunded", "enemy-cannot-lose"],
+  "new_expectations": ["self draw2, enemy library2 untouched", "self draw4, enemy library4 untouched", "target enemy library0 and native win", "decline with all six Islands tapped", "native Platinum Angel prevents opponent loss, target self"],
+  "supplemental_controls": "Four independent exact-library games, both spells/seats: observe native targetAI policy, then explicit-target legal paid action on enemy; empty library without native game loss. Trusted execution, not AI passes.",
+  "pose": "Constructed native games, not natural games; full unchanged canonical scripts pinned/copied before fixtures",
+  "phases": "empty-enemy actor MAIN2, all other new scenes opponent END_OF_TURN; devModeSet/onStackResolved/setPriority(actor), assert actual phase/turn/priority",
+  "funding": "Six canonical Islands; all tapped only for unfunded; no pool mana",
+  "immutable_dependency": "Original NativeTargetedDrawAudit.aiCase invoked reflectively, no old source/main/seed/verifier changes; its 12 AI expectations are unchanged",
+  "baseline_before_product": true,
+  "bounds": {"engine_workers": 1, "heap_mb": 1500, "processors": 1, "seconds_per_gate": 180, "native_clock": "unchanged"},
+  "candidate": "One DrawAi.java, one DrawAi.class, zero-fuzz patch atop exact eight-class prefix and qualified base; no app/profile/CI/graph/commit/SQL/network changes",
+  "limits": "No arbitrary curse, linked chain, trigger or natural-game certification; fixture/engine errors stop the run"
+}

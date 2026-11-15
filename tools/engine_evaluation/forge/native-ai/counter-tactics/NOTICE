@@ -1,0 +1,18 @@
+Derived from Forge Team / Card-Forge, revision
+61e9442c433711a82258daca3236f936a1d6f70e.
+
+CounterAi.java, its complete preimage, and the canonical card programs are
+Forge-derived material distributed under GPL-3.0-or-later. LICENSE contains
+the GNU General Public License version 3. Original upstream attribution is
+retained; the modified source adds an SPDX identifier and Forge Team credit.
+
+Local correction: optional counter target enumeration, a narrow public
+selected-target critical-damage preference override, current target legality,
+and conservative observer-public LifeReduced uncertainty handling.
+
+The three native audits use Forge's AITest harness and complete canonical
+programs. Their frozen source bytes are reproduced unchanged. The portable
+runner follows the existing Chalice-family sandbox/pinning structure.
+
+This package does not claim authorship of Forge, a complete game-winning-threat
+predictor, complete replacement prediction, or general AI fairness qualification.

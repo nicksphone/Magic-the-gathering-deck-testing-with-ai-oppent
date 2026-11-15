@@ -12,6 +12,30 @@ export function emptyCombatDraft(): CombatDraft {
   return { attackers: [], attackTargets: {}, bands: [], blocks: {}, selectedBlocker: null };
 }
 
+export function combatDraftGuidance(draft?: CombatDraft, attackMove?: LegalMove, blockMove?: LegalMove): string | null {
+  if (!draft) return null;
+  if (blockMove) {
+    const selected = blockMove.blockers?.find(card => card.id === draft.selectedBlocker);
+    if (selected) {
+      return `Block draft: not submitted. ${selected.name} is selected; click an attacker to assign it, then Submit Blocks.`;
+    }
+    const attackers = new Set(blockMove.attackers?.map(card => card.id));
+    const blockers = new Set(blockMove.blockers?.map(card => card.id));
+    const count = Object.entries(draft.blocks).filter(([id]) => attackers.has(id))
+      .reduce((total, [, ids]) => total + new Set(ids.filter(id => blockers.has(id))).size, 0);
+    return count
+      ? `${count} block ${count === 1 ? "assignment" : "assignments"} drafted, not submitted. Submit Blocks to confirm.`
+      : "No blocks drafted. Select a blocker, then an attacker. Submit Blocks confirms your assignments.";
+  }
+  if (attackMove) {
+    const count = new Set(draft.attackers.filter(id => attackMove.options?.includes(id))).size;
+    return count
+      ? `${count} ${count === 1 ? "attacker" : "attackers"} selected, not submitted. Submit Attackers to declare your attack.`
+      : "No attackers selected. Select attackers and review before submitting.";
+  }
+  return null;
+}
+
 export function selectAttackers(draft: CombatDraft, attackers: string[]): CombatDraft {
   return { ...draft, attackers: [...new Set(attackers)],
     bands: draft.bands.map(band => band.filter(id => attackers.includes(id))).filter(band => band.length > 1) };

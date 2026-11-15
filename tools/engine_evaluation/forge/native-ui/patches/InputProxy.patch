@@ -1,0 +1,52 @@
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputProxy.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputProxy.java
+@@ -17,6 +17,8 @@
+  */
+ package forge.gamemodes.match.input;
+ 
++// Owned 2026-11-05 patch on Forge 61e9442: bind queued presentations at enqueue time.
++
+ import forge.game.card.Card;
+ import forge.game.card.CardView;
+ import forge.game.player.Player;
+@@ -54,6 +56,26 @@
+ 
+     @Override
+     public final void update(final Observable observable, final Object obj) {
++        final InputQueue queue = controller.getInputQueue();
++        if (queue.hasPresentationListener()) {
++            final Input captured;
++            final long generation;
++            synchronized (queue) {
++                captured = queue.getActualInput(controller);
++                generation = queue.getInputGeneration();
++                input.set(captured);
++            }
++            if (!(captured instanceof InputLockUI)) controller.getGui().setCurrentPlayer(captured.getOwner());
++            FThreads.invokeInEdtLater(() -> {
++                queue.syncPoint();
++                if (captured instanceof InputLockUI) {
++                    if (getInput() == captured) captured.showMessageInitial();
++                } else {
++                    queue.presentInput(captured, generation);
++                }
++            });
++            return;
++        }
+         final Input nextInput = controller.getInputQueue().getActualInput(controller);
+ /*        if(DEBUG_INPUT) 
+             System.out.printf("%s ... \t%s on %s, \tstack = %s%n", 
+@@ -148,6 +170,13 @@
+         final Input inp = getInput();
+         if (inp != null) {
+             if (sa != null) {
++                if (inp instanceof InputSelectStackItems stackInput) {
++                    // Owned 2026-11-06: receipt only for synchronous stack-only ability clicks.
++                    final long generation = stackInput.interactionGeneration();
++                    final boolean result = inp.selectAbility(sa);
++                    stackInput.interactionCompleted(generation);
++                    return result;
++                }
+                 return inp.selectAbility(sa);
+             }
+         }

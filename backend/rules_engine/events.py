@@ -579,8 +579,13 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         key = "artifact_targets"
     else:
         key = "enchantment_targets"
+    targets = hints.get(key, [])
+    if (item.effect_key == 'exile_until_source_leaves'
+            and re.search(r'\btarget creature or planeswalker\b', low)):
+        targets = list({target['id']: target for target in
+                        [*targets, *hints.get('planeswalker_targets', [])]}.values())
     options = []
-    for target in hints.get(key, []):
+    for target in targets:
         choice = {"target_card_id": target["id"]}
         if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
             options.append({**choice, "target_name": target["name"]})
@@ -1013,6 +1018,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "block_declared" and _matches_block_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} block trigger", event=event, payload=payload))
             elif event in {"spell_cast", "spell_copy"}:
+                out.extend(_any_player_cast_damage_triggers(state, card, event, payload, oracle))
                 from rules_engine.nth_spell_triggers import collect_nth_spell_triggers
                 nth_triggers, oracle = collect_nth_spell_triggers(state, card, event, payload, oracle)
                 out.extend(nth_triggers)
@@ -1690,6 +1696,31 @@ def _cast_event_source(state, event, payload):
                 and item.payload == payload.get('stack_payload')):
             return stack_source_card(state, item)
     return state.cards.get(payload.get('source_card_id'))
+
+
+def _any_player_cast_damage_triggers(state, source, event, payload, oracle):
+    if event != 'spell_cast' or 'whenever a player casts a spell with mana value ' not in oracle:
+        return []
+    caster = payload.get('controller')
+    spell = _cast_event_source(state, event, payload)
+    x_value = (payload.get('stack_payload') or {}).get('x_value', 0)
+    if (type(caster) is not int or caster not in state.players or spell is None
+            or type(x_value) is not int or x_value < 0):
+        return []
+    from rules_engine.mana import mana_value
+    value = mana_value(spell.mana_cost, x_value=x_value)
+    subject = r'(?:this (?:artifact|creature|enchantment|permanent)|' + re.escape(source.name.lower()) + r')'
+    triggers = []
+    for clause in oracle.splitlines():
+        match = re.fullmatch(
+            r'whenever a player casts a spell with mana value ([0-9]+) or less, '
+            + subject + r' deals ([0-9]+) damage to that player\.', clause.strip())
+        if match and value <= int(match[1]):
+            triggers.append({'source_card_id': source.id, 'controller': source.controller,
+                             'label': f'{source.name} cast trigger', 'effect_key': 'deal_damage',
+                             'payload': {'amount': int(match[2]), 'target_player': caster,
+                                         '__trigger_full_clause': clause.strip()}})
+    return triggers
 
 
 def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
@@ -2396,18 +2427,26 @@ def _trigger_from_oracle(
                 'label': default_label, 'effect_key': key, 'payload': data}
     if self_instructions:
         linked = [body for _, body in self_instructions if re.match(
-            r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
+            r'exile target (?:creature(?: or planeswalker)?|permanent|nonland permanent|artifact|enchantment)'
             r'(?: an opponent controls| you control)? until\b', body, re.I)]
         if linked:
             from rules_engine.oracle_effects import infer_effect_from_oracle
             compiled = None
-            if len(self_instructions) == 1 and oracle.strip() == self_instructions[0][0]:
+            if len(self_instructions) == 1:
                 clause, instruction = self_instructions[0]
-                proxy = copy(source)
-                proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
-                key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
-                if key == 'exile_until_source_leaves':
-                    compiled = key, data
+                raw_surface = raw_entry if event == 'enters_battlefield' else oracle
+                lines = [line.strip() for line in (raw_surface or '').splitlines() if line.strip()]
+                if event == 'enters_battlefield' and len(lines) == 2:
+                    from rules_engine.attachments import enchant_restriction, is_aura
+                    if is_aura(source, state) and enchant_restriction(lines[0]) is not None:
+                        lines = lines[1:]
+                # Account for the complete raw body, not a normalized substring.
+                if len(lines) == 1 and lines[0].casefold() == clause.casefold():
+                    proxy = copy(source)
+                    proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+                    key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
+                    if key == 'exile_until_source_leaves':
+                        compiled = key, data
             key, data = compiled if compiled is not None else ('noop', {
                 '__unsupported_trigger_instruction': '\n'.join(linked)})
             data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
@@ -2418,12 +2457,19 @@ def _trigger_from_oracle(
         from rules_engine.oracle_effects import (compile_optional_land_instruction,
                                                  optional_land_instruction_candidate)
         if any(optional_land_instruction_candidate(body) for _, body in self_instructions):
-            clause, instruction = self_instructions[0]
-            compiled = compile_optional_land_instruction(instruction) if len(self_instructions) == 1 else None
+            entries = self_instructions
+            if event == 'enters_battlefield':
+                entries = []
+                for line in raw_entry.splitlines():
+                    if re.fullmatch(self_entry_pattern, without_reminder_text(line).strip(), re.I):
+                        raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+                        entries.append((line.strip(), raw_match[1] if raw_match else None))
+            instruction = entries[0][1] if len(entries) == 1 else None
+            compiled = compile_optional_land_instruction(instruction) if instruction is not None else None
             key, data = compiled if compiled is not None else ('noop', {})
-            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in entries)
             if compiled is None:
-                data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+                data['__unsupported_trigger_instruction'] = data['__trigger_full_clause']
                 state.log.append(f'Unsupported optional land trigger instruction on {source.name}: '
                                  + data['__unsupported_trigger_instruction'])
             return {'source_card_id': source_card_id, 'controller': controller,

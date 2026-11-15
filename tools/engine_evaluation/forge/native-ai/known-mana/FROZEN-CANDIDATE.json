@@ -1,0 +1,218 @@
+{
+  "content_id": "74e0cc8af0915195b8a0a353439847206997c3c0f9ba9b520731ce3708ae8d9b",
+  "identity": {
+    "schema": "forge-known-mana-shadow-v1",
+    "forge_revision": "61e9442c433711a82258daca3236f936a1d6f70e",
+    "base_build_id": "59228745bfcbec403b038019815d8e94f74273fd4494a2e5799479d61abd3605",
+    "base_identity_sha256": "cf27ccd7a08f1a9433f75da8d399b3e9c87b83b95b17f883ffc4812ee2dfb3d0",
+    "identity_patch_sha256": "221ac0ec7c0cedd3e72392bdae7692f052ac2fe6a51c7b445852e762fc030cf3",
+    "increment_patch_sha256": "f83941ef5827334e846a7893e0626374c004ee04039dfb4fe525336302daec29",
+    "builder_sha256": "77a4120f4c455c4a1490c7dbab6d515e837aa43cb4076352ff65999935555f99",
+    "compiler": {
+      "release": 17,
+      "implicit": "none",
+      "java_sha256": "9cad3f2620d3ef2ed10b26f922af7e773d54fdaa05f615d6d6df014f3fec4155",
+      "javac_sha256": "2cc288a26beebc50ca7cd924847dffbfb38ef3314e105bba6d4ebce03a0bcb6b",
+      "jdk_release_sha256": "f83f6dcc966043c93cd498ac8e7ee7c310852074970d62c702e4ad2710002898"
+    },
+    "required_base_launch_sha256": "ee58d6110017448391e210c1722d6f1450904c239cc297282f34e4ed4c588562",
+    "source_preimages": [
+      {
+        "sha256": "7a9341bc13900a1ad8a47a96ad29a5cba3110340ecb38895bef98669760f18d8",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java"
+      },
+      {
+        "sha256": "5fe219c35f0f7067d7c6943b85c8f7f91272b5ef88707b5b863d24fbaf16f833",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java"
+      },
+      {
+        "sha256": "46d8b049cb68379f1968fd5eac95fdd7f0544fa37551a1f21c2f9944f071d436",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java"
+      }
+    ],
+    "upstream_source_preimages": [
+      {
+        "sha256": "10aa934b5efca931d34d39cbcf5dcd9a703ff0145edfad3466ffbd9dc3a4937d",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java"
+      },
+      {
+        "sha256": "5fe219c35f0f7067d7c6943b85c8f7f91272b5ef88707b5b863d24fbaf16f833",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java"
+      },
+      {
+        "sha256": "46d8b049cb68379f1968fd5eac95fdd7f0544fa37551a1f21c2f9944f071d436",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java"
+      }
+    ],
+    "sources": [
+      {
+        "sha256": "a01fe06b0ceb8e1d2e6ecfbd719e16d59a33cf9cab57874e051f381d425beaf6",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtil.java"
+      },
+      {
+        "sha256": "15681c6592e1d843b384945bcd67f81b1ce9cbbbd2aea29be1f5c5cfcdbe30a1",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilCost.java"
+      },
+      {
+        "sha256": "7ea882eb888ed5182cbfeb7d6f185ad916a4d29aab3b21de1ec132ee7718783e",
+        "path": "forge-ai/src/main/java/forge/ai/ComputerUtilMana.java"
+      }
+    ],
+    "payloads": [
+      {
+        "sha256": "23b15557de80e398db989e40d78bb6b1849ba19f91a98f7419fb16f44ca65a0a",
+        "path": "./forge/ai/ComputerUtil.class",
+        "class_name": "forge.ai.ComputerUtil"
+      },
+      {
+        "sha256": "05b1ab83a06f559594b8cca98d748ce23da7e4e3b6840aeb7b372c237fda6732",
+        "path": "./forge/ai/ComputerUtilCost$1.class",
+        "class_name": "forge.ai.ComputerUtilCost$1"
+      },
+      {
+        "sha256": "a5825608bc38f757af2341cf4af081f5bb58288e56958689ccc670c7a4124e29",
+        "path": "./forge/ai/ComputerUtilCost.class",
+        "class_name": "forge.ai.ComputerUtilCost"
+      },
+      {
+        "sha256": "544c419f8227bbf2a087d2b32107e1293c2ddf4f5236089dd66139be6191edc2",
+        "path": "./forge/ai/ComputerUtilMana.class",
+        "class_name": "forge.ai.ComputerUtilMana"
+      }
+    ]
+  },
+  "shadow": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-known-mana-20261106-lgx5DMtw/qualified/shadow",
+  "runtime_classpath": [
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-known-mana-20261106-lgx5DMtw/qualified/shadow",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-causal-cold-resume-qualification-20261106-Vi32VEl0/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-causal-cold-resume-qualification-20261106-Vi32VEl0/native-shadow",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-gui-desktop/target/test-classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-gui-desktop/target/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-core/target/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/guava/guava/33.3.1-android/guava-33.3.1-android.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/checkerframework/checker-qual/3.43.0/checker-qual-3.43.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/errorprone/error_prone_annotations/2.28.0/error_prone_annotations-2.28.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/apache/commons/commons-text/1.12.0/commons-text-1.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/apptasticsoftware/rssreader/3.8.2/rssreader-3.8.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/tinylog/slf4j-tinylog/2.7.0/slf4j-tinylog-2.7.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/tinylog/tinylog-api/2.7.0/tinylog-api-2.7.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/tinylog/tinylog-impl/2.7.0/tinylog-impl-2.7.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-game/target/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/sentry/sentry/8.21.1/sentry-8.21.1.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/jgrapht/jgrapht-core/1.5.2/jgrapht-core-1.5.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/jheaps/jheaps/0.14/jheaps-0.14.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/apfloat/apfloat/1.10.1/apfloat-1.10.1.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-ai/target/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge/forge-61e9442c433711a82258daca3236f936a1d6f70e/forge-gui/target/classes",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/xmlpull/xmlpull/1.1.3.4a/xmlpull-1.1.3.4a.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/thoughtworks/xstream/xstream/1.4.21/xstream-1.4.21.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/github/x-stream/mxparser/1.2.2/mxparser-1.2.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-all/4.1.115.Final/netty-all-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-buffer/4.1.115.Final/netty-buffer-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec/4.1.115.Final/netty-codec-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-dns/4.1.115.Final/netty-codec-dns-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-haproxy/4.1.115.Final/netty-codec-haproxy-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-http/4.1.115.Final/netty-codec-http-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-http2/4.1.115.Final/netty-codec-http2-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-memcache/4.1.115.Final/netty-codec-memcache-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-mqtt/4.1.115.Final/netty-codec-mqtt-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-redis/4.1.115.Final/netty-codec-redis-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-smtp/4.1.115.Final/netty-codec-smtp-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-socks/4.1.115.Final/netty-codec-socks-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-stomp/4.1.115.Final/netty-codec-stomp-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-codec-xml/4.1.115.Final/netty-codec-xml-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-common/4.1.115.Final/netty-common-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-handler/4.1.115.Final/netty-handler-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-unix-common/4.1.115.Final/netty-transport-native-unix-common-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-handler-proxy/4.1.115.Final/netty-handler-proxy-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-handler-ssl-ocsp/4.1.115.Final/netty-handler-ssl-ocsp-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-resolver/4.1.115.Final/netty-resolver-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-resolver-dns/4.1.115.Final/netty-resolver-dns-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport/4.1.115.Final/netty-transport-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-rxtx/4.1.115.Final/netty-transport-rxtx-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-sctp/4.1.115.Final/netty-transport-sctp-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-udt/4.1.115.Final/netty-transport-udt-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-classes-epoll/4.1.115.Final/netty-transport-classes-epoll-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-classes-kqueue/4.1.115.Final/netty-transport-classes-kqueue-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-resolver-dns-classes-macos/4.1.115.Final/netty-resolver-dns-classes-macos-4.1.115.Final.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-x86_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-aarch_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-epoll/4.1.115.Final/netty-transport-native-epoll-4.1.115.Final-linux-riscv64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-x86_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-transport-native-kqueue/4.1.115.Final/netty-transport-native-kqueue-4.1.115.Final-osx-aarch_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-x86_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/io/netty/netty-resolver-dns-native-macos/4.1.115.Final/netty-resolver-dns-native-macos-4.1.115.Final-osx-aarch_64.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/jupnp/org.jupnp/3.0.5/org.jupnp-3.0.5.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/jupnp/org.jupnp.support/3.0.5/org.jupnp.support-3.0.5.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/at/yawk/lz4/lz4-java/1.10.2/lz4-java-1.10.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-client/9.4.57.v20241219/jetty-client-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-http/9.4.57.v20241219/jetty-http-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-util/9.4.57.v20241219/jetty-util-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-io/9.4.57.v20241219/jetty-io-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-server/9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-servlet/9.4.57.v20241219/jetty-servlet-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-security/9.4.57.v20241219/jetty-security-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/eclipse/jetty/jetty-util-ajax/9.4.57.v20241219/jetty-util-ajax-9.4.57.v20241219.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/miglayout/miglayout-swing/4.2/miglayout-swing-4.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/miglayout/miglayout-core/4.2/miglayout-core-4.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/mortennobel/java-image-scaling/0.8.6/java-image-scaling-0.8.6.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/jhlabs/filters/2.0.235/filters-2.0.235.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/testng/testng/7.10.2/testng-7.10.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/slf4j/slf4j-api/2.0.16/slf4j-api-2.0.16.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/webjars/jquery/3.7.1/jquery-3.7.1.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/mockito/mockito-core/5.14.2/mockito-core-5.14.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/net/bytebuddy/byte-buddy/1.18.14/byte-buddy-1.18.14.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/net/bytebuddy/byte-buddy-agent/1.18.14/byte-buddy-agent-1.18.14.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/objenesis/objenesis/3.4/objenesis-3.4.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/org/freemarker/freemarker/2.3.33/freemarker-2.3.33.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/googlecode/soundlibs/jlayer/1.0.1.4/jlayer-1.0.1.4.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/junit/junit/3.8.2/junit-3.8.2.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/beust/jcommander/1.82/jcommander-1.82.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/sipgate/mp3-wav/1.0.4/mp3-wav-1.0.4.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/javazoom/jlayer/1.0.1/jlayer-1.0.1.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/googlecode/soundlibs/mp3spi/1.9.5.4/mp3spi-1.9.5.4.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/googlecode/soundlibs/tritonus-share/0.3.7.4/tritonus-share-0.3.7.4.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/imageio/imageio-jpeg/3.12.0/imageio-jpeg-3.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/imageio/imageio-core/3.12.0/imageio-core-3.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/imageio/imageio-metadata/3.12.0/imageio-metadata-3.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/common/common-lang/3.12.0/common-lang-3.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/common/common-io/3.12.0/common-io-3.12.0.jar",
+    "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/external-mtg-card-knowledge-20261105-1Uz704n2/forge-evidence/m2/com/twelvemonkeys/common/common-image/3.12.0/common-image-3.12.0.jar"
+  ],
+  "scope": "separate native known-mana increment; not application/save qualification",
+  "retained_candidate_root": "/home/nick/.hermes/cache/scratch/mtg-jev-ui-clarity-20261025-krVbf5Hv/native-known-mana-20261106-lgx5DMtw/qualified",
+  "evidence_receipt": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/native-known-mana-20261106-lgx5DMtw/VERIFIED.json",
+  "qualification": {
+    "scope": "bounded controlled native known-mana correction",
+    "ordinary_checks_passed": 30,
+    "red": 0,
+    "errors": 0,
+    "original_twenty_pass": 20,
+    "unchanged_followup_six_pass": 6,
+    "new_controls_four_pass": 4,
+    "prior_identity_baseline": {
+      "pass": 28,
+      "red": 2,
+      "errors": 0
+    },
+    "owner_payment_attempts": 6,
+    "legacy_owner_full_state_rng_parity": "canonical JSON equality",
+    "remembered_esg_both_seats": true,
+    "all_four_payload_origins_and_before_end_pins_verified": true,
+    "rebuild_reproduced_exact_payloads": true,
+    "source_admission_before_abilities": true,
+    "three_hand_statistics_filtered": true,
+    "parent_profile_modified": false,
+    "application_qualified": false,
+    "save_compatibility_qualified": false,
+    "broad_fairness_proven": false
+  }
+}

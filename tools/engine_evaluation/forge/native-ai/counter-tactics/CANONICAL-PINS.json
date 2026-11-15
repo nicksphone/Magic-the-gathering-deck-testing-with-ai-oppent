@@ -1,0 +1,62 @@
+{
+  "counterspell.txt": {
+    "bytes": 168,
+    "sha256": "893b826ac94d6c73d4dd80c975ff6e2bbb0fd3d9a8f26fe08b050f7999bb2c0c",
+    "upstream_path": "forge-gui/res/cardsfolder/c/counterspell.txt"
+  },
+  "craw_wurm.txt": {
+    "bytes": 65,
+    "sha256": "b716f2f75f1044e55ec1ee51dc33bfddbc6d91194de20f7bd133b60a23d9ec0f",
+    "upstream_path": "forge-gui/res/cardsfolder/c/craw_wurm.txt"
+  },
+  "forest.txt": {
+    "bytes": 76,
+    "sha256": "9a574ea2a8136e588ab77ff8bf260075a94572d8099a7d0d98c62590479aa5a6",
+    "upstream_path": "forge-gui/res/cardsfolder/f/forest.txt"
+  },
+  "gilded_light.txt": {
+    "bytes": 363,
+    "sha256": "f97a217fa9f59a625fc8271536b677a930d5ae3e5884469ab20d44a1b9abf00a",
+    "upstream_path": "forge-gui/res/cardsfolder/g/gilded_light.txt"
+  },
+  "island.txt": {
+    "bytes": 76,
+    "sha256": "e590434de75aa3e39a03555d0c91788cdabe37f5fdf91ce7c1a189c79f4cade6",
+    "upstream_path": "forge-gui/res/cardsfolder/i/island.txt"
+  },
+  "lightning_bolt.txt": {
+    "bytes": 202,
+    "sha256": "330ba48b8090d1b2312f9404d71612cd3bbf49b960974b99ebf5c0804bb4711e",
+    "upstream_path": "forge-gui/res/cardsfolder/l/lightning_bolt.txt"
+  },
+  "mountain.txt": {
+    "bytes": 80,
+    "sha256": "d421d9639d7b7f2a8c4ed04fa2fa8526cbc768733a92b0a1a453535ee99a3799",
+    "upstream_path": "forge-gui/res/cardsfolder/m/mountain.txt"
+  },
+  "opt.txt": {
+    "bytes": 219,
+    "sha256": "589e7822d532f94b80b469a5322d84ce02078277153c5ad3ba205105650b5dcd",
+    "upstream_path": "forge-gui/res/cardsfolder/o/opt.txt"
+  },
+  "plains.txt": {
+    "bytes": 76,
+    "sha256": "7b72280280cf668427e25283026a88ebcf3c67963e1097eda39ed6433c228f9c",
+    "upstream_path": "forge-gui/res/cardsfolder/p/plains.txt"
+  },
+  "supreme_verdict.txt": {
+    "bytes": 320,
+    "sha256": "6c20fc696f134ae6b8bf8954a0dac1907b405bcf9f6374ab821e4e69f7e8c248",
+    "upstream_path": "forge-gui/res/cardsfolder/s/supreme_verdict.txt"
+  },
+  "vexing_shusher.txt": {
+    "bytes": 656,
+    "sha256": "b493abb8b6d9cc65e295e83235cf9a37f5d26a7926925e1740f1c497cf1399ce",
+    "upstream_path": "forge-gui/res/cardsfolder/v/vexing_shusher.txt"
+  },
+  "worship.txt": {
+    "bytes": 601,
+    "sha256": "a6dda6a70976913dc28a3c1dd7f747ceb587e01077160365372a6d5bedd565cd",
+    "upstream_path": "forge-gui/res/cardsfolder/w/worship.txt"
+  }
+}

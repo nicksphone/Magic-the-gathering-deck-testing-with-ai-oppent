@@ -1,0 +1,6 @@
+{
+  "upstream/forge-gui/src/main/java/forge/gamemodes/match/input/InputBase.java": "102230baa95c02cb0ee2dccac7f6594353454bf8779dfff533b1e4b3df536500",
+  "upstream/forge-gui/src/main/java/forge/gamemodes/match/input/InputPayMana.java": "563f3d0994687de4cdf2af0cb685dc35cdb91e1ce83d34f1b1cca954d6a4e62b",
+  "upstream/forge-gui/src/main/java/forge/gamemodes/match/input/InputProxy.java": "01cd17409375ab6c1bdc815bf78cec0cb7d4f8169bf27c193115b9ee75845bf2",
+  "upstream/forge-gui/src/main/java/forge/gamemodes/match/input/InputQueue.java": "7e2cecbb04876360506a4c6542cc06b34823ef2f8fed68d7267725c94e6dbcb5"
+}

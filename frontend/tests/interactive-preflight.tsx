@@ -30,6 +30,8 @@ const queuedStarts: (() => void)[] = [];
 let blockedFetches = 0;
 const fixture = {
   decks, preflights, requests, receipts, holdPreflight: false, holdStart: false, emptyGaps: false,
+  nextStates: [] as MatchState[], actions: [] as {player: number; action: Record<string, unknown>}[],
+  debugRequests: 0, debugDenied: false,
   preflightError: false, rejectStart: false,
   resolvePreflight(fail = false) {
     const next = queuedPreflights.shift();
@@ -87,5 +89,27 @@ api.getMatch = async id => {
   if (!receipt) throw new Error("Unknown UI fixture receipt");
   return structuredClone(receipt.state);
 };
-api.legalMoves = async () => ({ moves: [], player_id: 1, revision: 0, can_auto_pass: false });
+api.legalMoves = async id => {
+  const state = Object.values(receipts).find(row => row.state.id === id)?.state;
+  return {moves: state?.winner === null ? [{type:'pass_priority'}] : [], player_id:1,
+    revision:state?.revision ?? 0, can_auto_pass:false};
+};
+api.act = async (id, player, action) => {
+  fixture.actions.push({player, action:structuredClone(action)});
+  const receipt = Object.values(receipts).find(row => row.state.id === id);
+  const next = fixture.nextStates.shift();
+  if (!receipt || !next || next.id !== id) throw new Error('No queued synthetic match update');
+  receipt.state = structuredClone(next);
+  sessionStorage.setItem('interactiveFixture.receipts', JSON.stringify(receipts));
+  return structuredClone(next);
+};
+api.aiDebugHands = async id => {
+  fixture.debugRequests++;
+  if (fixture.debugDenied) throw new Error('Synthetic debug inspection disabled');
+  const state = Object.values(receipts).find(row => row.state.id === id)?.state;
+  if (!state) throw new Error('Unknown synthetic match');
+  return {debug_only:true, match_id:id, revision:state.revision ?? 0, game_number:state.game_number ?? 1,
+    turn:state.turn, hands:{'2':[{id:'synthetic-debug-card',name:'Synthetic debug inspection card',
+      types:['Protocol'],tapped:false,summoning_sick:false,power:null,toughness:null}]}};
+};
 createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);

@@ -11,6 +11,22 @@ turn and tick count must match. The first divergence identifies the decision and
 field, or includes the existing first-log-divergence context. Invalid records and
 rejected actions cannot produce a successful reconstruction.
 
+Custom evaluator traces now carry a version-one `replay` object alongside the
+quality fields. It records the original ordered hand/battlefield names, legal
+action types, actor/phase metadata and the complete action supplied to the checked
+transition. This preserves ordered mechanic selections, attack destinations,
+bands and other operands omitted by the quality projection. The reader rejects
+unknown/incomplete envelopes and conflicting shared outer identity/action fields;
+`card_name` remains announcement metadata. The producer reserves the `replay`
+key and bounds all completed action operands before builders or recording copy
+them. Final combined payloads remain subject to the existing trace limits.
+
+The default legacy producer retains its original format. Historical compact
+quality traces without an execution envelope cannot be backfilled into complete
+replays. In particular, the November 8 frozen full matrix started before this
+correction: its receipts remain valid game observations, but they do not gain
+exact recorded-action reconstruction from the new reader.
+
 ## CLI
 
 From `backend/`, using a retained `run_match` packet and its exact two-deck resolved

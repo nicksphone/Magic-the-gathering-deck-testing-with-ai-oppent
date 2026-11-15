@@ -1,0 +1,21 @@
+{
+  "parent_content_id": "3973f642ee21856e748c23513dad120421e6a26c9ecde7acd6f0579bfee83f48",
+  "candidate_content_id": "f4c8d41f6de9016c194551b2bfcedad9f61ddf2fdf556eb88e16a6618d40dfb5",
+  "payload_schema": 10,
+  "sources": 13,
+  "classes": 21,
+  "changed": {
+    "forge-ai/src/main/java/forge/ai/ability/DamageAiBase.java": {
+      "preimage": "70312adb62cbf3ab8a0f06d0405c2be9c0858715bcb6c2d86818b1ec03cde8bd",
+      "postimage": "dd7646033c9817e531ef7dde51838a6402b36942b019b52df0e6a0ddc78a13f7",
+      "class": "forge/ai/ability/DamageAiBase.class",
+      "class_postimage": "bf64ff8e6a592c51a43d360f5fee839b731817847f4d97a098219cd607cdd072"
+    },
+    "forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java": {
+      "preimage": "509ba5c2fe366e807e770816dd381abe77d87c2933ddcc942ebe471b7d0417ae",
+      "postimage": "6237f0491d82781b8c4e242d7bd49b9bc7b83c08cbcb570a7d93cf5c9c94dc7d",
+      "class": "forge/ai/ability/DamageDealAi.class",
+      "class_postimage": "1dea2b9bfd645d1db9b15f6eeb0cd7d1992385c78af65b112e787dd06119e3bf"
+    }
+  }
+}

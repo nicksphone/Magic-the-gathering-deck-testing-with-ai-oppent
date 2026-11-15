@@ -5,6 +5,8 @@ The caller's unknown/unresolved branch is exercised separately in the matrix
 protocol module; OMITTED here is that unchanged legacy builder selection.
 The receipt sink is still in-memory unit-only, not native-export admission.
 """
+from copy import deepcopy
+
 import pytest
 
 from analytics.decision_quality import build_trace_payload
@@ -23,7 +25,16 @@ def _production_trace(state, pid, legal, action, decision):
 def test_real_builder_native_prefix_never_loses_accepted_actions(monkeypatch, seat, mode):
     budget = ObservedBudget()
     labels = CONTEXTS if mode == 'known' else OMITTED
-    observed = _run(monkeypatch, seat=seat, labels=labels, builder=_production_trace, budget=budget)
+    roots = []
+    def build(state, pid, legal, action, decision):
+        roots.append({'schema_version': 1, 'pid': pid, 'turn': state.turn, 'step': str(state.step),
+                      'active_player': state.active_player, 'priority_player': state.priority_player,
+                      'hand': [state.cards[cid].name for cid in state.players[pid].hand],
+                      'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield],
+                      'legal_action_types': sorted({str(move['type']) for move in legal}),
+                      'action': deepcopy(action)})
+        return _production_trace(state, pid, legal, action, decision)
+    observed = _run(monkeypatch, seat=seat, labels=labels, builder=build, budget=budget)
     rows = _rows(observed)
     assert observed.result.get('stop_reason') is None
     assert observed.result['ticks'] == len(observed.checked) == len(rows) == budget.commits == 16
@@ -40,7 +51,8 @@ def test_real_builder_native_prefix_never_loses_accepted_actions(monkeypatch, se
             key: action[key] for key in raw['action']}
         assert 'card_name' not in raw['action']
         assert row['hand'] == raw['hand'] and row['opp_hand'] == raw['opp_hand']
-        expected = {**raw, 'action': dict(raw['action'])}
+        expected = {**raw, 'action': dict(raw['action']), 'replay': roots[index]}
+        assert row['replay']['action'] == action
         if mode == 'known':
             expected.update(opponent_archetype=CONTEXTS[pid].lower(),
                             action_index=index, player_name={1: 'Player A', 2: 'Player B'}[pid])

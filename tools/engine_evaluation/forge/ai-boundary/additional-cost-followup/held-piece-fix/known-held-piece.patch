@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Forge Team/Card-Forge native source; original narrow knowledge correction.
+# Against final ff89fd32, ComputerUtilMana.java preimage:
+# 6928620486da73f525fc5eb5e9369d47a2ceeb444706f4711da173e481948c54
+# See NOTICE.md. No upstream/source/runtime files are modified in place.
+--- a/forge-ai/src/main/java/forge/ai/ComputerUtilMana.java
++++ b/forge-ai/src/main/java/forge/ai/ComputerUtilMana.java
+@@ -1241,6 +1241,24 @@
+         return !abMana.getOrigProduced().contains("Different") || !choices.toString().contains(choice);
+     }
+ 
++    private static boolean holdsKnownKillPiece(final Player ai, final Predicate<Card> knownCard) {
++        if (knownCard == null) {
++            return forge.ai.simulation.ComboPlan.holdsKillPiece(ai);
++        }
++        // Keep the native held-piece policy, but inspect only observer-known hand cards.
++        for (final Card card : ai.getCardsIn(ZoneType.Hand)) {
++            if (!knownCard.test(card)) {
++                continue;
++            }
++            if (forge.ai.simulation.ComboPlan.isStormFinisher(card)
++                    || (!card.isLand() && !card.isCreature()
++                        && forge.ai.simulation.ComboPlan.isRecursionAbility(card.getSpellAbilities()))) {
++                return true;
++            }
++        }
++        return false;
++    }
++
+     private static boolean canPayShardWithSpellAbility(ManaCostShard toPay, Player ai, SpellAbility ma, SpellAbility sa, ManaCostBeingPaid cost, boolean checkCosts, Map<String, Integer> xManaCostPaidByColor) {
+         return canPayShardWithSpellAbility(toPay, ai, ma, sa, cost, checkCosts, xManaCostPaidByColor, null);
+     }
+@@ -1256,7 +1274,7 @@
+         // finisher or the engine of a storm deck: it was cracked with Tendrils of Agony in hand and the kill was gone
+         if (ma != sa && ma.getPayCosts() != null && ma.getPayCosts().hasSpecificCostType(forge.game.cost.CostDiscard.class)
+                 && ai.getController() instanceof PlayerControllerAi
+-                && forge.ai.simulation.ComboPlan.holdsKillPiece(ai)) {
++                && holdsKnownKillPiece(ai, knownCard)) {
+             return false;
+         }
+ 

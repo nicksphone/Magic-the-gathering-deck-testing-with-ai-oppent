@@ -1,0 +1,4 @@
+# Preserve exact upstream source bytes and generated unified-diff context.
+preimage/DigAi.java -whitespace
+source/forge-ai/src/main/java/forge/ai/ability/DigAi.java -whitespace
+dig-direction.patch -whitespace

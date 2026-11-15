@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "label": "CONTROLLED-NATIVE-CHALICE-18",
+  "original8": "Unchanged audit firstChoice seam; two private invariance pairs and two genuine Telepathy visibility contrasts, both seats; public output divergence not required",
+  "new10": [
+    "opaque Exile Opt/Bear, both seats (4)",
+    "known spent Opt Graveyard, both seats (2)",
+    "known Opt returned to hand, both seats (2)",
+    "real Underworld Breach Escape, both seats (2)"
+  ],
+  "case_count": 18,
+  "synthetic_cases": 0,
+  "natural_game": false,
+  "paid_execution": "Only exact selected native actions execute; declined cases are never forced",
+  "fixture_knowledge": "Disclosed registered60; constructed state, not natural/paid setup history",
+  "RNG": "Original fixed declared seed before construction; original source unchanged; no late reset/retry/search",
+  "bounds": {
+    "total_compile_and_native_seconds": 300,
+    "termination_grace_seconds": 5,
+    "heap": "1500m",
+    "active_processors": 1,
+    "owned_concurrent_JVMs": 1,
+    "maximum_total_JVMs": 2
+  },
+  "old_baseline_reexecution_authorized": false,
+  "portable_runner_execution_authorized": false,
+  "parent_observation": {
+    "candidate18_exit": 0,
+    "candidate18_seconds": 12.9218,
+    "candidate18_all_contrasts": "PASS; parent observed, not a run of this portable runner"
+  }
+}
