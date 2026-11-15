@@ -64,7 +64,7 @@ def collect_activation_copy_triggers(state, payload):
             instruction = compile_clause(clause)
             if instruction is None:
                 continue
-            key, data = compile_paid_instruction(state, source, source.controller, instruction, payload)
+            key, data = compile_paid_instruction(state, source, source.controller, instruction, payload, referred_activation=True)
             data.update(__activation_copy_clause=clause, __activation_copy_source={
                 'card_id': cid, 'incarnation': object_incarnation(source),
                 'zone_change_sequence': source.zone_change_sequence,
