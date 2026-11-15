@@ -82,19 +82,21 @@ class ScryfallSyncService:
             raise ValueError('Oracle text fields must be strings or absent.')
         out: list[dict[str, Any]] = []
         for face in faces:
-            out.append(
-                {
-                    "name": face.get("name", ""),
-                    "mana_cost": face.get("mana_cost"),
-                    "type_line": face.get("type_line"),
-                    "oracle_text": face.get("oracle_text"),
-                    "power": face.get("power"),
-                    "toughness": face.get("toughness"),
-                    "loyalty": face.get("loyalty"),
-                    "colors": face.get("colors"),
-                    "image_uri": cls._extract_face_image_uri(face),
-                }
-            )
+            item = {
+                "name": face.get("name", ""),
+                "mana_cost": face.get("mana_cost"),
+                "type_line": face.get("type_line"),
+                "oracle_text": face.get("oracle_text"),
+                "power": face.get("power"),
+                "toughness": face.get("toughness"),
+                "loyalty": face.get("loyalty"),
+                "colors": face.get("colors"),
+                "image_uri": cls._extract_face_image_uri(face),
+            }
+            # Battle faces carry printed defense; other faces keep their stored shape.
+            if face.get("defense") is not None:
+                item["defense"] = face["defense"]
+            out.append(item)
         return out
 
     @classmethod
