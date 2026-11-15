@@ -1774,5 +1774,10 @@ so an unreadable optional archive fails loudly, matching
 
 Still open and not claimed: AI playing strength (no accepted percentage),
 Chrome/Brave/Firefox acceptance, single-launcher packaging, and the original
-release/data gates (see `plan.md` Gates 1-3). CI on `main` at `e51ddb82` is run 43759790245 (not
-yet complete when written). Next work: `docs/testing/RC-HANDOFF-FOR-CODEX.md`.
+release/data gates (see `plan.md` Gates 1-3). `main` CI at `e51ddb82` is run 43759790245: every job passed (frontend, browser,
+backend-reference, four backend workers, backend qualification). Worker totals:
+37722 collected, 37625 passed calls, 97 skips, 0 failures. Independent read-only
+reviews of the review-gate deltas and the `legacy_unknown` stack compatibility
+change found no issues; one edge (an untyped historical ability whose source is
+later bounced and recast to the stack still takes spell cleanup) is queued as a
+regression-test/policy task. Next work: `docs/testing/RC-HANDOFF-FOR-CODEX.md`.
