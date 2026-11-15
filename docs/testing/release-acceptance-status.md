@@ -1774,5 +1774,5 @@ so an unreadable optional archive fails loudly, matching
 
 Still open and not claimed: AI playing strength (no accepted percentage),
 Chrome/Brave/Firefox acceptance, single-launcher packaging, and the original
-release/data gates (see `plan.md` Gates 1-3). CI on `main` at `e51ddb82` had not
-been recorded when this section was written.
+release/data gates (see `plan.md` Gates 1-3). CI on `main` at `e51ddb82` is run 43759790245 (not
+yet complete when written). Next work: `docs/testing/RC-HANDOFF-FOR-CODEX.md`.
