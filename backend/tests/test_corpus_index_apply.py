@@ -144,9 +144,13 @@ def test_refuses_unsafe_or_changed_targets_without_writes(application, monkeypat
         args.target = protected.with_name('mtg_lab.db')
         shutil.copy2(protected, args.target)
     else:
-        import subprocess
-        original = subprocess.check_output
-        monkeypatch.setattr(subprocess, 'check_output', lambda command, **kw: 'nfs\n' if str(protected) in command else original(command, **kw))
+        original = Path.read_text
+
+        def mountinfo(path, *a, **kw):
+            if str(path) == '/proc/self/mountinfo':
+                return f'1 0 0:1 / / rw - ext4 root rw\n2 1 0:2 / {protected.parent} rw - nfs remote rw\n'
+            return original(path, *a, **kw)
+        monkeypatch.setattr(Path, 'read_text', mountinfo)
     with pytest.raises(ValueError):
         apply(args)
     assert protected.read_bytes() == before
