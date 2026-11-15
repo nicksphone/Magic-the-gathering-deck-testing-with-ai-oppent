@@ -118,6 +118,16 @@ assert SPECTACLE_COST['accepted_public_commit'] == '3d691056ba34b9f578f6d038b871
 assert SPECTACLE_COST['source'] == 'rules_engine/costs.py'
 ACCEPTED_SPECTACLE_COST_DELTA = SPECTACLE_COST['accepted_delta']
 
+SACRIFICE_QUERY_COST_PATH = PATH.with_name('accepted_sacrifice_query_cost_delta.json')
+sacrifice_query_cost_raw = SACRIFICE_QUERY_COST_PATH.read_bytes()
+assert hashlib.sha256(sacrifice_query_cost_raw).hexdigest() == 'c0dc7ef0dbb013f3e21a5ee0c5db4ffb355da842ec95bc228a168fc26626399b'
+SACRIFICE_QUERY_COST = json.loads(sacrifice_query_cost_raw)
+assert SACRIFICE_QUERY_COST['accepted_public_commit'].startswith('cc29147b')
+assert SACRIFICE_QUERY_COST['previous_accepted_public_commit'] == SPECTACLE_COST['accepted_public_commit']
+assert SACRIFICE_QUERY_COST['source'] == 'rules_engine/costs.py'
+ACCEPTED_SACRIFICE_QUERY_COST_DELTA = SACRIFICE_QUERY_COST['accepted_delta']
+assert ACCEPTED_SACRIFICE_QUERY_COST_DELTA['old_sha256'] == ACCEPTED_SPECTACLE_COST_DELTA['new_sha256']
+
 FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
 finite_raw = FINITE_PATH.read_bytes()
 assert hashlib.sha256(finite_raw).hexdigest() == '268baa65862fe5eab759629e5b8370a8943f4d3dcae8077009515f2e0494324d'
@@ -249,6 +259,8 @@ def restore_reviewed_source(name, current, historical):
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'rules_engine/costs.py' and hashlib.sha256(current).hexdigest() == ACCEPTED_SACRIFICE_QUERY_COST_DELTA['new_sha256']:
+        current = _restore(current.decode(), ACCEPTED_SACRIFICE_QUERY_COST_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == LIFECYCLE_RETENTION_MAIN_DELTA['new_sha256']:
         current = _restore(current.decode(), LIFECYCLE_RETENTION_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == NATIVE_FORGE_MAIN_DELTA['new_sha256']:

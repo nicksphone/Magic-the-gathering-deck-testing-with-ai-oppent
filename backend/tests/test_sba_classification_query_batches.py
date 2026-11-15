@@ -58,7 +58,12 @@ def check_wave(state):
          patch.object(sba, 'put_into_graveyard', outside(original_grave)), \
          patch.object(bestow, 'end_bestow', end_bestow):
         sba._apply_attachment_state_checks(candidate)
-    assert len(scopes) == sum(card.zone == Zone.BATTLEFIELD for card in state.cards.values())
+    # One immutable whole-board classification scope; a board with attachment work
+    # then also gets one scope per battlefield card (no-work boards return early).
+    battlefield = [card for card in state.cards.values() if card.zone == Zone.BATTLEFIELD]
+    has_work = any(card.attached_to or is_aura(card, state) or is_equipment(card, state)
+                   or is_fortification(card, state) for card in battlefield)
+    assert len(scopes) == 1 + (len(battlefield) if has_work else 0)
     assert serialize_match_snapshot(candidate) == serialize_match_snapshot(baseline)
     restarted = deserialize_match_snapshot(serialize_match_snapshot(candidate))
     reference(restarted)
