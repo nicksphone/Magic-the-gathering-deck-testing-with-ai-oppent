@@ -30,7 +30,8 @@ def midgame(seat):
             state.cards[cid].move_to_zone(Zone.LIBRARY)
             player.library.append(cid)
         player.hand.clear()
-        player.mana_pool = {}
+        # Restore validates each snow-mana amount against its total pool entry.
+        player.mana_pool = {color: 0 for color in "WUBRGC"}
         player.lands_played_this_turn = player.land_plays_recorded_on_turn = 1
         player.last_land_play_turn = state.turn
     def place(name, zone):

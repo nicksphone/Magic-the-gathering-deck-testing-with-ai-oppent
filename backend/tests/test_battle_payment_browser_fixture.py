@@ -16,6 +16,15 @@ from tests.test_battle_product_acceptance import resolve_until
 
 
 @pytest.mark.parametrize("seat", [1, 2])
+def test_declared_midgame_mana_pools_satisfy_restore_contract(seat):
+    state, _ = midgame(seat)
+    for player in state.players.values():
+        assert player.mana_pool == {color: 0 for color in "WUBRGC"}
+        assert all(amount <= player.mana_pool[color]
+                   for color, amount in player.snow_mana_pool.items())
+
+
+@pytest.mark.parametrize("seat", [1, 2])
 def test_declared_midgame_preserves_stock_and_offers_both_real_spells(seat):
     before = deepcopy(SEED_CARD_DATA)
     state, ids = midgame(seat)

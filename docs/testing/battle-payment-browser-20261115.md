@@ -56,9 +56,14 @@ belongs in the PR.
 
 ## Evidence and limits
 
-- Fixture checks: **7 passed, 0 failed** locally, including a fresh-process import
+- Fixture checks: **9 passed, 0 failed** locally, including a fresh-process import
   without pytest's path setup. The import regression failed before the fixture
   stopped depending on pytest-only audit imports.
+- Restore regression: both seat checks failed before initializing the fixture's
+  total mana pool with zero entries for all six colors. The original serialized
+  response failed the actual frontend parser with `Invalid match response:
+  player 1 snow mana pool`; all six episode/negative fixture responses pass that
+  parser after the correction. This is fixture evidence, not a browser pass.
 - The local fresh-copy Vite development build completed. Local browser execution
   was blocked by socket/listen/crashpad permission errors; **no browser episode
   or warning-removal RED is claimed yet**.
