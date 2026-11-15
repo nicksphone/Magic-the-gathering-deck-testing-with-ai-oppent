@@ -1,8 +1,9 @@
-"""Declared canonical midgame Battle goldens through real ASGI HTTP + cold SQLite.
+"""Declared canonical midgame Battle goldens through real ASGI HTTP + SQLite reload.
 
 Initial lands/creatures are fixture inputs. Cast, search, attack, block, combat
-and Siege transformation use real action routes. Cold means controller eviction
-and disposed SQLite connections, not a new OS process or TCP/browser transport.
+and Siege transformation use real action routes. Reload means controller
+eviction and restoration from SQLite with the capacity-owned engine/pool intact.
+These cases do not claim an OS-process cold start or TCP/browser transport.
 """
 import pytest
 
@@ -41,13 +42,12 @@ def advance(api, controller, predicate):
     pytest.fail("HTTP Battle boundary was not reached")
 
 
-def cold_http(api, controller):
+def reload_http(api, controller):
     mid = controller.state.id
     before = api.client.get(f"/matches/{mid}")
     assert before.status_code == 200, before.text
     expected = stable(api, controller)
     api.main.ACTIVE_MATCHES.pop(mid)
-    api.engine.dispose()  # Force subsequent routes to use new SQLite connections.
     after = api.client.get(f"/matches/{mid}")
     assert after.status_code == 200, after.text
     restored = api.main.ACTIVE_MATCHES[mid]
@@ -59,21 +59,21 @@ def cold_http(api, controller):
 
 @pytest.mark.parametrize("seat", [1, 2])
 @pytest.mark.parametrize("case", GOLDENS)
-def test_paid_battle_http_cold_sqlite_action_golden(seam_api, seat, case):
+def test_paid_battle_http_sqlite_reload_action_golden(seam_api, seat, case):
     api = seam_api
     state, battle, attackers = battle_position(seat, extra=("Grizzly Bears",))
     blocker = place(state, 3-seat, "Grizzly Bears", Zone.BATTLEFIELD) if case == "blocked" else None
     state.mechanic_choice_players = {1, 2}
-    controller = cold_http(api, install_humans(api, state, seat))
+    controller = reload_http(api, install_humans(api, state, seat))
     send(api, controller, seat, {"type": "cast_spell", "card_id": battle})
     advance(api, controller, lambda s: s.pending_mechanic_choice is not None)
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     pending = controller.state.pending_mechanic_choice
     assert (pending["kind"], pending["player_id"], pending["count"]) == ("search_library", seat, 2)
     chosen = pending["options"][:2]
     assert len(chosen) == 2
     send(api, controller, seat, {"type": "choose_mechanic", "card_ids": chosen})
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     front = controller.state.cards[battle]
     assert (front.zone, front.counters["defense"], front.battle_protector) == (Zone.BATTLEFIELD, 3, 3-seat)
     assert all(controller.state.cards[cid].tapped for cid in chosen)
@@ -88,12 +88,12 @@ def test_paid_battle_http_cold_sqlite_action_golden(seam_api, seat, case):
     target = f"player:{3-seat}" if case == "player" else "battle:" + battle
     send(api, controller, seat, {"type": "attack", "attackers": selected,
                                "attack_targets": {cid: target for cid in selected}})
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     assert controller.state.attack_targets == {cid: target for cid in selected}
     advance(api, controller, lambda s: s.step == Step.DECLARE_BLOCKERS)
     send(api, controller, 3-seat, {"type": "block", "blocks": {selected[0]: [blocker]} if blocker else {}})
     advance(api, controller, lambda s: s.step == Step.COMBAT_DAMAGE)
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     s = controller.state
     actual = {"life": [s.players[seat].life, s.players[3-seat].life],
               "defense": s.cards[battle].counters.get("defense", 0),
@@ -105,13 +105,13 @@ def test_paid_battle_http_cold_sqlite_action_golden(seam_api, seat, case):
         assert s.cards[battle].zone == Zone.BATTLEFIELD
         return
     advance(api, controller, lambda s: s.pending_mechanic_choice is not None)
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     assert controller.state.cards[battle].zone == Zone.EXILE
     assert controller.state.pending_mechanic_choice["kind"] == "effect_cast"
     send(api, controller, seat, {"type": "cast_spell", "card_id": battle,
                                "from_exile": True, "selected_face_index": 1})
     advance(api, controller, lambda s: s.cards[battle].zone == Zone.BATTLEFIELD)
-    controller = cold_http(api, controller)
+    controller = reload_http(api, controller)
     view = api.client.get(f"/matches/{state.id}").json()
     back = next(card for card in view["players"][str(seat)]["battlefield"] if card["id"] == battle)
     assert (back["name"], back["power"], back["toughness"]) == ("Awakened Skyclave", 4, 4)
