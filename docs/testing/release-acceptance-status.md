@@ -1756,3 +1756,23 @@ three remain explicitly incomplete. Current whole-browser/backend CI still
 requires execution.
 See `officer-origin-and-passive-browser-current.md`; broader release gates,
 measured expert AI, arbitrary-deck support and deployment remain open.
+
+## 2026-11-15 integration status (code integration complete; not release acceptance)
+
+Integrated to `main` by merge commit, each after a fully green CI run:
+
+| PR | Merge commit | CI evidence |
+| --- | --- | --- |
+| #54 integration branch | `0ef31940` | branch run 43672690660 (all jobs); `main` run 43730760816 success |
+| #52 paid-copy boundary | `ddd890ec` | branch CI green; local related-slice failure set identical to `main` |
+| #55 Battles, deferred upkeep payments | `e51ddb82` | branch run 43751390849 (head `4dc553c3`), all jobs success |
+
+Notes: the full backend suite is sharded over four workers plus reference,
+frontend and browser jobs. PR #55 changed `test_optional_archive_availability.py`
+so an unreadable optional archive fails loudly, matching
+`test_optional_archive_collection.py` on `main`.
+
+Still open and not claimed: AI playing strength (no accepted percentage),
+Chrome/Brave/Firefox acceptance, single-launcher packaging, and the original
+release/data gates (see `plan.md` Gates 1-3). CI on `main` at `e51ddb82` had not
+been recorded when this section was written.
