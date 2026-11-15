@@ -8,7 +8,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.replacement import replace_die_zone, replacement_options
 from rules_engine.events import emit_event
 from rules_engine.state_based_actions import apply_state_based_actions
-from rules_engine.stack_engine import finish_stack_resolution, resolve_top_of_stack
+from rules_engine.stack_engine import add_to_stack, finish_stack_resolution, resolve_top_of_stack
 from rules_engine.zone_actions import discard_selected
 from tests.death_artifact_canonical4f86 import canonical_card, raw_card, set_printed
 
@@ -71,11 +71,11 @@ def test_opponent_card_replacement_applies_to_resolved_spells_only_for_opponent(
             "Lightning Bolt", id=cid, owner=owner, controller=owner,
             zone=Zone.STACK,
         )
-        item = StackItem(
-            id=f"item-{cid}", source_card_id=cid, controller=owner,
-            label="Lightning Bolt", effect_key="deal_damage", payload={},
+        item = add_to_stack(
+            state, cid, owner,
+            "Lightning Bolt", "deal_damage", {},
         )
-        finish_stack_resolution(state, item, {})
+        finish_stack_resolution(state, state.stack.pop(), item.payload)
         assert state.cards[cid].zone == (Zone.GRAVEYARD if owner == 1 else Zone.EXILE)
 
 

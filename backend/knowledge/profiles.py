@@ -9,7 +9,6 @@ import math
 
 from ai.deck_analysis import _cmc, analyze_deck
 from card_data.tactical import _rules_surface, canonical_tactical_tags, printed_card_types, tactical_clauses
-from effects.registry import EFFECT_HANDLERS
 from knowledge.mechanic_metadata import mechanic_metadata
 from rules_engine.closed_loyalty import compile_instruction
 from rules_engine.continuous import _attached_keywords
@@ -152,6 +151,8 @@ def _impact(effects):
 
 
 def _routes(types, keywords, uncounterable):
+    from effects.registry import EFFECT_HANDLERS
+
     routes = []
     def add(key, zone, targeted, *conditions):
         if key in EFFECT_HANDLERS:

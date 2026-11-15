@@ -138,6 +138,8 @@ def transfer_controller(state, card, controller):
         return
     if controller not in state.players or previous not in state.players:
         raise ValueError('Unknown controller')
+    from rules_engine.combat import remove_permanent_from_combat
+    remove_permanent_from_combat(state, card.id)
     old = state.players[previous].battlefield
     if card.id in old:
         old.remove(card.id)

@@ -5,9 +5,10 @@ export type LandPile = {
   colors: string[]; amounts: Record<string, number>; cards: CardView[];
 };
 
-// Group presentation only. Never discard identity or hide an animated land in a resource pile.
+// Keep combat permanents visible as individual cards.
 export function groupBattlefield(cards: CardView[]): { nonLands: CardView[]; lands: LandPile[] } {
-  const isResource = (card: CardView) => card.types.includes("Land") && !card.types.includes("Creature");
+  const isResource = (card: CardView) => card.types.includes("Land")
+    && !card.types.includes("Creature") && !card.types.includes("Battle");
   const piles = new Map<string, LandPile>();
   for (const card of cards.filter(isResource)) {
     const colors = [...(card.mana_source_colors ?? [])].sort();
@@ -24,9 +25,20 @@ export function groupBattlefield(cards: CardView[]): { nonLands: CardView[]; lan
   return { nonLands: cards.filter(card => !isResource(card)), lands: [...piles.values()].sort((a,b) => a.name.localeCompare(b.name)) };
 }
 
-export function cardStates(card: CardView, match: Pick<MatchState, "attackers" | "blocks">, targetable = false, selected = false): string[] {
+export function cardStates(
+  card: CardView,
+  match: Pick<MatchState, "attackers" | "blocks"> & Partial<Pick<MatchState, "players">>,
+  targetable = false,
+  selected = false,
+): string[] {
+  const battle = card.types.includes("Battle");
+  const protector = battle && card.battle_protector
+    ? match.players?.[String(card.battle_protector)]?.name || `Player ${card.battle_protector}`
+    : undefined;
   return [card.tapped && "Tapped", match.attackers?.includes(card.id) && "Attacking",
     Object.values(match.blocks ?? {}).some(ids => ids.includes(card.id)) && "Blocking",
+    battle && typeof card.defense === "number" && `Defense ${card.defense}`,
+    protector && `Protected by ${protector}`,
     card.types.includes("Creature") && card.summoning_sick && !card.keywords?.includes("haste") && "Summoning sick", targetable && "Targetable", selected && "Selected"].filter(Boolean) as string[];
 }
 export const phases = ["Beginning", "Main I", "Combat", "Main II", "Ending"];

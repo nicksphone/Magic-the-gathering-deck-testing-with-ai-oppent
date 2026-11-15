@@ -11,9 +11,10 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 _SCHEMA_PINS = {
-    # Emblems, loyalty permissions and grant/control ledgers require empty defaults below.
-    MatchState: 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31',
-    CardInstance: '9ec94d05825ea801accc8ac4e230421ea6bbb2d36e1ab582e9e83f12a6d69c8f',
+    # Retained combat, grant and control contexts require empty defaults below.
+    MatchState: 'b0d936983aba79969c59ee653fbd0b64afab907a43be14f6ba1ff5fede6a1426',
+    # Battle metadata is reviewed only at the ordinary None defaults below.
+    CardInstance: '0594abe253e2b13e8fd8186c0f265a1f84f349472ef0a5b160f6856a5a8a7880',
     PlayerState: '9d6bba14bc8fdfae5e10148dedff0487a62dd40205f5c93c618e2f68edf4bcae',
 }
 
@@ -106,7 +107,7 @@ def public_graveyard_inventory(state, actor_id):
         'cleanup_deferred_triggers', 'delayed_triggers', 'emblems', 'loyalty_permissions',
         'pending_entry_counters',
         'temporary_control_changes', 'linked_exiles', 'adventure_permissions',
-        'graveyard_permission_uses', 'combat_cost_effects', 'phase_plan',
+        'graveyard_permission_uses', 'combat_cost_effects', 'combat_target_context', 'phase_plan',
         'extra_turns', 'turn_cant_gain_life', 'turn_damage_cant_be_prevented',
         'numeric_prevention_shields',
         'cleanup_pending', 'cleanup_repeat_required',
@@ -165,6 +166,7 @@ def public_graveyard_inventory(state, actor_id):
                         or not isinstance(card.granted_flashback, dict)
                         or not isinstance(card.card_faces, list) or card.card_faces
                         or card.selected_face_index is not None
+                        or card.printed_defense is not None or card.battle_protector is not None
                         or card.layout != 'normal' or card.is_token
                         or card.printed_characteristics or card.bestow_characteristics
                         or card.type_effects or card.type_effect_base is not None

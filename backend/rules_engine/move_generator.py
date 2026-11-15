@@ -100,6 +100,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if pending['kind'] == 'exchange_energy_payment':
             from rules_engine.exchange_energy import public_choice
             return [{'type': 'choose_mechanic', **public_choice(pending)}]
+        if pending['kind'] == 'deferred_upkeep_payment':
+            from rules_engine.deferred_upkeep_payment import public_choice
+            return [{'type': 'choose_mechanic', **public_choice(pending)}]
         if pending['kind'] == 'entry_mode':
             from rules_engine.modal_entry import view
             return [{'type': 'choose_mechanic', **view(pending)}]
@@ -216,6 +219,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             cid
             for cid in player.battlefield
             if "Creature" in effective_types(state, state.cards[cid])
+            and 'Battle' not in effective_types(state, state.cards[cid])
             and not state.cards[cid].tapped
             and (not state.cards[cid].summoning_sick or has_keyword(state, cid, "haste"))
             and not has_keyword(state, cid, "defender")
@@ -235,16 +239,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Can't attack"})
         if attackers:
             defender_id = 1 if state.active_player == 2 else 2
-            defenders = [{"id": f"player:{defender_id}", "label": state.players[defender_id].name, "kind": "player"}]
-            defenders.extend(
-                {
-                    "id": f"planeswalker:{cid}",
-                    "label": state.cards[cid].name,
-                    "kind": "planeswalker",
-                }
-                for cid in state.players[defender_id].battlefield
-                if "Planeswalker" in effective_types(state, state.cards[cid]) and state.cards[cid].zone == Zone.BATTLEFIELD
-            )
+            from rules_engine.combat import _defender_keys, _defender_label
+            defenders = [{'id': key, 'label': _defender_label(state, key), 'kind': key.split(':', 1)[0]}
+                         for key in _defender_keys(state, defender_id)]
             from rules_engine.declaration_limits import declaration_limit_view
             from rules_engine.combat_payments import attack_tax_sources, attack_payment_view
             moves.append({"type": "attack", "options": attackers, "defenders": defenders,
@@ -263,7 +260,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         blockers = [
             cid
             for cid in player.battlefield
-            if "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
+            if "Creature" in effective_types(state, state.cards[cid])
+            and 'Battle' not in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ]
         attacker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in state.attackers]
         blocker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in blockers]
@@ -451,7 +449,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 from rules_engine.counter_placement import counter_placement_forbidden
                 if next_loyalty > (card.loyalty or 0) and counter_placement_forbidden(state, 'loyalty', target_card_id=cid):
                     continue
-                hints_card = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+                from rules_engine.loyalty_instructions import announcement_text
+                hints_card = type("LoyaltyOracleProxy", (), {
+                    "id": cid, "oracle_text": announcement_text(ability["text"], card.name),
+                    "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id, source_kind="activated")
                 if not has_available_targets_for_action(hints):
                     continue

@@ -26,8 +26,8 @@ DATA_DIR = Path(__file__).resolve().parents[1] / "knowledge" / "data"
 
 
 def read_cards(path: Path):
-    opener = gzip.open if path.suffix == ".gz" else open
-    with opener(path, "rt", encoding="utf-8") as stream:
+    from io import TextIOWrapper
+    with path.open("rb") as raw, (gzip.open(raw, "rt", encoding="utf-8") if path.suffix == ".gz" else TextIOWrapper(raw, encoding="utf-8")) as stream:
         if ".jsonl" in path.name:
             for line in stream:
                 if line.strip():

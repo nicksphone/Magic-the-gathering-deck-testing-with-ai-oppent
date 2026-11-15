@@ -36,6 +36,10 @@ def _frame(payload):
 def _native_copy_candidate(frame, cid, turn):
     from game_state.state import CardInstance, Zone
     copied = frame['payload']['__copied_card']
+    faces = deepcopy(copied.get('card_faces') or [])
+    layout = copied.get('layout') or ''
+    if layout in {'transform', 'modal_dfc', 'double_faced_token'} and len(faces) == 2:
+        layout = 'double_faced_token'
     count = None
     if '__kicker_count' in frame['payload']:
         from rules_engine.kicker import validate_kicker_count
@@ -48,9 +52,10 @@ def _native_copy_candidate(frame, cid, turn):
         oracle_text=copied.get('oracle_text') or '', power=copied.get('power'),
         toughness=copied.get('toughness'), loyalty=copied.get('loyalty'),
         printed_power=copied.get('printed_power'), printed_toughness=copied.get('printed_toughness'),
+        printed_defense=copied.get('printed_defense'),
         keywords=list(copied.get('keywords') or []), colors=deepcopy(copied.get('colors')),
-        image_uri=copied.get('image_uri'), layout=copied.get('layout') or '',
-        card_faces=deepcopy(copied.get('card_faces') or []), selected_face_index=copied.get('selected_face_index'),
+        image_uri=copied.get('image_uri'), layout=layout,
+        card_faces=faces, selected_face_index=copied.get('selected_face_index'),
         bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
         summoning_sick=True, entered_turn=turn, was_kicked=bool(frame['payload'].get('__kicked')),
         kicker_count=count)

@@ -4,6 +4,31 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+Battle support separates printed defense, live counters and protector identity.
+The [model/copy foundation](docs/testing/battle-lifecycle-foundation-20261110.md),
+[entry handling](docs/testing/battle-entry-native-20261110.md),
+[counter and defeat handling](docs/testing/battle-defeat-native-20261110.md), and
+[transformed casting](docs/testing/battle-transformed-cast-native-20261110.md)
+describe the related rules and regression scenarios.
+[Printing provenance](docs/testing/battle-copy-native-gap-20261110.md) is kept
+separate from gameplay behavior.
+
+Additional rules work covers
+[conditional graveyard self-copy](docs/testing/conditional-graveyard-self-copy-20261110.md),
+[conditional player draws](docs/testing/conditional-player-draw-20261110.md), and
+[noncolor creature targets](docs/testing/noncolor-targets-20261110.md).
+[Source-characteristic notes](docs/testing/graveyard-source-inventory-20261110.md)
+describe copy boundaries. The
+[evidence input-boundary correction](docs/testing/native-profile-input-boundary-20261110.md)
+records a historical tooling incident.
+
+The [deferred-payment policy](docs/testing/AI-deferred-payment-20261110.md)
+distinguishes safe, losing and uncertain future payments.
+[Additional commitments](docs/testing/AI-additional-payment-20261110.md) retain
+proved payment continuations when available, while
+[unresolved simultaneous ordering](docs/testing/AI-ordered-payment-20261110.md)
+remains uncertain.
+
 The [target mana-value correction](docs/testing/target-mana-value-20261110.md)
 uses rules mana value for hybrid and snow target restrictions. A missing legal
 counter target reproduces before the fix; all183tests across seven whole modules
@@ -749,3 +774,16 @@ start fresh matches when comparing newly compiled rule behavior.
   accessibility and full current-source release gates remain unfinished.
 - Network authorization, worker coordination, storage quotas/retention and
   operational security review are required before broader deployment.
+
+
+### Deferred upkeep payments
+
+Summoner's Pact schedules its next-own-upkeep obligation when it resolves.
+Pay/decline, copies, restricted mana and paused choices use the existing payment
+and continuation paths. See [the behavior and test instructions](docs/testing/deferred-upkeep-payment-20261110.md).
+
+### Variable library search
+
+Variable searches bind their mana-value maximum to announced X and use the
+mana-value helper for library filtering. See
+[the behavior and test instructions](docs/testing/variable-library-search-20261110.md).

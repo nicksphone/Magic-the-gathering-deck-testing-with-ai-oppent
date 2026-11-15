@@ -14,7 +14,7 @@ except ImportError:
 import argparse
 import errno
 from collections import Counter, defaultdict
-from contextlib import closing
+from contextlib import closing, nullcontext
 from datetime import datetime, timezone
 import gzip
 import hashlib
@@ -142,7 +142,7 @@ def fetch_rulings(directory):
 
 
 def read_cards_gzip(path):
-    with gzip.open(path, 'rt', encoding='utf-8') as stream:
+    with (open(path, 'rb') if isinstance(path, (str, bytes, os.PathLike)) else nullcontext(path)) as raw, gzip.open(raw, 'rt', encoding='utf-8') as stream:
         for line in stream:
             if line.strip():
                 yield json.loads(line)
@@ -236,16 +236,16 @@ def readonly(path):
 
 
 def local_path(path):
-    """Keep SQLite state local, including paths outside the normal NFS mount."""
-    import subprocess
+    """Keep SQLite state on a recognized local filesystem.
+
+    Normalize relative paths as before. Unknown or unavailable mount metadata
+    fails closed; callers retain their source, file and sidecar checks.
+    """
+    from persistence.job_retention import _canonical_local_path
+
     if Path(path).is_symlink():
         raise ValueError('Writable SQLite paths cannot be symlinks')
-    path = Path(path).resolve()
-    parent = path if path.exists() else path.parent
-    kind = subprocess.check_output(['findmnt', '-n', '-o', 'FSTYPE', '-T', str(parent)], text=True).strip()
-    if any(item in kind for item in ('nfs', 'cifs', 'autofs')):
-        raise ValueError('SQLite scratch/state must be on a local filesystem')
-    return path
+    return _canonical_local_path(Path(path).resolve(), existing=False)
 
 
 def load_profile(row):
@@ -585,7 +585,7 @@ def validate_artifact(conn, artifact, scratch, *, reuse=False, snapshot=None, fu
                 if ownership is not None:
                     target.execute('CREATE TABLE corpus_campaign_owner (json TEXT NOT NULL)')
                     target.execute('INSERT INTO corpus_campaign_owner VALUES (?)', (json.dumps(ownership, sort_keys=True),))
-            with gzip.open(artifact, 'rt', encoding='utf-8') as stream:
+            with (open(artifact, 'rb') if isinstance(artifact, (str, bytes, os.PathLike)) else nullcontext(artifact)) as raw, gzip.open(raw, 'rt', encoding='utf-8') as stream:
                 manifest = json.loads(next(stream))['manifest']
                 if manifest['version'] != VERSION or manifest['snapshot'] != (snapshot or audit(conn)['knowledge_rows_sha256']):
                     raise ValueError('Artifact is for a different canonical snapshot')
@@ -657,7 +657,7 @@ def verify_campaign_profiles(conn, args, *, final=False):
                     or not receipt.get('sqlite_transaction_committed')):
                 raise ValueError('Delivered artifact receipt evidence mismatch')
             patches = {}
-            with gzip.open(path, 'rt') as stream:
+            with open(path, 'rb') as raw, gzip.open(raw, 'rt') as stream:
                 manifest = json.loads(next(stream))['manifest']
                 if manifest['snapshot'] != checkpoint_snapshot:
                     raise ValueError('Delivered artifact checkpoint snapshot mismatch')
@@ -750,7 +750,7 @@ def campaign(conn, args):
         publish_json(root / 'seed-validation.json', seed)
     with closing(sqlite3.connect(local_path(args.state))) as state:
         state.execute('CREATE TABLE IF NOT EXISTS delivered (id INTEGER PRIMARY KEY, artifact_sha256 TEXT NOT NULL)')
-        with gzip.open(args.seed_artifact, 'rt') as stream:
+        with open(args.seed_artifact, 'rb') as raw, gzip.open(raw, 'rt') as stream:
             next(stream)
             for line in stream:
                 patch = json.loads(line)
@@ -782,7 +782,7 @@ def campaign(conn, args):
             raise ValueError('Artifact changed during validation')
         publish_json(out.with_name(out.name + '.validated.json'), validation)
         with closing(sqlite3.connect(args.state)) as state:
-            with gzip.open(out, 'rt') as stream:
+            with open(out, 'rb') as raw, gzip.open(raw, 'rt') as stream:
                 next(stream)
                 for line in stream:
                     state.execute('INSERT OR IGNORE INTO delivered VALUES (?,?)', (json.loads(line)['id'], digest))

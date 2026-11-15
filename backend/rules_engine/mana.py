@@ -670,7 +670,7 @@ def _consumption_reservations(payment_context, card, source_card_id, reserved_ca
 def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='',
                         source_card_id=None, card=None, resource_choices=None,
                         excluded_sources=None, reserved_card_ids=(), protected_life=0,
-                        optimize_paid=False, post_payment_condition=None):
+                        optimize_paid=False, post_payment_condition=None, preserve_source=False):
     from types import SimpleNamespace
     from rules_engine.casting_resources import resource_keywords, joint_resource_payment
     from rules_engine.source_linked_exile import mana_requirements
@@ -687,12 +687,36 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
             return [], {}
         if cannot_spend:
             return None
-        return _plan_payment(state, player_id, remaining, payment_context=payment_context,
-                             excluded_sources=set(excluded_sources or ()) | set(tapped),
-                             reserved_card_ids=set(reserved_card_ids) | set(held),
+        excluded = set(excluded_sources or ()) | set(tapped)
+        reserved = set(reserved_card_ids) | set(held)
+        plan = _plan_payment(state, player_id, remaining, payment_context=payment_context,
+                             excluded_sources=excluded,
+                             reserved_card_ids=reserved,
                              protected_life=protected_life, optimize_paid=optimize_paid,
                              post_payment_condition=post_payment_condition.with_pending(held)
                                  if post_payment_condition is not None else None)
+        # An ability need not tap its own source to pay a mana cost. Prefer an
+        # equally useful native payment that leaves it available for combat or
+        # another ability. This is a preference, never an affordability rule.
+        from rules_engine.mana_abilities import PaidManaStep
+        if (preserve_source and plan is not None and post_payment_condition is None
+                and any((step.source_id if isinstance(step, PaidManaStep) else step[0])
+                        == source_card_id for step in plan[0])):
+            alternative = _plan_free_payment(state, player_id, remaining,
+                payment_context=payment_context, excluded_sources=excluded | {source_card_id},
+                reserved_card_ids=reserved, protected_life=protected_life + remaining.get('life', 0))
+            if alternative is not None:
+                scores = []
+                for candidate in (plan, alternative):
+                    trial = copy_match_state(state)
+                    if not _produce_planned_mana(trial, player_id, candidate[0],
+                            payment_context=payment_context, reserved_card_ids=reserved,
+                            protected_life=protected_life + remaining.get('life', 0)):
+                        break
+                    scores.append(_remaining_mana_score(trial, player_id, payment_context))
+                if len(scores) == 2 and scores[1] >= scores[0]:
+                    return alternative
+        return plan
 
     if enabled or resource_choices is not None:
         result = joint_resource_payment(state, player_id, view, req, resource_choices, physical,
@@ -766,7 +790,8 @@ def auto_pay_cost(
                     resource_choices=resource_choices, excluded_sources=excluded_sources,
                     optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids,
                     protected_life=reserved_life + protected_life,
-                    post_payment_condition=post_payment_condition)) is not None),
+                    post_payment_condition=post_payment_condition,
+                    preserve_source=payment_kind == 'activation' and ability_kind != 'mana')) is not None),
         None,
     )
     if payment is None:

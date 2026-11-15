@@ -74,11 +74,15 @@ def gain_matches(state, source, event, payload, instruction):
             return state.active_player != source.controller
         if kind == 'cast_combat':
             return state.step in COMBAT_STEPS
-        card = state.cards.get(payload.get('source_card_id'))
+        from rules_engine.events import _cast_event_source
+        card = _cast_event_source(state, event, payload)
         if not card or not set(selector.split(' or ')).intersection(t.lower() for t in effective_types(state, card)):
             return False
-        from rules_engine.mana import mana_value
-        return threshold is None or mana_value(card.mana_cost, x_value=int(payload.get('x_value', 0))) >= threshold
+        if threshold is None:
+            return True
+        from rules_engine.card_faces import card_mana_value
+        x_value = (payload.get('stack_payload') or {}).get('x_value', payload.get('x_value', 0))
+        return type(x_value) is int and x_value >= 0 and card_mana_value(card, x_value=x_value) >= threshold
     if event != 'enters_battlefield':
         return False
     card = state.cards.get(payload.get('card_id'))

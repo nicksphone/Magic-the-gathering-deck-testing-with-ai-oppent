@@ -19,6 +19,13 @@ def begin_bestow(card):
     if is_bestowed(card):
         return
     card.bestow_characteristics = {'types': list(card.types), 'type_line': card.type_line}
+    refresh_bestow(card)
+
+
+def refresh_bestow(card):
+    if not is_bestowed(card):
+        return
+    card.bestow_characteristics = {'types': list(card.types), 'type_line': card.type_line}
     # Bestow replaces card/creature types, not supertypes or mana cost/colors.
     from rules_engine.card_types import CARD_TYPES
     supertypes = [value for value in card.types if value not in CARD_TYPES]
@@ -33,6 +40,8 @@ def end_bestow(card):
         setattr(card, key, copy(value))
     card.bestow_characteristics = {}
     card.attached_to = None
+    from rules_engine.type_effects import rebase_type_effects
+    rebase_type_effects(card)
 
 
 def bestow_cast_view(card):

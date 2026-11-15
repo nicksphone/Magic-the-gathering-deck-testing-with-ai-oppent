@@ -228,8 +228,12 @@ def test_real_twincast_copy_uses_copy_controller_resources_and_current_target(se
         if retarget:
             assert seat in state.players_with_permanent_departure
         assert state.cards[old.id].zone == Zone.GRAVEYARD
+    elif retarget:
+        assert state.cards[old.id].zone == Zone.BATTLEFIELD
+        assert state.cards[old.id].loyalty == 5
     else:
-        assert state.cards[old.id].loyalty == (5 if retarget else -1)
+        assert state.cards[old.id].zone == Zone.GRAVEYARD
+        assert state.cards[old.id].last_known_battlefield['loyalty'] == 0
     assert state.cards[spell].zone == Zone.GRAVEYARD
 
 

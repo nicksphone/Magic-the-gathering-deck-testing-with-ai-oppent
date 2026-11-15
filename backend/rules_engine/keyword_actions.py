@@ -3,7 +3,7 @@ from rules_engine.type_effects import effective_types
 
 import re
 
-from game_state.state import Step, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import Step, Zone, assign_static_order_on_battlefield_entry, object_incarnation
 from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands
 
 
@@ -15,7 +15,8 @@ def ninjutsu_cost(card) -> str | None:
 def ninjutsu_attackers(state, player_id: int) -> list[str]:
     if state.active_player != player_id or not state.blockers_declared or state.step not in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE, Step.END_COMBAT}:
         return []
-    return [cid for cid in state.attackers if cid in state.players[player_id].battlefield and not state.blocks.get(cid)]
+    return [cid for cid in state.attackers
+            if cid in state.players[player_id].battlefield and cid not in state.blocks]
 
 
 def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
@@ -44,17 +45,59 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
             state.trigger_staging = False
         return False
     returned = state.cards[return_id]
+    from rules_engine.combat import reconcile_combat_targets
+    reconcile_combat_targets(state)
     target = state.attack_targets.get(return_id, f"player:{3-player_id}")
+    payload = {"attack_target": target, "__source_zone_sequence": source_sequence}
+    if target.startswith(('battle:', 'planeswalker:')):
+        permanent = state.cards.get(target.split(':', 1)[1])
+        if permanent is not None and permanent.zone == Zone.BATTLEFIELD:
+            payload['__attack_target_reference'] = {
+                'incarnation': object_incarnation(permanent),
+                'zone_change_sequence': permanent.zone_change_sequence,
+            }
     emit_event(state, "leaves_battlefield", {"card_id": return_id, "controller": player_id})
     player.battlefield.remove(return_id)
     state.players[returned.owner].hand.append(return_id)
     returned.move_to_zone(Zone.HAND)
     state.attackers.remove(return_id)
     state.attack_targets.pop(return_id, None)
+    state.combat_target_context.pop(return_id, None)
     activated_item = add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu",
-                 {"attack_target": target, "__source_zone_sequence": source_sequence}, is_spell=False)
+                 payload, is_spell=False)
     record_activation_complete(state, activated_item)
     return True
+
+
+def _ninjutsu_destination(state, controller, payload):
+    from rules_engine.combat import _valid_defenders
+    target = payload.get('attack_target')
+    if type(target) is not str or not target:
+        return None
+    choices = _valid_defenders(state, 3-controller)
+    if target.startswith('player:'):
+        return target if target in choices else None
+    kind, _, cid = target.partition(':')
+    if kind not in {'battle', 'planeswalker'}:
+        return None
+    reference = payload.get('__attack_target_reference')
+    if reference is None and kind == 'planeswalker':
+        # Snapshots from before retained combat references support the old PW path.
+        return target if target in choices else None
+    card = state.cards.get(cid)
+    if card is None or card.zone != Zone.BATTLEFIELD or type(reference) is not dict:
+        return None
+    if set(reference) != {'incarnation', 'zone_change_sequence'}:
+        return None
+    if any(type(value) is not int or value < 0 for value in reference.values()):
+        return None
+    if (reference['incarnation'] != object_incarnation(card)
+            or reference['zone_change_sequence'] != card.zone_change_sequence):
+        return None
+    if target in choices:
+        return target
+    alternate = ('planeswalker:' if kind == 'battle' else 'battle:') + cid
+    return alternate if alternate in choices else None
 
 
 def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
@@ -76,9 +119,15 @@ def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
     card.summoning_sick = True
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, card_id)
-    if state.step in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE, Step.END_COMBAT} and state.active_player == controller:
-        state.attackers.append(card_id)
-        state.attack_targets[card_id] = payload["attack_target"]
+    if (state.step in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE, Step.END_COMBAT}
+            and state.active_player == controller and 'Creature' in effective_types(state, card)
+            and 'Battle' not in effective_types(state, card)):
+        target = _ninjutsu_destination(state, controller, payload)
+        if target is not None:
+            state.attackers.append(card_id)
+            state.attack_targets[card_id] = target
+            from rules_engine.combat import bind_attack_target
+            bind_attack_target(state, card_id, target)
     emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
 
 
@@ -89,6 +138,18 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
     if not count:
         return
     state.pending_mechanic_choice = {"kind": "sacrifice", "player_id": player_id, "options": choices, "count": count, "label": "Annihilator"}
+    state.priority_player = player_id
+    state.passed_priority = set()
+
+
+def resolve_creature_sacrifice(state, controller: int, payload: dict) -> None:
+    player_id = payload['target_player']
+    choices = [cid for cid in state.players[player_id].battlefield
+               if 'Creature' in effective_types(state, state.cards[cid])]
+    if not choices:
+        return
+    state.pending_mechanic_choice = {'kind': 'sacrifice', 'player_id': player_id,
+                                    'options': choices, 'count': 1, 'label': 'Sacrifice a creature'}
     state.priority_player = player_id
     state.passed_priority = set()
 
@@ -115,6 +176,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             return False
     if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'exchange_energy_payment':
         from rules_engine.exchange_energy import finish
+        return finish(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'deferred_upkeep_payment':
+        from rules_engine.deferred_upkeep_payment import finish
         return finish(state, player_id, action)
     if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_mode':
         from rules_engine.modal_entry import finish
@@ -385,7 +449,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             announced[key] = value
             copied.payload[key] = value
             refresh([(key,)])
-            if selected_graveyard_trigger or (key == 'target_card_id' and copied.payload.get('__trigger_target_choice') is True):
+            if copied.payload.get('__trigger_target_choice') is True:
                 from rules_engine.events import _remember_trigger_target
                 _remember_trigger_target(state, copied)
             if copied.effect_key == 'conditional_instruction':
@@ -605,14 +669,8 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     emit_event_batch(state, "permanent_dies", died)
     emit_event_batch(state, "creature_dies", [event for event in died if was_creature_on_battlefield(state.cards[event["card_id"]])])
     state.pending_mechanic_choice = None
-    if pending.get("resolving_item"):
-        from game_state.state import StackItem
-        from rules_engine.stack_engine import finish_stack_resolution
-        item = StackItem(**pending["resolving_item"])
-        finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
-    if not state.pending_trigger_order and not state.pending_replacement_choice:
-        state.priority_player = state.active_player
-        state.passed_priority = set()
+    from rules_engine.stack_engine import resume_paused_resolution
+    resume_paused_resolution(state, pending)
     return True
 
 

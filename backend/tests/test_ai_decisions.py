@@ -613,31 +613,39 @@ def test_board_role_adjusts_pass_bias_for_control_and_aggro_lines() -> None:
 
 def test_control_ai_sets_counterspell_stack_target() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
-    moves = [
-        {
-            "type": "cast_spell",
-            "card_name": "Counterspell",
-            "card_id": "counter-1",
-            "target_hints": {"stack_targets": [{"id": "stack-a", "label": "Lightning Bolt"}]},
-        },
-        {"type": "pass_priority"},
-    ]
-
-    class FakeState:
-        turn = 3
-        step = "precombat_main"
-        players = {
-            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
-            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
-        }
-        cards = {
-            "counter-1": canonical_card('Counterspell'),
-        }
-        stack = [type("S", (), {"id": "stack-a", "label": "Lightning Bolt"})()]
-
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    state = MatchFactory.from_decks(
+        [canonical_deck_entry('Island', 60)], [canonical_deck_entry('Mountain', 60)], seed=935717)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 3
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 2
+    state.players[1].life = 3
+    for seat, count in ((1, 2), (2, 1)):
+        for _ in range(count):
+            cid = state.players[seat].library.pop()
+            state.cards[cid].move_to_zone(Zone.BATTLEFIELD)
+            state.players[seat].battlefield.append(cid)
+    counter = canonical_card('Counterspell', as_instance=True, id='counter-1',
+                             owner=1, controller=1, zone=Zone.HAND)
+    bolt = canonical_card('Lightning Bolt', as_instance=True, id='enemy-bolt',
+                          owner=2, controller=2, zone=Zone.HAND)
+    state.cards.update({counter.id: counter, bolt.id: bolt})
+    state.players[1].hand.append(counter.id)
+    state.players[2].hand.append(bolt.id)
+    rules = RulesEngine()
+    rules.take_action(state, 2, {'type': 'cast_spell', 'card_id': bolt.id,
+                                 'targets': {'target_player': 1}}, reject_invalid=True)
+    spell = next(item for item in state.stack if item.source_card_id == bolt.id)
+    assert spell.payload['mana_spent'] == 1
+    rules.take_action(state, 2, {'type': 'pass_priority'}, reject_invalid=True)
+    assert state.priority_player == 1 and state.players[1].life == 3
+    decision = ai.choose_action(state, rules.legal_moves(state, 1), 1)
     assert decision.action["type"] == "cast_spell"
-    assert decision.action["targets"]["target_stack_id"] == "stack-a"
+    assert decision.action['card_id'] == counter.id
+    assert decision.action["targets"]["target_stack_id"] == spell.id
+    rules.take_action(state, 1, decision.action, reject_invalid=True)
+    assert state.stack[-1].payload['mana_spent'] == 2
 
 
 def test_aggro_ai_avoids_suicide_attack_into_larger_blocker() -> None:

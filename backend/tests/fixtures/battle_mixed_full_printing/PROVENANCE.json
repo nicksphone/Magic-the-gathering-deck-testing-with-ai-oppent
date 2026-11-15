@@ -1,0 +1,19 @@
+{
+  "RC_ready": false,
+  "bytes": 4955,
+  "field_projection": false,
+  "fields": 63,
+  "fresh_scryfall_fetch_claimed": false,
+  "full_response": true,
+  "git_blob": "d06d6a34d05093d8e5f956269c75ec75500cd888",
+  "kind": "exact complete static public Scryfall response cache",
+  "oracle_id": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+  "printing_id": "d072e9ca-aae7-45dc-8025-3ce590bae63f",
+  "sha256": "a1017ed41fa6af2a22221ec413f752679fe91c316845fbdd6ff5627460495653",
+  "source_commit": "dca82d7e32df5f3fbb229b47c3ba5fc808240de2",
+  "source_kind_evidence": "PUBLIC-PRINTING-ADMISSION.json in battle-mixed-entry-work",
+  "source_path": "data/cards/blood_moon.json",
+  "source_repository": "coolcrazyben/MagicML",
+  "source_url": "https://github.com/coolcrazyben/MagicML/blob/dca82d7e32df5f3fbb229b47c3ba5fc808240de2/data/cards/blood_moon.json",
+  "whole_corpus_qualified": false
+}

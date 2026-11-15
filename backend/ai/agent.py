@@ -195,22 +195,52 @@ class AIAgent:
                                 return AIDecision(action=finishing,
                                     reasoning='Checked current-turn damage sequence if unanswered',
                                     knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                    from ai.deferred_payment_policy import DeferredPaymentPolicy
+                    payments = DeferredPaymentPolicy(self, state, player_id)
+                    if win is not True:
+                        financing = payments.financing_action()
+                        if financing is not None:
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, financing)
+                            except ActionRejected:
+                                pass
+                            else:
+                                return AIDecision(action=financing,
+                                    reasoning='Execute native financing before the deferred payment deadline',
+                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                        legal_moves = payments.filter(legal_moves)
+                        if action is not None and not payments.permits(action):
+                            action = None
+                    def funded_decision(proposed, reasoning):
+                        alternative = payments.funded_alternative(proposed, legal_moves) if win is not True else None
+                        if alternative is not None:
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, alternative)
+                            except ActionRejected:
+                                pass
+                            else:
+                                proposed = alternative
+                                reasoning = 'Keep a proved payment continuation before borrowing again'
+                        return AIDecision(action=proposed, reasoning=reasoning,
+                            knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                     if action is not None:
-                        if win is not True and (replacement := self._early_prowess_burn_action(state, action, player_id)):
+                        if (win is not True and (replacement := self._early_prowess_burn_action(state, action, player_id))
+                                and payments.permits(replacement)):
                             from rules_engine.action_validation import ActionRejected, checked_action
                             try:
                                 checked_action(authoritative_state, self.engine, player_id, replacement)
                             except ActionRejected:
                                 pass
                             else:
-                                return AIDecision(action=replacement,
-                                    reasoning='Develop a checked main-phase prowess sequence before nonlethal burn',
-                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-                        return AIDecision(action=action,
-                            reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
-                            knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                                return funded_decision(replacement,
+                                    'Develop a checked main-phase prowess sequence before nonlethal burn')
+                        return funded_decision(action,
+                            'Tactical-safeguarded Q ranking over a checked heuristic subset')
                     decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
-                    if replacement := self._early_prowess_burn_action(state, decision.action, player_id):
+                    if ((replacement := self._early_prowess_burn_action(state, decision.action, player_id))
+                            and payments.permits(replacement)):
                         from rules_engine.action_validation import ActionRejected, checked_action
                         try:
                             checked_action(authoritative_state, self.engine, player_id, replacement)
@@ -230,8 +260,7 @@ class AIAgent:
                         if action:
                             decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
                     from ai.declaration_policy import finalize_declaration
-                    return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
-                                      knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                    return funded_decision(finalize_declaration(state, decision.action), decision.reasoning)
             finally:
                 self._knowledge_usage = previous_usage
 
@@ -378,6 +407,10 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'deferred_upkeep_payment':
+                selected = 'pay' if 'pay' in options else 'decline'
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
+                                  reasoning='Pay the delayed upkeep cost when affordable')
             if choice['kind'] == 'entry_copy':
                 from rules_engine.action_validation import ActionRejected
                 from rules_engine.entry_copy import selected_option
@@ -520,9 +553,10 @@ class AIAgent:
             if choice['kind'] == 'effect_cast':
                 from ai.effect_cast_policy import usable_cast
                 target = state.pending_mechanic_choice['effect_payload']['target_card_id']
-                action = usable_cast(state, player_id, target)
+                action = usable_cast(state, player_id, target,
+                                     permission=state.pending_mechanic_choice['effect_payload'])
                 return AIDecision(action=action or {'type': 'choose_mechanic', 'card_ids': ['decline']},
-                                  reasoning='Cast a supported usable graveyard spell or decline the permission')
+                                  reasoning='Cast a supported usable spell or decline the permission')
             if choice['kind'] in {'surveil', 'surveil_top_order'}:
                 selected = (self._surveil_graveyard_choices(state, options, player_id)
                             if choice['kind'] == 'surveil'
@@ -1117,6 +1151,7 @@ class AIAgent:
 
     def _tactical_loyalty_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         from types import SimpleNamespace
+        from rules_engine.card_faces import card_mana_value
         from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
         from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
@@ -1162,9 +1197,9 @@ class AIAgent:
             if effect_key != "exile_colored_permanents_mana_value_at_most":
                 continue
             x_values = sorted({
-                max(1, mana_value(state.cards[cid].mana_cost or ""))
+                max(1, card_mana_value(state.cards[cid]))
                 for cid in state.players[opponent].battlefield
-                if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= source.loyalty
+                if card_color_names(state.cards[cid], state) and card_mana_value(state.cards[cid]) <= source.loyalty
             })
             for x_value in x_values:
                 action = {"type": "activate_loyalty", "card_id": source.id, "ability_index": index, "targets": {"x_value": x_value}}
@@ -4093,10 +4128,12 @@ class AIAgent:
         from ai.pending_effects import granted_acquisition_forecast
         from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
-        source = state.cards.get(move.get("card_id"))
+        source = _card_for_move(state, move)
         if source is None:
             return None, 0.0
         casting = move.get("type") == "cast_spell"
+        from ai.casting_resources import _automatic_effect_permission
+        permission = _automatic_effect_permission(state, player_id, source.id) if casting else None
         targets = (move.get("target_hints") or {}).get("aura_targets", []) if casting else move.get("targets", [])
         chosen_target = (move.get("targets") or {}).get("target_card_id") if casting else None
         if chosen_target is not None:
@@ -4115,7 +4152,11 @@ class AIAgent:
             acquisitions = {pid: 0 for pid in state.players}
             try:
                 old_stack_ids = {item.id for item in projected.stack}
-                simulation_take_action(self.engine, projected, player_id, action, reject_invalid=True)
+                if permission is not None:
+                    from rules_engine.effect_casts import project_cast
+                    projected = project_cast(state, player_id, action, permission)
+                else:
+                    simulation_take_action(self.engine, projected, player_id, action, reject_invalid=True)
                 attachment = next((item for item in projected.stack if item.id not in old_stack_ids
                                    and item.source_card_id == source.id
                                    and (casting or item.effect_key == 'equip_attachment')), None)
@@ -4731,12 +4772,13 @@ class AIAgent:
         if card:
             tags = self._spell_tags(card)
             if mtype == "cast_spell" and self._modal_face_options(card):
-                if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
+                explicit_face = move.get('selected_face_index') is not None
+                if explicit_face or getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
                     selected_face_index = int(move.get("selected_face_index", 0))
                 else:
                     selected_face_index, _ = self._select_modal_face_index(state, card, player_id)
                 out["selected_face_index"] = selected_face_index
-                if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
+                if explicit_face or getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
                     from rules_engine.card_faces import select_cast_face
                     from rules_engine.cast_choice import build_cast_hints
                     card = select_cast_face(card, selected_face_index)

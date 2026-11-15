@@ -19,6 +19,13 @@ _PRODUCERS = {
     'scripts/regression_matrix_replay.py': 'd29588861eb7a471ae3616fd79a4591c4b56050cc4ef9d1fe9db0e7ee3228b10',
     'scripts/build_ai_log_priors.py': '5142857efe9051889a91b5b4e7db40a199d37afd1afb066b1a779d1d073d2e4c',
 }
+# Complete reviewed layouts: the replay envelope addition preserves outer
+# cast-context admission while retaining the historical producer identity.
+_PRODUCER_LAYOUTS = (
+    _PRODUCERS,
+    {**_PRODUCERS, 'scripts/regression_matrix_replay.py':
+        '2966c40f05063e00a3fd7b2865d8f3ac711ca4684ecbbd8369cf0037cb5aaf0d'},
+)
 _CHECKS = (
     'role_inputs_equal', 'prepared_inputs_equal', 'setup_approval_equal',
     'source_equal', 'full_source_metadata_equal', 'F_equal', 'full_F_metadata_equal',
@@ -255,7 +262,8 @@ def export_closed_matrixquota_training(*, role_root, contract, inventory, destin
     from scripts import matchup_round_robin as rr
 
     _require(type(binding.get('backend_files')) is dict
-        and all(binding['backend_files'].get(k) == v for k, v in _PRODUCERS.items()), 'unsupported_producer_layout')
+        and any(all(binding['backend_files'].get(k) == v for k, v in layout.items())
+            for layout in _PRODUCER_LAYOUTS), 'unsupported_producer_layout')
     rows, series = _admit(summary, export, binding, backend, expected_lineage)
     manifest = summary['manifest']
     _require(len(rows) == 11 and len(series) == 110 and len(summary['pairs']) == 55

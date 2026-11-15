@@ -17,14 +17,20 @@ def _tupleize(value):
     return value
 
 
-def serialize_card_view(state: MatchState, cid: str) -> dict:
+def serialize_card_view(state: MatchState, cid: str, *, projected_card=None) -> dict:
+    if projected_card is not None:
+        from copy import copy
+        state = copy(state)
+        state.cards = {**state.cards, cid: projected_card}
     from rules_engine.suspend import suspended
     from rules_engine.land_types import effective_type_line
     from rules_engine.continuous import effective_combat_stats, effective_keyword_counts, attachment_effect_warnings
     from rules_engine.colors import card_color_symbols
     from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
+    from rules_engine.battles import defense
     card = state.cards[cid]
-    creature = "Creature" in effective_types(state, card)
+    types = effective_types(state, card)
+    creature = 'Creature' in types
     def numeric(value):
         try:
             return int(value) if value is not None else None
@@ -40,7 +46,10 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         counters['lore'] = counters.pop('__lore')
     from rules_engine.mana_abilities import tap_only_outputs
     outputs = (tap_only_outputs(state, card, ignore_readiness=True)
-               if "Land" in effective_types(state, card) else nonland_mana_outputs(state, cid, card, free_only=False)) if card.zone == Zone.BATTLEFIELD else {}
+               if 'Land' in types else nonland_mana_outputs(state, cid, card, free_only=False)) if card.zone == Zone.BATTLEFIELD else {}
+    battle = ({'printed_defense': card.printed_defense, 'defense': defense(state, card),
+               'battle_protector': card.battle_protector if card.zone == Zone.BATTLEFIELD else None}
+              if 'Battle' in types else {})
     return {
         "id": cid, "name": card.name, "tapped": card.tapped,
         "summoning_sick": card.summoning_sick,
@@ -50,8 +59,9 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "keywords": list(keyword_counts), "keyword_counts": keyword_counts, "base_keywords": list(card.keywords),
         "counters": counters, "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
+        **battle,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
-        "types": list(effective_types(state, card)), "is_token": is_token_card(card), "type_line": effective_type_line(state, card),
+        "types": list(types), "is_token": is_token_card(card), "type_line": effective_type_line(state, card),
         "base_type_line": card.type_line,
         "attached_to": card.attached_to,
         "bestowed": bool(card.bestow_characteristics),
@@ -60,7 +70,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "mana_source_colors": sorted(outputs),
         "mana_source_amounts": outputs,
         "chosen_creature_type": card.chosen_creature_type,
-        "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
+        "card_faces": deepcopy(card.card_faces), "selected_face_index": card.selected_face_index,
         "layout": card.layout,
         "was_foretold": card.was_foretold,
         "foretell_order": card.foretell_record.get('order'),
@@ -87,6 +97,8 @@ def _card_snapshot(card):
         "toughness": card.toughness,
         "printed_power": card.printed_power,
         "printed_toughness": card.printed_toughness,
+        **({'printed_defense': card.printed_defense} if card.printed_defense is not None else {}),
+        **({'battle_protector': card.battle_protector} if card.battle_protector is not None else {}),
         "loyalty": card.loyalty,
         "tapped": card.tapped,
         "summoning_sick": card.summoning_sick,
@@ -108,7 +120,7 @@ def _card_snapshot(card):
         "battlefield_incarnation": card.battlefield_incarnation,
         "instance_order": card.instance_order,
         "zone_change_sequence": card.zone_change_sequence,
-        "card_faces": list(card.card_faces),
+        "card_faces": deepcopy(card.card_faces),
         "layout": card.layout,
         "exile_face_down": card.exile_face_down,
         "foretell_record": deepcopy(card.foretell_record),
@@ -120,17 +132,24 @@ def _card_snapshot(card):
         "selected_face_index": card.selected_face_index,
         **({'knowledge_snapshot': copy_snapshot(card.knowledge_snapshot)} if card.knowledge_snapshot else {}),
         "chosen_creature_type": card.chosen_creature_type,
-        "printed_characteristics": dict(card.printed_characteristics),
+        "printed_characteristics": deepcopy(card.printed_characteristics),
         "characteristic_record": deepcopy(card.characteristic_record),
         "bestow_characteristics": deepcopy(card.bestow_characteristics),
-        "colors": card.colors,
-        "last_known_battlefield": dict(card.last_known_battlefield),
+        "colors": list(card.colors) if card.colors is not None else None,
+        "last_known_battlefield": deepcopy(card.last_known_battlefield),
     }
 
 
 def _card_from_snapshot(raw, players):
     from knowledge.service import copy_snapshot
     from rules_engine.keyword_effects import restore_keyword_effects
+    printed_defense = raw.get('printed_defense')
+    protector = raw.get('battle_protector')
+    if (printed_defense is not None and (type(printed_defense) is not str
+            or not printed_defense.isascii() or not printed_defense.isdecimal())):
+        raise ValueError('Invalid printed defense')
+    if protector is not None and (type(protector) is not int or protector not in players):
+        raise ValueError('Invalid battle protector')
     if 'kicker_count' in raw:
         from rules_engine.kicker import validate_kicker_count
         validate_kicker_count(raw['kicker_count'], raw.get('was_kicked', False))
@@ -141,6 +160,7 @@ def _card_from_snapshot(raw, players):
         mana_cost=str(raw.get("mana_cost", "")),
         power=raw.get("power"), toughness=raw.get("toughness"), loyalty=raw.get("loyalty"),
         printed_power=raw.get('printed_power'), printed_toughness=raw.get('printed_toughness'),
+        printed_defense=printed_defense, battle_protector=protector,
         tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
         entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
         counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
@@ -154,17 +174,17 @@ def _card_from_snapshot(raw, players):
         effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),
         battlefield_incarnation=raw.get("battlefield_incarnation"),
         zone_change_sequence=int(raw.get("zone_change_sequence", 0)),
-        instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
+        instance_order=int(raw.get("instance_order", 0)), card_faces=deepcopy(raw.get("card_faces", [])),
         selected_face_index=raw.get("selected_face_index"),
         knowledge_snapshot=copy_snapshot(raw.get('knowledge_snapshot', {}), semantic=True),
         layout=str(raw.get("layout") or ""),
         chosen_creature_type=raw.get("chosen_creature_type"),
-        printed_characteristics=dict(raw.get("printed_characteristics", {})),
+        printed_characteristics=deepcopy(raw.get("printed_characteristics", {})),
         characteristic_record=deepcopy({} if raw.get('characteristic_record') is None
                                        else raw['characteristic_record']),
         bestow_characteristics=deepcopy(raw.get('bestow_characteristics', {})),
         colors=list(raw["colors"]) if raw.get("colors") is not None else None,
-        last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
+        last_known_battlefield=deepcopy(raw.get("last_known_battlefield", {})),
         exile_face_down=bool(raw.get("exile_face_down", False)),
         foretell_record=deepcopy(raw.get('foretell_record', {})),
         suspend_haste=deepcopy(raw.get('suspend_haste', {})),
@@ -175,6 +195,11 @@ def _card_from_snapshot(raw, players):
     )
     from rules_engine.activated_grants import validate_records
     validate_records(card)
+    if type(card.characteristic_record) is dict and card.characteristic_record.get('version') in {2, 3}:
+        from rules_engine.copiable_values import values
+        retained = values(card)
+        if card.characteristic_record['version'] == 3 and retained['printed_defense'] != card.printed_defense:
+            raise ValueError('Printed defense differs from retained characteristics')
     from rules_engine.control_effects import restore_control_effects
     restore_control_effects(raw, card, players)
     return card
@@ -214,6 +239,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "passed_priority": sorted(state.passed_priority),
         "attackers": list(state.attackers),
         "attack_targets": dict(state.attack_targets),
+        **({'combat_target_context': deepcopy(state.combat_target_context)} if state.combat_target_context else {}),
         "attack_bands": [list(band) for band in state.attack_bands],
         "blocks": {key: list(value) for key, value in state.blocks.items()},
         "attackers_declared": state.attackers_declared,
@@ -229,7 +255,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "foretells_this_turn": dict(state.foretells_this_turn),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
-        "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
+        "cleanup_deferred_triggers": deepcopy(state.cleanup_deferred_triggers),
         "winner": state.winner,
         "failed_draw_players": sorted(state.failed_draw_players),
         "best_of": state.best_of,
@@ -243,7 +269,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "trigger_once_seen_this_turn": sorted(state.trigger_once_seen_this_turn),
         "trigger_staging": state.trigger_staging,
         "trigger_staging_event": state.trigger_staging_event,
-        "staged_triggers": state.staged_triggers,
+        "staged_triggers": deepcopy(state.staged_triggers),
         "priority_stops": {
             str(key): sorted(step.value for step in value)
             for key, value in state.priority_stops.items()
@@ -274,9 +300,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
         },
-        "linked_exiles": [dict(item) for item in state.linked_exiles],
+        "linked_exiles": deepcopy(state.linked_exiles),
         "retained_counter_prohibitions": counter_snapshot(state.retained_counter_prohibitions),
-        "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
+        "pending_entry_counters": deepcopy(state.pending_entry_counters),
         "adventure_permissions": dict(state.adventure_permissions),
         "graveyard_permission_uses": dict(state.graveyard_permission_uses),
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
@@ -285,12 +311,12 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "replacement_choice_required": state.replacement_choice_required,
         "replacement_choice_players": sorted(state.replacement_choice_players),
         "mechanic_choice_players": sorted(state.mechanic_choice_players),
-        "pending_replacement_choice": state.pending_replacement_choice,
+        "pending_replacement_choice": deepcopy(state.pending_replacement_choice),
         "mana_continuation": deepcopy(state.mana_continuation),
         "trigger_order_choice_required": state.trigger_order_choice_required,
         "trigger_order_choice_players": sorted(state.trigger_order_choice_players),
-        "pending_trigger_order": state.pending_trigger_order,
-        "pending_mechanic_choice": state.pending_mechanic_choice,
+        "pending_trigger_order": deepcopy(state.pending_trigger_order),
+        "pending_mechanic_choice": deepcopy(state.pending_mechanic_choice),
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -326,7 +352,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "controller": item.controller,
                 "label": item.label,
                 "effect_key": item.effect_key,
-                "payload": item.payload,
+                "payload": deepcopy(item.payload),
                 "targets": list(item.targets),
             }
             for item in state.stack
@@ -372,7 +398,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         stack=[StackItem(
             id=str(item["id"]), source_card_id=str(item["source_card_id"]),
             controller=int(item["controller"]), label=str(item["label"]),
-            effect_key=str(item["effect_key"]), payload=dict(item.get("payload", {})),
+            effect_key=str(item["effect_key"]), payload=deepcopy(item.get("payload", {})),
             targets=list(item.get("targets", [])),
         ) for item in payload.get("stack", [])],
     )
@@ -395,6 +421,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))
     state.attack_targets = dict(payload.get("attack_targets", {}))
+    from rules_engine.combat import restore_combat_targets
+    restore_combat_targets(state, payload.get('combat_target_context', {}))
     state.attack_bands = [list(band) for band in payload.get("attack_bands", [])]
     state.blocks = {key: list(value) for key, value in payload.get("blocks", {}).items()}
     state.attackers_declared = bool(payload.get("attackers_declared", False))
@@ -410,11 +438,14 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.delayed_triggers = deepcopy(payload.get('delayed_triggers', []))
     state.emblems = list(payload.get('emblems', []))
     state.loyalty_permissions = deepcopy(payload.get('loyalty_permissions', []))
+    if state.loyalty_permissions:
+        from rules_engine.loyalty_instructions import validate_loyalty_grants
+        validate_loyalty_grants(state, state.loyalty_permissions)
     state.foretells_this_turn = {int(key): int(value) for key, value in
                                payload.get('foretells_this_turn', {'1': 0, '2': 0}).items()}
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))
     state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
-    state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))
+    state.cleanup_deferred_triggers = deepcopy(payload.get("cleanup_deferred_triggers", []))
     state.score = {int(key): int(value) for key, value in payload.get("score", {"1": 0, "2": 0}).items()}
     state.pregame_pending = bool(payload.get("pregame_pending", True))
     state.mulligan_count = {int(key): int(value) for key, value in payload.get("mulligan_count", {}).items()}
@@ -476,10 +507,10 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()
     }
-    state.linked_exiles = [dict(item) for item in payload.get("linked_exiles", [])]
+    state.linked_exiles = deepcopy(payload.get("linked_exiles", []))
     from rules_engine.retained_counter_prohibition import snapshot as counter_snapshot
     state.retained_counter_prohibitions = counter_snapshot(payload.get('retained_counter_prohibitions', []))
-    state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
+    state.pending_entry_counters = deepcopy(payload.get("pending_entry_counters", []))
     state.players_with_permanent_departure = {int(pid) for pid in payload.get("players_with_permanent_departure", [])}
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}
     state.graveyard_permission_uses = {str(key): int(turn) for key, turn in payload.get('graveyard_permission_uses', {}).items()}
@@ -493,14 +524,14 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             "mechanic_choice_players", payload.get("library_choice_players", payload.get("search_choice_players", []))
         )
     }
-    state.pending_replacement_choice = payload.get("pending_replacement_choice")
+    state.pending_replacement_choice = deepcopy(payload.get("pending_replacement_choice"))
     state.trigger_order_choice_required = bool(payload.get("trigger_order_choice_required", False))
     state.trigger_order_choice_players = {int(value) for value in payload.get("trigger_order_choice_players", [])}
     state.trigger_staging = bool(payload.get("trigger_staging", False))
     state.trigger_staging_event = str(payload.get("trigger_staging_event") or "combat_damage_step")
-    state.staged_triggers = list(payload.get("staged_triggers", []))
-    state.pending_trigger_order = payload.get("pending_trigger_order")
-    state.pending_mechanic_choice = payload.get("pending_mechanic_choice")
+    state.staged_triggers = deepcopy(payload.get("staged_triggers", []))
+    state.pending_trigger_order = deepcopy(payload.get("pending_trigger_order"))
+    state.pending_mechanic_choice = deepcopy(payload.get("pending_mechanic_choice"))
     # Old suspended land entries retained asdict(face) before this additive field.
     for attribute, packet_key in (('pending_replacement_choice', 'counter_payload'),
                                   ('pending_mechanic_choice', 'effect_payload')):

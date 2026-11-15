@@ -1,5 +1,5 @@
 """Choose graveyard permission targets from legal public casting opportunities."""
-def usable_cast(state, controller, target):
+def usable_cast(state, controller, target, *, permission=None):
     from ai.pending_effects import planning_copy
     from rules_engine.effect_casts import materialize_cast, admit_cast
     from rules_engine.targeting import stack_object_kind
@@ -7,8 +7,9 @@ def usable_cast(state, controller, target):
     projected.pending_trigger_order = None
     projected.pending_mechanic_choice = None
     try:
-        action = materialize_cast(projected, controller, target)
-        admit_cast(projected, controller, action, {'target_card_id': target})
+        permission = {'target_card_id': target} if permission is None else permission
+        action = materialize_cast(projected, controller, target, permission=permission)
+        admit_cast(projected, controller, action, permission)
     except (ValueError, KeyError):
         return None
     item = next(item for item in reversed(projected.stack) if item.source_card_id == target

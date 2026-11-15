@@ -113,8 +113,37 @@ def compile_optional_hand_exile_discount(text, card_name=''):
             'hand_exile_generic_reduction': int(match[2])}
 
 
+def compile_optional_sacrifice_discount(text, card_name=''):
+    """One complete sacrifice-discount spell, including its quoted token ability."""
+    if not re.search(r'\bas an additional cost to cast\b[^.]*\byou may sacrifice\b', text or '', re.I):
+        return None
+    unsupported = {'unsupported_optional_sacrifice': True}
+    reference = r'this spell' + ('|' + re.escape(card_name) if card_name else '')
+    body = re.sub(r'\s+', ' ', text or '').strip()
+    match = re.fullmatch(
+        r'As an additional cost to cast (?:' + reference + r'), you may sacrifice any number of creatures\. '
+        r'This spell costs \{(\d+)\} less to cast for each creature sacrificed this way\. '
+        r'Each opponent sacrifices a creature(?: of their choice)?\. '
+        r'(Create a (\d+)/(\d+) [a-z -]+ creature token with haste and '
+        r'(["\u201c])(Whenever this (?:token|creature) attacks, it deals (\d+) damage to each opponent\.)(["\u201d])\.?)',
+        body, re.I)
+    if match is None or {'"': '"', '\u201c': '\u201d'}[match[5]] != match[8]:
+        return unsupported
+    from rules_engine.token_descriptors import creature_token_descriptor
+    token = creature_token_descriptor(match[2])
+    if token is None or token['name'].lower() not in CREATURE_SUBTYPES:
+        return unsupported
+    return {'optional_sacrifice_generic_reduction': int(match[1]),
+            'token': {**token, 'amount': 1, 'power': int(match[3]), 'toughness': int(match[4]),
+                      'keywords': ['haste'], 'oracle_text': 'Haste\n' + match[6]}}
+
+
 def spell_additional_costs(text, card_name=''):
     """Return supported cost branches, or None for any unmodeled clause."""
+    sacrifice = compile_optional_sacrifice_discount(text, card_name)
+    if sacrifice is not None:
+        return (None if sacrifice.get('unsupported_optional_sacrifice') else
+                [{'optional_sacrifice_generic_reduction': sacrifice['optional_sacrifice_generic_reduction']}])
     hand_exile = compile_optional_hand_exile_discount(text, card_name)
     if hand_exile is not None:
         return None if hand_exile.get('unsupported_hand_exile') else [hand_exile]

@@ -2,8 +2,8 @@
 import re
 
 from game_state.state import Zone, object_incarnation
+from rules_engine.card_faces import card_mana_value
 from rules_engine.card_types import graveyard_card_types
-from rules_engine.mana import mana_value
 from rules_engine.oracle_text import without_reminder_text
 
 
@@ -75,7 +75,7 @@ def selected_instruction(state, controller, payload):
             if name not in {'condition', 'effect_key', 'normal', 'enhanced'}}
     if key == 'destroy_permanent':
         target = state.cards.get(payload.get('target_card_id'))
-        if target is None or target.zone != Zone.BATTLEFIELD or mana_value(target.mana_cost) > value:
+        if target is None or target.zone != Zone.BATTLEFIELD or card_mana_value(target) > value:
             return 'noop', data
     elif key == 'deal_damage':
         data['amount'] = value

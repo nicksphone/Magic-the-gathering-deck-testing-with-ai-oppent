@@ -3,7 +3,7 @@ from rules_engine.type_effects import effective_types
 
 import re
 
-from game_state.state import MatchState, Step, Zone
+from game_state.state import MatchState, Step, Zone, object_incarnation
 from rules_engine.colors import card_color_names
 from rules_engine.continuous import KNOWN_KEYWORDS, effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event, emit_event_batch
@@ -23,16 +23,121 @@ DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 BLOCK_ONLY_KEYWORD_RE = re.compile(r"\bcan block only creatures with ([a-z][a-z ]*?)(?:[.\n]|$)", re.IGNORECASE)
 
 
+def bind_attack_target(state, attacker, target):
+    """Retain the permanent object, its defending player and relevant types."""
+    state.combat_target_context.pop(attacker, None)
+    if not target.startswith(('battle:', 'planeswalker:')):
+        return
+    cid = target.split(':', 1)[1]
+    card = state.cards.get(cid)
+    if card is None or card.zone != Zone.BATTLEFIELD:
+        state.attack_targets[attacker] = ''
+        return
+    state.combat_target_context[attacker] = {
+        'target_card_id': cid, 'incarnation': object_incarnation(card),
+        'zone_change_sequence': card.zone_change_sequence,
+        'controller': card.controller, 'protector': card.battle_protector,
+        'types': sorted(set(effective_types(state, card)) & {'Battle', 'Planeswalker'}),
+        'removed': False}
+
+
+def remove_permanent_from_combat(state, card_id):
+    """A genuine departure/control transition cannot be undone by returning."""
+    state.attackers = [cid for cid in state.attackers if cid != card_id]
+    state.attack_targets.pop(card_id, None)
+    state.combat_target_context.pop(card_id, None)
+    state.blocks = {aid: [bid for bid in bids if bid != card_id]
+                    for aid, bids in state.blocks.items() if aid != card_id}
+    for aid, context in state.combat_target_context.items():
+        if context['target_card_id'] == card_id:
+            context['removed'] = True
+            state.attack_targets[aid] = ''
+
+
+def reconcile_combat_targets(state):
+    """Latch rule506.4 removal; retain the conditional mixed-type exceptions."""
+    for aid in list(state.combat_target_context):
+        if aid not in state.attackers:
+            del state.combat_target_context[aid]
+            continue
+        context = state.combat_target_context[aid]
+        card = state.cards.get(context['target_card_id'])
+        previous = set(context['types'])
+        current = set(effective_types(state, card)) & {'Battle', 'Planeswalker'} if card else set()
+        removed = (context['removed'] or card is None or card.zone != Zone.BATTLEFIELD
+                   or object_incarnation(card) != context['incarnation']
+                   or card.zone_change_sequence != context['zone_change_sequence']
+                   or card.controller != context['controller']
+                   or ('Battle' in previous and card.battle_protector != context['protector'])
+                   or not current)
+        if not removed and not previous.issubset(current):
+            removed = not (previous == {'Battle', 'Planeswalker'}
+                           and (current == {'Battle'} or current == {'Planeswalker'}
+                                and card.controller == context['protector']))
+        if removed:
+            context['removed'] = True
+            state.attack_targets[aid] = ''
+        else:
+            context['types'] = sorted(current)
+            key = 'battle:' if 'Battle' in current else 'planeswalker:'
+            state.attack_targets[aid] = key + card.id
+
+
+def is_being_attacked(state, card_id):
+    reconcile_combat_targets(state)
+    return any(aid in state.attackers and not context['removed']
+               and context['target_card_id'] == card_id
+               for aid, context in state.combat_target_context.items())
+
+
+def restore_combat_targets(state, raw):
+    """Legacy player and planeswalker destinations retain their prior behavior."""
+    from copy import deepcopy
+    if type(raw) is not dict:
+        raise ValueError('Invalid combat target context')
+    keys = {'target_card_id', 'incarnation', 'zone_change_sequence', 'controller', 'protector', 'types', 'removed'}
+    for aid, row in raw.items():
+        if (type(aid) is not str or aid not in state.attackers or type(row) is not dict
+                or set(row) != keys or type(row['target_card_id']) is not str
+                or row['target_card_id'] not in state.cards
+                or any(type(row[key]) is not int or row[key] < 0 for key in ('incarnation', 'zone_change_sequence'))
+                or type(row['controller']) is not int or row['controller'] not in state.players
+                or not (row['protector'] is None or type(row['protector']) is int and row['protector'] in state.players)
+                or type(row['removed']) is not bool or type(row['types']) is not list
+                or not row['types'] or any(type(kind) is not str for kind in row['types'])
+                or row['types'] != sorted(set(row['types']))
+                or not set(row['types']).issubset({'Battle', 'Planeswalker'})
+                or (state.attack_targets.get(aid) != '' if row['removed'] else
+                    state.attack_targets.get(aid) not in {'battle:' + row['target_card_id'], 'planeswalker:' + row['target_card_id']})):
+            raise ValueError('Invalid retained combat destination')
+    state.combat_target_context = deepcopy(raw)
+    for aid, key in state.attack_targets.items():
+        if aid not in raw and key.startswith('battle:'):
+            state.attack_targets[aid] = ''
+    reconcile_combat_targets(state)
+
+
 def remove_noncreatures_from_combat(state):
     """A type transition removes combatants; returning to creature doesn't rejoin."""
+    if not (state.attackers or state.attack_targets or state.blocks or state.combat_target_context):
+        return
+
     def remains(cid):
         card = state.cards.get(cid)
-        return card is not None and card.zone == Zone.BATTLEFIELD and 'Creature' in effective_types(state, card)
-    state.attackers = [cid for cid in state.attackers if remains(cid)]
-    state.attack_targets = {cid: target for cid, target in state.attack_targets.items() if cid in state.attackers}
-    # Preserve an empty block entry: the attacker remains blocked (rule 509.1h).
-    state.blocks = {cid: [bid for bid in bids if remains(bid)]
-                    for cid, bids in state.blocks.items() if cid in state.attackers}
+        if card is None or card.zone != Zone.BATTLEFIELD:
+            return False
+        types = effective_types(state, card)
+        return 'Creature' in types and 'Battle' not in types
+
+    with rule_query_scope(state):
+        attackers = [cid for cid in state.attackers if remains(cid)]
+        # Preserve an empty block entry: the attacker remains blocked (rule 509.1h).
+        blocks = {cid: [bid for bid in bids if remains(bid)]
+                  for cid, bids in state.blocks.items() if cid in attackers}
+    state.attackers = attackers
+    state.attack_targets = {cid: target for cid, target in state.attack_targets.items() if cid in attackers}
+    state.blocks = blocks
+    reconcile_combat_targets(state)
     # Announced bands persist; block assignment filters out departed members.
 
 
@@ -71,7 +176,8 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             continue
         if card.zone != Zone.BATTLEFIELD:
             continue
-        if "Creature" not in effective_types(state, card):
+        types = effective_types(state, card)
+        if 'Creature' not in types or 'Battle' in types:
             continue
         if card.tapped:
             continue
@@ -83,7 +189,9 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             continue
         legal.append(cid)
         desired = attack_targets.get(cid, f"player:{defender}")
-        legal_targets[cid] = desired if desired in valid_defenders else f"player:{defender}"
+        if desired not in valid_defenders:
+            raise ValueError('Invalid attack destination')
+        legal_targets[cid] = desired
     if len(legal) == 1 and card_cant_attack_alone(state, legal[0]):
         lone = legal[0]
         state.log.append(f"{state.cards[lone].name} can't attack alone.")
@@ -122,6 +230,9 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
     state.combat_damage_stage = "none"
     state.first_strike_damage_ids = set()
     state.attack_targets = legal_targets
+    state.combat_target_context = {}
+    for cid, target in legal_targets.items():
+        bind_attack_target(state, cid, target)
     if legal:
         names = ", ".join(
             f"{state.cards[c].name} -> {_defender_label(state, state.attack_targets.get(c, f'player:{defender}'))}"
@@ -169,7 +280,8 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
                     continue
                 if block_card.tapped:
                     continue
-                if "Creature" not in effective_types(state, block_card):
+                types = effective_types(state, block_card)
+                if 'Creature' not in types or 'Battle' in types:
                     continue
                 if card_cant_block(state, blocker):
                     continue
@@ -268,9 +380,11 @@ def _assignment_options(state: MatchState, cid: str, first_only: bool) -> list[s
         return []
     if cid in state.attackers:
         blockers = [bid for bid in state.blocks.get(cid, []) if bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD]
-        if len(blockers) > 1 or (blockers and has_keyword(state, cid, "trample")):
-            defender = 1 if state.active_player == 2 else 2
-            return blockers + ([state.attack_targets.get(cid, f"player:{defender}")] if has_keyword(state, cid, "trample") else [])
+        defender = 1 if state.active_player == 2 else 2
+        target = state.attack_targets.get(cid, f'player:{defender}')
+        overflow = bool(target) and has_keyword(state, cid, 'trample')
+        if len(blockers) > 1 or (blockers and overflow):
+            return blockers + ([target] if overflow else [])
         return []
     attackers = [aid for aid in state.attackers if cid in state.blocks.get(aid, []) and aid in state.cards and state.cards[aid].zone == Zone.BATTLEFIELD]
     return attackers if len(attackers) > 1 else []
@@ -327,11 +441,12 @@ def _resolve_damage_step(state: MatchState) -> None:
 
 def _prepare_damage_step(state: MatchState) -> None:
     state.combat_damage_assignments = {}
+    remove_noncreatures_from_combat(state)
     first_only = state.combat_damage_stage == "first"
-    blockers = list(dict.fromkeys(bid for bids in state.blocks.values() for bid in bids))
-    sources = list(state.attackers) + blockers
     # Reuse board queries only while constructing the immutable assignment list.
     with rule_query_scope(state):
+        blockers = list(dict.fromkeys(bid for bids in state.blocks.values() for bid in bids))
+        sources = list(state.attackers) + blockers
         queue = [
             cid for cid in sources
             if cid in state.cards and _assignment_controller(state, cid) in state.mechanic_choice_players
@@ -354,7 +469,9 @@ def _trample_assignments_legal(state: MatchState, assignments: dict[str, dict[st
         amounts = assignments.get(attacker)
         if amounts is None:
             blockers = [bid for bid in state.blocks.get(attacker, []) if bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD]
-            amounts = {blockers[0]: max(0, effective_power(state, attacker))} if len(blockers) == 1 and not has_keyword(state, attacker, "trample") else {}
+            defender = state.attack_targets.get(attacker, f'player:{3-state.active_player}')
+            overflow = bool(defender) and has_keyword(state, attacker, 'trample')
+            amounts = {blockers[0]: max(0, effective_power(state, attacker))} if len(blockers) == 1 and not overflow else {}
         for blocker_id in state.blocks.get(attacker, []):
             dealt = amounts.get(blocker_id, 0)
             assigned_to_blocker[blocker_id] = assigned_to_blocker.get(blocker_id, 0) + dealt
@@ -490,6 +607,15 @@ def _combat_damage_results(state: MatchState, default_defender: int, first_ids: 
             return
         previous = lifelink_gains.get(source_id, (controller, 0))[1]
         lifelink_gains[source_id] = (controller, previous + amount)
+
+    def record_destination(source_id: str, target: str, amount: int) -> None:
+        kind, identity = target.split(':', 1)
+        event = {'source_card_id': source_id, 'target_key': target, 'amount': amount,
+                 'target_player': int(identity) if kind == 'player' else None}
+        if kind != 'player':
+            event['target_card_id'] = identity
+        damage_events.append(event)
+    reconcile_combat_targets(state)
     # All sources assign damage from the same pre-damage game state.
     with rule_query_scope(state):
         attacker_power = {
@@ -511,16 +637,17 @@ def _combat_damage_results(state: MatchState, default_defender: int, first_ids: 
 
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
         defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
+        can_trample = bool(defender_key) and has_keyword(state, attacker, 'trample')
         if not blocks:
             if not assigns_damage(attacker):
                 continue
             # A blocked creature stays blocked when its blockers leave combat.
-            if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
+            if attacker in state.blocks and not has_keyword(state, attacker, "trample"):
                 continue
             dealt = _deal_unblocked_damage(state, defender_key, attacker_power[attacker], source_id=attacker)
             record_lifelink(attacker, atk.controller, dealt)
             if dealt > 0:
-                damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
+                record_destination(attacker, defender_key, dealt)
             continue
 
         if assigns_damage(attacker):
@@ -530,10 +657,11 @@ def _combat_damage_results(state: MatchState, default_defender: int, first_ids: 
             if allocation is None:
                 allocation = {}
                 for blocker_id in blocks:
-                    dealt = min(remaining, 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id))
+                    lethal = _remaining_lethal_damage(state, blocker_id)
+                    dealt = min(remaining, min(1, lethal) if atk_has_deathtouch else lethal)
                     allocation[blocker_id] = dealt
                     remaining -= dealt
-                if has_keyword(state, attacker, "trample"):
+                if can_trample:
                     allocation[defender_key] = remaining
                 elif blocks and remaining > 0:
                     allocation[blocks[0]] += remaining
@@ -545,11 +673,11 @@ def _combat_damage_results(state: MatchState, default_defender: int, first_ids: 
                 record_lifelink(attacker, atk.controller, actual)
                 if actual > 0:
                     damage_events.append({"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual})
-            if has_keyword(state, attacker, "trample") and allocation.get(defender_key, 0) > 0:
+            if can_trample and allocation.get(defender_key, 0) > 0:
                 dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
                 record_lifelink(attacker, atk.controller, dealt)
                 if dealt > 0:
-                    damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
+                    record_destination(attacker, defender_key, dealt)
 
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
@@ -605,6 +733,8 @@ def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_s
 
 
 def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
+    if 'Battle' in effective_types(state, blocker):
+        return False
     from rules_engine.combat_constraints import combat_rule_text
     attacker_text = combat_rule_text(state, attacker.id)
     blocker_text = combat_rule_text(state, blocker.id)
@@ -721,17 +851,31 @@ def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defend
     return False
 
 
+def _defender_keys(state: MatchState, defending_player: int) -> list[str]:
+    planeswalkers = []
+    battles = []
+    with rule_query_scope(state):
+        for controller, player in state.players.items():
+            for cid in player.battlefield:
+                card = state.cards.get(cid)
+                if card is None or card.zone != Zone.BATTLEFIELD or card.controller != controller:
+                    continue
+                types = effective_types(state, card)
+                is_battle = 'Battle' in types
+                protected = type(card.battle_protector) is int and card.battle_protector == defending_player
+                if is_battle and protected:
+                    battles.append('battle:' + cid)
+                if controller == defending_player and 'Planeswalker' in types and (not is_battle or protected):
+                    planeswalkers.append('planeswalker:' + cid)
+    return [f'player:{defending_player}', *planeswalkers, *battles]
+
+
 def _valid_defenders(state: MatchState, defending_player: int) -> set[str]:
-    out = {f"player:{defending_player}"}
-    for cid in state.players[defending_player].battlefield:
-        card = state.cards[cid]
-        if "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
-            out.add(f"planeswalker:{cid}")
-    return out
+    return set(_defender_keys(state, defending_player))
 
 
 def _defender_label(state: MatchState, key: str) -> str:
-    if key.startswith("planeswalker:"):
+    if key.startswith(("planeswalker:", 'battle:')):
         cid = key.split(":", 1)[1]
         card = state.cards.get(cid)
         if card:
@@ -745,10 +889,11 @@ def _defender_label(state: MatchState, key: str) -> str:
 def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, source_id: str | None = None) -> int:
     if amount <= 0:
         return 0
-    if defender_key.startswith("planeswalker:"):
+    if defender_key.startswith(("planeswalker:", 'battle:')):
         cid = defender_key.split(":", 1)[1]
         card = state.cards.get(cid)
-        if card and "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
+        kind = 'Battle' if defender_key.startswith('battle:') else 'Planeswalker'
+        if card and kind in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
             prevention_locked = damage_cant_be_prevented(state, source_card_id=source_id,
                                                         target_card_id=cid, combat=True)
             if not prevention_locked and source_id is not None and source_id in state.cards and _damage_prevented_by_protection(state, source_id, cid):
@@ -757,12 +902,17 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
             amount = apply_permanent_damage_replacements(state, cid, amount, prevention_locked=prevention_locked)
             if not prevention_locked:
                 amount, _ = consume_card_prevention_shield(card, amount, state=state)
-            card.loyalty = (card.loyalty or 0) - amount
-            state.log.append(f"{card.name} loses {amount} loyalty.")
+            from rules_engine.damage_results import apply_permanent_damage
+            apply_permanent_damage(state, cid, amount, source_id)
             return amount
         # PW left battlefield — damage disappears, does NOT redirect to player
         return 0
-    pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
+    if not defender_key.startswith('player:'):
+        return 0
+    raw_player = defender_key.split(':', 1)[1]
+    if raw_player not in {'1', '2'}:
+        return 0
+    pid = int(raw_player)
     prevention_locked = source_id is not None and source_id in state.cards and damage_cant_be_prevented(
         state,
         source_card_id=source_id,
@@ -803,8 +953,8 @@ def _mark_creature_damage(
         state.log.append(f"{card.name} prevents {prevented} damage.")
     if post <= 0:
         return 0
-    from rules_engine.damage_results import apply_creature_damage
-    apply_creature_damage(state, card_id, int(post), source_id)
+    from rules_engine.damage_results import apply_permanent_damage
+    apply_permanent_damage(state, card_id, int(post), source_id)
     if deathtouch:
         card.counters[DEATHTOUCH_MARK_KEY] = 1
     return int(post)
@@ -814,4 +964,4 @@ def _remaining_lethal_damage(state: MatchState, card_id: str) -> int:
     card = state.cards[card_id]
     toughness = effective_toughness(state, card_id)
     marked = int(card.counters.get(DMG_MARK_KEY, 0))
-    return max(1, toughness - marked)
+    return max(0, toughness - marked)

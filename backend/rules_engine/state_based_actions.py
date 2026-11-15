@@ -36,6 +36,16 @@ def _human_die_choice_required(state: MatchState, card_id: str) -> bool:
     return not players or card.controller in players
 
 
+def _log_state_based_departure(state, name, destination, zero_defense):
+    if destination == Zone.GRAVEYARD:
+        reason = 'zero defense' if zero_defense else 'lethal damage or 0 toughness'
+        state.log.append(f'State-based action: {name} is put into graveyard due to {reason}.')
+    else:
+        movement = 'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'
+        reason = 'by a replacement effect at zero defense' if zero_defense else 'instead of dying'
+        state.log.append(f'State-based action: {name} {movement} {reason}.')
+
+
 def _move_lethal_creature(state: MatchState, card_id: str, replacement_source_id: str | None = None) -> None:
     card = state.cards.get(card_id)
     if not card or card.zone != Zone.BATTLEFIELD:
@@ -43,15 +53,17 @@ def _move_lethal_creature(state: MatchState, card_id: str, replacement_source_id
     battlefield_owner = state.players[card.controller]
     if card_id not in battlefield_owner.battlefield:
         return
+    from rules_engine.battles import zero_defense_ids
+    zero_defense = 'Battle' in effective_types(state, card) and card_id in zero_defense_ids(state)
+    battle_name = card.name if zero_defense else None
     plan = select_graveyard_entry_plan(state, card_id, replacement_source_id or None)
     causes = prepare_graveyard_entry_causes(state, [plan])
     emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
     was_creature = was_creature_on_battlefield(card)
     destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=causes[card_id])
+    _log_state_based_departure(state, battle_name or card.name, destination, zero_defense)
     if destination != Zone.GRAVEYARD:
-        state.log.append(f"State-based action: {card.name} {'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'} instead of dying.")
         return
-    state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
     emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
     if was_creature:
         emit_event(state, "creature_dies", {"card_id": card_id, "controller": plan.controller})
@@ -92,7 +104,7 @@ def resume_legend_rule_replacement(
         emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
-def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> None:
+def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str], *, zero_defense=()) -> None:
     """Move simultaneous lethal creatures together before collecting their triggers."""
     valid_ids = [
         cid
@@ -103,6 +115,7 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
     ]
     if not valid_ids:
         return
+    battle_names = {cid: state.cards[cid].name for cid in valid_ids if cid in zero_defense}
     leave_events = [
         {"card_id": cid, "controller": state.cards[cid].controller}
         for cid in valid_ids
@@ -125,10 +138,9 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
         card = state.cards[cid]
         destination = execute_graveyard_entry(state, plans[cid], prevalidated=True,
                                               _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
+        _log_state_based_departure(state, battle_names.get(cid, card.name), destination, cid in battle_names)
         if destination != Zone.GRAVEYARD:
-            state.log.append(f"State-based action: {card.name} {'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'} instead of dying.")
             continue
-        state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
         event = {"card_id": cid, "controller": card.controller}
         death_events.append(event)
         if creatures[cid]:
@@ -137,6 +149,17 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
         emit_event_batch(state, "enters_graveyard", entry_receipts)
     emit_event_batch(state, "permanent_dies", death_events)
     emit_event_batch(state, "creature_dies", creature_death_events)
+
+
+def _state_based_signature(state: MatchState) -> tuple:
+    with rule_query_scope(state):
+        return tuple(
+            (cid, card.zone, card.controller, card.battle_protector, card.attached_to,
+             tuple(effective_types(state, card) if card.zone == Zone.BATTLEFIELD else card.types or ()),
+             bool(card.bestow_characteristics))
+            for cid, card in state.cards.items()
+        )
+
 
 def apply_state_based_actions(state: MatchState) -> None:
     if state.pending_mechanic_choice:
@@ -153,17 +176,16 @@ def apply_state_based_actions(state: MatchState) -> None:
     # A source leaving the battlefield can make another permanent illegal or
     # lethal. No trigger gets a stack position until those waves stabilize.
     for _ in range(len(state.cards) + 1):
-        with rule_query_scope(state):
-            before = tuple((cid, card.zone, card.controller, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        before = _state_based_signature(state)
         from rules_engine.control_effects import reconcile_control
         reconcile_control(state)
+        from rules_engine.battles import ensure_protectors
+        ensure_protectors(state)
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
         if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
-        with rule_query_scope(state):
-            after = tuple((cid, card.zone, card.controller, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
-        if after == before:
+        if _state_based_signature(state) == before:
             break
     from rules_engine.events import flush_staged_triggers
     flush_staged_triggers(state)
@@ -175,12 +197,15 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
     from rules_engine.combat import remove_noncreatures_from_combat
     remove_noncreatures_from_combat(state)
     from rules_engine.alternative_casts import restore_printed_characteristics
+    from rules_engine.bestow import end_bestow
     state.adventure_permissions = {cid: pid for cid, pid in state.adventure_permissions.items()
                                    if cid in state.cards and state.cards[cid].zone == Zone.EXILE}
     for card in state.cards.values():
-        if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
-            from rules_engine.bestow import end_bestow
+        if card.zone in (Zone.BATTLEFIELD, Zone.STACK):
+            continue
+        if card.bestow_characteristics:
             end_bestow(card)
+        if card.printed_characteristics:
             restore_printed_characteristics(card)
     _cease_nonbattlefield_tokens(state)
     if state.winner is None:
@@ -207,7 +232,13 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
 
     # Reuse only this immutable scan; discard queries before any departures.
     with rule_query_scope(state):
-        lethal_candidates = [cid for cid in state.cards if creature_has_lethal_state(state, cid)]
+        lethal_candidates = [
+            cid for cid, card in state.cards.items()
+            if card.zone == Zone.BATTLEFIELD and creature_has_lethal_state(state, cid)
+        ]
+        from rules_engine.battles import zero_defense_ids
+        zero_defense = zero_defense_ids(state)
+        lethal_candidates = list(dict.fromkeys([*lethal_candidates, *zero_defense]))
     lethal_ids: list[str] = []
     for cid in lethal_candidates:
         card = state.cards[cid]
@@ -228,7 +259,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
             return
         lethal_ids.append(cid)
     if lethal_ids:
-        _resolve_lethal_creature_batch(state, lethal_ids)
+        _resolve_lethal_creature_batch(state, lethal_ids, zero_defense=zero_defense)
 
     for cid, card in list(state.cards.items()):
         if card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0 and "Planeswalker" in effective_types(state, card):
@@ -517,6 +548,11 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
         if card.zone != Zone.BATTLEFIELD:
             continue
         target_id = attached_to(card)
+        if target_id and 'Battle' in effective_types(state, card):
+            card.attached_to = None
+            card.counters.pop('__attached_to', None)
+            state.log.append(f'State-based action: {card.name} becomes unattached.')
+            continue
         from rules_engine.bestow import is_bestowed, end_bestow
         with rule_query_scope(state):
             aura, equipment, fortification = is_aura(card, state), is_equipment(card, state), is_fortification(card, state)

@@ -65,13 +65,14 @@ def _profile(row):
     for spec in profile.ability_specs:
         if spec['kind'] != 'spell_effect' or spec['condition'] or spec['cost']:
             return None
-        if spec['effects']:
-            covered.append(spec)
-            continue
-        # Missing estimator effects need positive whole raw-clause coverage;
-        # no prefix, erased reminder or physical target supplies that proof.
         start, end = spec['source_span']
         body = inputs['oracle_text'][start:end].strip()
+        nonartifact_creature = re.fullmatch(r'destroy target nonartifact creature\.', body, re.I)
+        if spec['effects'] and not nonartifact_creature:
+            covered.append(spec)
+            continue
+        # Missing effects or target domains need positive whole raw-clause coverage;
+        # no prefix, erased reminder or physical target supplies that proof.
         if not set(profile.types) & {'instant', 'sorcery'}:
             return None
         if complete_self_counter_prohibition(body, inputs['name']):
@@ -89,7 +90,7 @@ def _profile(row):
         if body.endswith('.') and COUNTER_TARGET_SPELL_RE.fullmatch(body[:-1]):
             key = 'counter_spell'
             payload = {'target_kind': 'noncreature' if 'noncreature' in body.lower() else 'any'}
-        elif re.fullmatch(r'destroy target nonartifact creature\.', body, re.I):
+        elif nonartifact_creature:
             key = 'destroy_permanent'
             # Symbolic domain projection, not rewritten Oracle or runtime state.
             payload = {**infer_target_restrictions(None, 'target creature', 1),

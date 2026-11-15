@@ -443,6 +443,11 @@ def effective_combat_stats(state, card_id: str, *, unknown_as_zero=False) -> tup
     if unknown_as_zero:
         base_power, base_toughness = int(base_power or 0), int(base_toughness or 0)
     power_bonus, toughness_bonus = _continuous_pt_delta(state, card_id)
+    if getattr(state, 'loyalty_permissions', ()):
+        from rules_engine.loyalty_instructions import next_turn_pt_delta
+        power, toughness = next_turn_pt_delta(state, card_id)
+        power_bonus += power
+        toughness_bonus += toughness
     counter_bonus = _counter_pt_delta(state.cards[card_id])
     counters = getattr(state.cards[card_id], 'counters', {}) or {}
     return (base_power + power_bonus + counter_bonus + int(counters.get('__eot_power', 0)) if base_power is not None else None,
@@ -1169,7 +1174,9 @@ def _subject_match_result(state, card_id: str, subject: str) -> bool:
         def matches(qualifier):
             negative = qualifier.startswith("non")
             word = qualifier[3:].lstrip("-") if negative else qualifier
-            if word == "token":
+            if word == "attacking":
+                matched = card_id in state.attackers
+            elif word == "token":
                 matched = is_token_card(card)
             elif word in color_names:
                 matched = color_names[word] in colors

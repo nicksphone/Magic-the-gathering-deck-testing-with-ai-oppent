@@ -127,6 +127,10 @@ def ordinary_graveyard_cast_view(state, player_id, card):
     if (card.zone != Zone.GRAVEYARD or card.owner != player_id
             or card_id not in state.players[player_id].graveyard or is_departed_token(card)):
         return False
+    if getattr(state, 'loyalty_permissions', ()):
+        from rules_engine.loyalty_instructions import graveyard_cast_granted
+        if graveyard_cast_granted(state, player_id, card_id):
+            return True
     from rules_engine.continuous import printed_abilities_suppressed
     for clause in _clauses(card):
         permission = _self_permission(clause, card.name)

@@ -94,6 +94,9 @@ def public_choice(pending):
     if pending and pending.get('kind') == 'exchange_energy_payment':
         from rules_engine.exchange_energy import public_choice as exchange_choice
         return exchange_choice(pending)
+    if pending and pending.get('kind') == 'deferred_upkeep_payment':
+        from rules_engine.deferred_upkeep_payment import public_choice as upkeep_choice
+        return upkeep_choice(pending)
     if pending and pending.get('kind') == 'entry_mode':
         from rules_engine.modal_entry import view
         return view(pending)

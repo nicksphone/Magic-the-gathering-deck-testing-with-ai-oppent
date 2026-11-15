@@ -235,14 +235,10 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                         and _creature_is_lethally_damaged(state, target_card_id)):
                     _move_creature_to_graveyard(state, target_card_id)
                 return 0
-            from rules_engine.damage_results import apply_creature_damage
-            if "Creature" in effective_types(state, card):
-                apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
-                                      controller=controller, counter_is_effect=True, source_context=source_context)
-                state.log.append(f"{card.name} takes {post} damage.")
-            if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
-                card.loyalty -= int(post)
-                state.log.append(f"{card.name} loses {post} loyalty.")
+            from rules_engine.damage_results import apply_permanent_damage
+            apply_permanent_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
+                                   controller=controller, counter_is_effect=True, source_context=source_context)
+            state.log.append(f"{card.name} takes {post} damage.")
             if not payload.get("__batch_damage"):
                 _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki, source_context=source_context)
             emit_event(state, 'damage_dealt', {'source_card_id': source_card_id,
@@ -694,7 +690,9 @@ def exile_until_source_leaves(state: MatchState, controller: int, payload: dict)
 
 
 def exile_nonland_until_source_leaves(state: MatchState, controller: int, payload: dict) -> None:
-    from rules_engine.card_types import is_land_card, is_token_card
+    from rules_engine.card_faces import card_mana_value
+    from rules_engine.card_types import is_token_card
+    from rules_engine.events import flush_staged_triggers
     from rules_engine.linked_exile import record_linked_exile, source_still_present
 
     source_id = payload.get("source_card_id")
@@ -702,23 +700,37 @@ def exile_nonland_until_source_leaves(state: MatchState, controller: int, payloa
     if not source_still_present(state, source_id, timestamp):
         return
     mv_max = int(payload["mv_max"])
-    affected = [cid for player in state.players.values() for cid in player.battlefield
-                if not is_land_card(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max]
-    for cid in affected:
-        capture_last_known_battlefield(state, cid)
-    leaves = []
+    affected = []
+    for player in state.players.values():
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if (card.zone == Zone.BATTLEFIELD and card.controller == player.id
+                    and "Land" not in effective_types(state, card) and card_mana_value(card) <= mv_max):
+                affected.append((card, card.controller, card.owner, {
+                    "incarnation": object_incarnation(card),
+                    "zone_change_sequence": card.zone_change_sequence,
+                }))
+    for card, _, _, _ in affected:
+        capture_last_known_battlefield(state, card.id)
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "leaves_battlefield"
+    leaves = [{"card_id": card.id, "controller": previous_controller,
+               "previous_reference": reference}
+              for card, previous_controller, _, reference in affected]
+    emit_event_batch(state, "leaves_battlefield", leaves)
     returning = []
-    for cid in affected:
-        card = state.cards[cid]
-        leaves.append({"card_id": cid, "controller": card.controller})
-        state.players[card.controller].battlefield.remove(cid)
-        state.players[card.owner].exile.append(cid)
+    for card, previous_controller, owner, _ in affected:
+        state.players[previous_controller].battlefield.remove(card.id)
+        state.players[owner].exile.append(card.id)
         card.move_to_zone(Zone.EXILE)
         if not is_token_card(card):
-            returning.append(cid)
+            returning.append(card.id)
     record_linked_exile(state, source_id, timestamp, returning)
-    emit_event_batch(state, "leaves_battlefield", leaves)
     state.log.append(f"Exile nonland permanents with mana value {mv_max} or less until the source leaves: {len(affected)} exiled.")
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
 
 
 def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -> None:
@@ -763,23 +775,37 @@ def exile_all_creatures_incubate(state: MatchState, controller: int, payload: di
 
 
 def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_faces import card_mana_value
+    from rules_engine.events import flush_staged_triggers
     del controller
     mv_max = int(payload["mv_max"])
-    affected = [
-        cid for player in state.players.values() for cid in player.battlefield
-        if card_color_names(state.cards[cid], state) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
-    ]
-    for cid in affected:
-        capture_last_known_battlefield(state, cid)
-    leaves = []
-    for cid in affected:
-        card = state.cards[cid]
-        state.players[card.controller].battlefield.remove(cid)
-        state.players[card.owner].exile.append(cid)
-        card.zone = Zone.EXILE
-        leaves.append({"card_id": cid, "controller": card.controller})
+    affected = []
+    for player in state.players.values():
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if (card.zone == Zone.BATTLEFIELD and card.controller == player.id
+                    and card_color_names(card, state) and card_mana_value(card) <= mv_max):
+                affected.append((card, card.controller, card.owner, {
+                    "incarnation": object_incarnation(card),
+                    "zone_change_sequence": card.zone_change_sequence,
+                }))
+    for card, _, _, _ in affected:
+        capture_last_known_battlefield(state, card.id)
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "leaves_battlefield"
+    leaves = [{"card_id": card.id, "controller": previous_controller,
+               "previous_reference": reference}
+              for card, previous_controller, _, reference in affected]
     emit_event_batch(state, "leaves_battlefield", leaves)
+    for card, previous_controller, owner, _ in affected:
+        state.players[previous_controller].battlefield.remove(card.id)
+        state.players[owner].exile.append(card.id)
+        card.move_to_zone(Zone.EXILE)
     state.log.append(f"Exile colored permanents with mana value {mv_max} or less: {len(affected)} exiled.")
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
 
 
 def destroy_all_artifacts(state: MatchState, controller: int, payload: dict) -> None:
@@ -933,6 +959,8 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
                             "toughness", "printed_power", "printed_toughness", "loyalty", "keywords", "colors", "image_uri",
                             "layout", "card_faces", "selected_face_index", "bestow_characteristics")
             }
+            if source.printed_defense is not None or 'Battle' in source.types:
+                copied_payload['__copied_card']['printed_defense'] = source.printed_defense
     copied_payload["__stack_copy_kind"] = kind
     copied_payload["__source_card_id"] = item.source_card_id
     copied_payload["__copied_from_stack_id"] = item.id
@@ -1892,7 +1920,7 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
         return
     from rules_engine.effect_casts import materialize_cast, admit_cast
     try:
-        action = materialize_cast(state, controller, target, payload.get('cast_targets'))
+        action = materialize_cast(state, controller, target, payload.get('cast_targets'), permission=payload)
         admit_cast(state, controller, action, payload)
     except (ValueError, KeyError):
         state.log.append(f'{player.name} chooses not to cast {card.name}: no payable supported announcement.')
@@ -2035,7 +2063,7 @@ def _search_resolution_context(state: MatchState, controller: int, payload: dict
         if data.get('__trigger_event') == 'enters_graveyard' or '__trigger_source_reference' in data:
             reference = data.get('__trigger_source_reference')
             if (stack_object_kind(state, item) != 'triggered'
-                    or data.get('__trigger_event') != 'enters_graveyard'
+                    or type(data.get('__trigger_event')) is not str or not data['__trigger_event']
                     or not isinstance(reference, dict)
                     or set(reference) != {'incarnation', 'zone_change_sequence'}
                     or any(type(value) is not int or value < 0 for value in reference.values())):
@@ -2272,6 +2300,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             toughness=t if "Creature" in types or payload.get('printed_toughness') is not None else None,
             printed_power=payload.get('printed_power', str(p) if p is not None else None),
             printed_toughness=payload.get('printed_toughness', str(t) if t is not None else None),
+            printed_defense=payload.get('printed_defense'),
             loyalty=payload.get('loyalty'),
             type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
             oracle_text=payload.get("oracle_text", ""),
@@ -2298,8 +2327,11 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             token.tapped = True
         if tapped_and_attacking:
             token.tapped = True
-            state.attackers.append(cid)
-            state.attack_targets[cid] = attack_targets[index] if attack_targets is not None else attack_target
+            if 'Creature' in effective_types(state, token) and 'Battle' not in effective_types(state, token):
+                state.attackers.append(cid)
+                state.attack_targets[cid] = attack_targets[index] if attack_targets is not None else attack_target
+                from rules_engine.combat import bind_attack_target
+                bind_attack_target(state, cid, state.attack_targets[cid])
         commit_entry_counters(state, token, payload)
         entry_events.append({"card_id": cid, "controller": token_controller})
         if sac_next_end:
@@ -3500,7 +3532,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
     max_permanents = max(1, int(payload.get("max_permanents", 2)))
     mv_max = payload.get("mv_max")
     top_slice = player.library[-top_n:]
-    permanent_types = {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"}
+    permanent_types = {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker", "Battle"}
 
     def mana_value_for(cid: str) -> int:
         req = parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")

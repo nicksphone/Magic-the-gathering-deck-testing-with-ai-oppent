@@ -13,14 +13,14 @@ from tests.test_numeric_inventory_adapter import positive, pure_inventory
 
 
 REVIEWED_MATCH91 = '6781fbd7d6aa55cfb6d6b9aee82506ba9f824d0603ef60fe733263a982551867'
-REVIEWED_MATCH93 = 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31'
+REVIEWED_MATCH94 = 'b0d936983aba79969c59ee653fbd0b64afab907a43be14f6ba1ff5fede6a1426'
 PRIVATE_SENTINEL = 'PRIVATE_MANA_PAYLOAD_MUST_NOT_ENTER_PUBLIC_COVERAGE'
 
 
 @pytest.fixture
 def reviewed_pin_only_protocol_negative(monkeypatch):
     """Expose missing context vetoes without changing data or production code."""
-    monkeypatch.setitem(inventory._SCHEMA_PINS, MatchState, REVIEWED_MATCH93)
+    monkeypatch.setitem(inventory._SCHEMA_PINS, MatchState, REVIEWED_MATCH94)
 
 
 class PrivatePayload:

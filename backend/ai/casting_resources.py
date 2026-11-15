@@ -21,9 +21,11 @@ _automatic_effect_cost_context = ContextVar('automatic_effect_cost_context', def
 
 
 @contextmanager
-def _automatic_effect_cost_scope(state, player_id, card_id):
+def _automatic_effect_cost_scope(state, player_id, card_id, *, permission=None):
     """Carry the trusted effect caller's waiver, never an action-dict flag."""
-    grant = {'state': state, 'player_id': player_id, 'card_id': card_id, 'active': True}
+    permission = {'target_card_id': card_id} if permission is None else permission
+    grant = {'state': state, 'player_id': player_id, 'card_id': card_id,
+             'permission': permission, 'active': True}
     token = _automatic_effect_cost_context.set(grant)
     try:
         yield
@@ -33,11 +35,18 @@ def _automatic_effect_cost_scope(state, player_id, card_id):
         _automatic_effect_cost_context.reset(token)
 
 
-def _materialization_without_mana(state, player_id, card_id):
+def _automatic_effect_permission(state, player_id, card_id):
     context = _automatic_effect_cost_context.get()
+    if (state.pending_mechanic_choice is None and context is not None
+            and context['active'] is True and context['state'] is state
+            and context['player_id'] == player_id and context['card_id'] == card_id):
+        return context['permission']
+    return None
+
+
+def _materialization_without_mana(state, player_id, card_id):
     return ((state.pending_mechanic_choice or {}).get('kind') in {'effect_cast', 'suspend_cast'}
-            or (context is not None and context['active'] is True and context['state'] is state
-                and context['player_id'] == player_id and context['card_id'] == card_id))
+            or _automatic_effect_permission(state, player_id, card_id) is not None)
 
 
 def complete_fixed_cost_choice(agent, state, action, player_id, offered, explicit=None):
@@ -118,7 +127,7 @@ def complete_fixed_cost_choice(agent, state, action, player_id, offered, explici
             reserved_life=option.pay_life + (x if option.pay_life_x else 0),
             reserved_card_ids=reserved, cast_resource_card=view,
             hybrid_choices=action.get('hybrid_choices'), resource_choices=action.get('resource_payment'),
-            additional_generic_reduction=len(selected.get('exile_card_ids', []))*option.hand_exile_generic_reduction,
+            additional_generic_reduction=option.additional_generic_reduction + len(selected.get('exile_card_ids', []))*option.hand_exile_generic_reduction,
             post_payment_condition=condition)
 
     if payable(preferred):
@@ -210,10 +219,16 @@ def complete_cast_hybrid_choices(agent, state, action, player_id):
     _payment_requirements(option['mana_cost'], False, 0, 0, 0, branch_output=branches)
     from ai.action_contract import complete_action
     from ai.pending_effects import simulation_checked_action
+    from rules_engine.effect_casts import project_cast
+    permission = _automatic_effect_permission(state, player_id, action['card_id'])
     for selected in branches:
         candidate = {**action, 'hybrid_choices': selected}
         try:
-            simulation_checked_action(state, agent.engine, player_id, complete_action(candidate))
+            completed = complete_action(candidate)
+            if permission is not None:
+                project_cast(state, player_id, completed, permission)
+            else:
+                simulation_checked_action(state, agent.engine, player_id, completed)
         except ActionRejected:
             continue
         return candidate
@@ -291,19 +306,37 @@ def _tap_reward(state, cid):
 
 def _requirements(state, card, action, player_id):
     from rules_engine.hooks import CostContext, apply_cost_modifiers
-    from rules_engine.costs import collect_cost_options
-    from rules_engine.mana import _payment_requirements
+    from rules_engine.costs import (
+        additional_cost_selection, casting_method, collect_cost_options, normalize_cost_choice,
+    )
+    from rules_engine.mana import _cast_colors, _payment_requirements
     from rules_engine.attachments import is_aura
-    option = next((option for option in collect_cost_options(state, player_id, card)
-                   if option.id == (action.get('cost_choice') or {}).get('id')), None)
+    from rules_engine.alternative_casts import spell_cast_view
+    from rules_engine.kicker import spell_kicker_view
+    targets = action.get('targets') or {}
+    choice = action.get('cost_choice') or {}
+    x_value = int(targets.get('x_value', 0) or 0)
+    options = collect_cost_options(
+        state, player_id, card, without_mana=_materialization_without_mana(state, player_id, card.id),
+        action_targets=targets)
+    if not options or choice.get('id') and all(option.id != choice['id'] for option in options):
+        return []
+    option = normalize_cost_choice(action, options)
+    card = spell_kicker_view(spell_cast_view(card, casting_method(option.id)), option.kicked)
     context = apply_cost_modifiers(CostContext(
-        player_id=player_id, card_name=card.name, mana_cost=option.mana_cost if option else card.mana_cost,
+        player_id=player_id, card_name=card.name, mana_cost=option.mana_cost,
         state=state, spell_types=set(effective_types(state, card)), spell_is_aura=is_aura(card),
-        spell_kicked=bool(option and option.kicked), oracle_text=card.oracle_text,
-        source_card_id=card.id, target_card_id=(action.get('targets') or {}).get('target_card_id')))
-    return _payment_requirements(context.mana_cost, False, int((action.get('targets') or {}).get('x_value', 0)),
-                                 context.generic_reduction, context.generic_increase,
-                                 action.get('hybrid_choices'), floored_reductions=context.floored_reductions)
+        spell_kicked=option.kicked, oracle_text=card.oracle_text, spell_colors=_cast_colors(card),
+        source_card_id=card.id, target_card_id=targets.get('target_card_id')))
+    context.generic_reduction += option.additional_generic_reduction
+    if option.hand_exile_generic_reduction:
+        selected = additional_cost_selection(state, player_id, option, card.id, choice, x_value=x_value)
+        if selected is None:
+            return []
+        context.generic_reduction += len(selected['exile_card_ids']) * option.hand_exile_generic_reduction
+    return _payment_requirements(
+        context.mana_cost, False, x_value, context.generic_reduction, context.generic_increase,
+        action.get('hybrid_choices'), floored_reductions=context.floored_reductions)
 
 
 def _choices(agent, state, card, action, player_id):
@@ -371,22 +404,21 @@ def choose_resource_payment(agent, state, action, player_id):
     card = select_cast_face(source, action.get('selected_face_index', (action.get('targets') or {}).get('selected_face_index')))
     if not resource_keywords(card):
         return action
-    automatic = (state.pending_mechanic_choice is None
-                 and _materialization_without_mana(state, player_id, card.id))
+    permission = _automatic_effect_permission(state, player_id, card.id)
 
     def trial(candidate):
+        if permission is not None:
+            from rules_engine.effect_casts import project_cast
+            return project_cast(state, player_id, candidate, permission)
         projected = planning_copy(state)
-        if automatic:
-            from rules_engine.effect_casts import admit_cast
-            admit_cast(projected, player_id, candidate, {'target_card_id': card.id})
-        else:
-            validate_action(projected, agent.engine, player_id, candidate)
-            agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
+        validate_action(projected, agent.engine, player_id, candidate)
+        agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
         return projected
 
     with rule_query_scope(state):
         cache = query_cache(state)
-        key = ('ai_cast_resources', agent, player_id, agent.archetype, automatic, json.dumps(action, sort_keys=True))
+        key = ('ai_cast_resources', agent, player_id, agent.archetype,
+               json.dumps(permission, sort_keys=True), json.dumps(action, sort_keys=True))
         if key in cache:
             return {**action, **deepcopy(cache[key])}
         best, score = action, float('-inf')
