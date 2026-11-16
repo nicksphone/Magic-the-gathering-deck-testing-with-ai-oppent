@@ -16,10 +16,11 @@ async function read(path) {
   return response.json();
 }
 
-async function load(seat, mode, variant = 'funded') {
-  assert.ok(['funded', 'unsupported', 'unaffordable'].includes(variant));
+async function load(seat, mode, variant = 'funded', routingCase = 'partial') {
+  assert.ok(['funded', 'unsupported', 'unaffordable', 'simultaneous', 'routing'].includes(variant));
+  assert.ok(['partial', 'player', 'blocked'].includes(routingCase));
   const suffix = variant === 'funded' ? '' : `/${variant}`;
-  const response = await fetch(`${backend}/fixture/battle-payment${suffix}?seat=${seat}&mode=${mode}`, {
+  const response = await fetch(`${backend}/fixture/battle-payment${suffix}?seat=${seat}&mode=${mode}&case=${routingCase}`, {
     method: 'POST', signal: AbortSignal.timeout(15000),
   });
   assert.equal(response.status, 200);
@@ -83,7 +84,15 @@ async function advanceUntil(predicate, label) {
     assert.equal(state.winner, null, `Unexpected game end before ${label}`);
     const menu = await legal();
     const human = state.controllers[String(menu.player_id)] === 'human';
-    if (human && state.pending_mechanic_choice?.kind === 'search_library') await search();
+    if (human && menu.moves.some(move => move.type === 'choose_trigger_order')) {
+      const before = state.revision;
+      await evaluate(`(() => {
+        const button = document.querySelector('.trigger-order-panel button');
+        if (!button) throw new Error('Missing real simultaneous-trigger order control');
+        button.click();
+      })()`);
+      await sync(before);
+    } else if (human && state.pending_mechanic_choice?.kind === 'search_library') await search();
     else if (human && menu.moves.some(move => move.type === 'block')) await press('Submit Blocks');
     else await press('Next Step');
   }
@@ -148,6 +157,127 @@ async function episode(seat, mode) {
   await waitFor(`document.querySelector('.game-result')?.textContent.includes('P${3 - seat} wins')`);
   assert.equal(await evaluate("document.body.textContent.includes('Unsupported mechanic choice:')"), false);
   console.log(`PASS declared canonical midgame ${mode} seat ${seat}: Battle combat/transform, Pact pay/decline, pending-choice refresh, game result`);
+}
+
+const paymentKind = 'deferred_upkeep_payment';
+const paymentCount = () => state.log.filter(line => line.includes('pays {2}{G}{G} for the delayed upkeep ability.')).length;
+
+async function simultaneous(seat) {
+  const fixture = await load(seat, 'human_vs_human', 'simultaneous');
+  const forests = () => state.players[String(seat)].battlefield.filter(card => card.name === 'Forest');
+  assert.equal(forests().length, 8);
+  assert.equal(state.pending_mechanic_choice, null);
+  assert.equal(paymentCount(), 0);
+  for (const pact of fixture.pacts) {
+    await cast(move => move.card_id === pact);
+    await advanceUntil(s => s.pending_mechanic_choice?.kind === 'search_library', 'real Pact search');
+    await search();
+  }
+  await advanceUntil(s => s.pending_trigger_order !== null, 'simultaneous upkeep order');
+  assert.equal(state.active_player, seat);
+  assert.equal(state.step, 'upkeep');
+  assert.equal(state.pending_trigger_order.current_controller, seat);
+  const menu = await legal();
+  assert.equal(menu.moves.find(move => move.type === 'choose_trigger_order').trigger_order.length, 2);
+  await advanceUntil(s => s.pending_mechanic_choice?.kind === paymentKind, 'first simultaneous debt');
+  const turn = state.turn;
+  assert.deepEqual(state.pending_mechanic_choice.options, ['pay', 'decline']);
+  assert.equal(state.pending_mechanic_choice.player_id, seat);
+  const first = state.revision;
+  await press('Pay {2}{G}{G}');
+  assert.equal(state.revision, first + 1, 'One first payment must commit once');
+  assert.equal(state.turn, turn);
+  assert.equal(state.step, 'upkeep');
+  assert.equal(state.winner, null);
+  assert.equal(paymentCount(), 1);
+  assert.ok(state.stack.some(item => item.effect_key === paymentKind) || state.pending_mechanic_choice?.kind === paymentKind, 'The first choice must leave the second obligation owed');
+  await advanceUntil(s => s.pending_mechanic_choice?.kind === paymentKind, 'remaining simultaneous debt');
+  assert.equal(state.turn, turn);
+  assert.equal(state.step, 'upkeep');
+  assert.equal(state.pending_mechanic_choice.player_id, seat);
+  assert.deepEqual(state.pending_mechanic_choice.options, ['pay', 'decline']);
+  assert.equal(forests().filter(card => card.tapped).length, 4);
+  const pending = structuredClone(state);
+  await reload();
+  await visible();
+  assert.deepEqual(await read(`/matches/${id}`), pending, 'Refresh must preserve the second obligation and revision');
+  await waitFor(`document.body.textContent.includes('Pay {2}{G}{G} or lose the game (P${seat})')`);
+  const second = state.revision;
+  await press('Pay {2}{G}{G}');
+  assert.equal(state.revision, second + 1, 'One second payment must commit once');
+  assert.equal(state.turn, turn);
+  assert.equal(state.step, 'upkeep');
+  assert.equal(state.winner, null);
+  assert.equal(state.pending_mechanic_choice, null);
+  assert.equal(paymentCount(), 2);
+  assert.equal(forests().filter(card => card.tapped).length, 8);
+  await advanceUntil(s => s.step === 'draw', 'draw after both obligations');
+  assert.equal(state.turn, turn);
+  assert.equal(state.active_player, seat);
+  assert.equal(paymentCount(), 2);
+  console.log(`PASS declared canonical midgame simultaneous Pact debts seat ${seat}: real casts/order, first payment continuation, pending-second refresh, two payments once`);
+}
+
+async function routing(seat, kind) {
+  const fixture = await load(seat, 'human_vs_human', 'routing', kind);
+  await cast(move => move.card_id === fixture.battle);
+  await advanceUntil(s => s.pending_mechanic_choice?.kind === 'search_library', 'routing Battle search');
+  await search();
+  await advanceUntil(s => s.step === 'declare_attackers', 'routing attack declaration');
+  const attacker = fixture.attackers[0];
+  const target = kind === 'player' ? `player:${3 - seat}` : `battle:${fixture.battle}`;
+  const attack = (await legal()).moves.find(move => move.type === 'attack');
+  const index = attack.options.indexOf(attacker);
+  assert.ok(index >= 0, 'The declared creature must be eligible');
+  const draftRevision = state.revision;
+  await evaluate(`(() => {
+    const row = document.querySelectorAll('#attack-declaration input[aria-label="Attack with Grizzly Bears"]')[${index}];
+    if (!row || row.checked) throw new Error('Expected an unselected real attacker');
+    row.click();
+  })()`);
+  await waitFor(`document.querySelectorAll('#attack-declaration input[aria-label="Attack with Grizzly Bears"]')[${index}]?.checked === true`);
+  await evaluate(`(() => {
+    const select = document.querySelectorAll('#attack-declaration select[aria-label="Defender for Grizzly Bears"]')[${index}];
+    if (!select || ![...select.options].some(o => o.value === ${JSON.stringify(target)})) throw new Error('Missing legal defender choice');
+    select.value = ${JSON.stringify(target)};
+    select.dispatchEvent(new Event('change', {bubbles: true}));
+  })()`);
+  await waitFor(`document.querySelectorAll('#attack-declaration select[aria-label="Defender for Grizzly Bears"]')[${index}]?.value === ${JSON.stringify(target)}`);
+  assert.equal((await read(`/matches/${id}`)).revision, draftRevision, 'Draft selection must not commit');
+  await press('Submit Attackers');
+  assert.deepEqual(state.attackers, [attacker]);
+  assert.deepEqual(state.attack_targets, {[attacker]: target});
+  await advanceUntil(s => s.step === 'declare_blockers', 'routing blockers');
+  if (kind === 'blocked') {
+    const blocker = fixture.blocker;
+    assert.ok(blocker);
+    await evaluate(`(() => {
+      const select = document.querySelector('#block-declaration select[aria-label="Block assignments for Grizzly Bears"]');
+      if (!select || ![...select.options].some(o => o.value === ${JSON.stringify(blocker)})) throw new Error('Missing real legal blocker');
+      const details = select.closest('details');
+      if (details) details.open = true;
+      for (const option of select.options) option.selected = option.value === ${JSON.stringify(blocker)};
+      select.dispatchEvent(new Event('change', {bubbles: true}));
+    })()`);
+    await waitFor(`document.querySelector('#block-declaration select[aria-label="Block assignments for Grizzly Bears"]')?.value === ${JSON.stringify(blocker)}`);
+  }
+  await press('Submit Blocks');
+  assert.deepEqual(state.blocks, kind === 'blocked' ? {[attacker]: [fixture.blocker]} : {});
+  await advanceUntil(s => s.step === 'combat_damage', 'routing combat damage');
+  const own = state.players[String(seat)];
+  const defender = state.players[String(3 - seat)];
+  const battle = own.battlefield.find(card => card.id === fixture.battle);
+  assert.ok(battle, 'An undefeated Siege must remain on the battlefield');
+  assert.equal(battle.defense, kind === 'partial' ? 1 : 3);
+  assert.equal(battle.battle_protector, 3 - seat);
+  assert.equal(own.life, 20);
+  assert.equal(defender.life, kind === 'player' ? 18 : 20, 'Battle damage must not damage its protector');
+  assert.equal(own.graveyard.some(card => card.id === attacker), kind === 'blocked');
+  if (kind === 'blocked') assert.ok(defender.graveyard.some(card => card.id === fixture.blocker));
+  assert.equal(state.pending_mechanic_choice, null);
+  assert.equal(state.stack.some(item => item.effect_key === 'battle_defeat'), false);
+  assert.ok(await evaluate(`document.querySelector('.battlefield').textContent.includes('Defense ${kind === 'partial' ? 1 : 3}')`));
+  console.log(`PASS declared canonical midgame Battle routing ${kind} seat ${seat}: real cast/search, UI attacker/defender/block choice, exact life/defense/graveyard consequences`);
 }
 
 async function unsupported(seat) {
@@ -217,6 +347,10 @@ try {
       for (const seat of [1, 2]) await episode(seat, mode);
     }
     for (const seat of [1, 2]) await unaffordable(seat);
+    for (const seat of [1, 2]) await simultaneous(seat);
+    for (const kind of ['partial', 'player', 'blocked']) {
+      for (const seat of [1, 2]) await routing(seat, kind);
+    }
   }
   for (const seat of [1, 2]) await unsupported(seat);
 } finally {
