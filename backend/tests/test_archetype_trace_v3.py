@@ -99,3 +99,16 @@ def test_writer_refuses_supplied_chain_fields_and_nonfinite_json():
     for row in ({'kind':'initial','sequence':0},{'kind':'initial','value':float('inf')}):
         with pytest.raises(ValueError): writer.emit(row)
     assert stream.getvalue() == b''
+
+
+def test_partial_progress_binds_an_exact_complete_prefix_not_an_unflushed_tail():
+    module,data,_=encoded()
+    assert callable(getattr(module,'verify_progress_prefix',None)),'Progress prefix verification is missing'
+    rows=list(module.read_records(io.BytesIO(data)));lines=data.splitlines(keepends=True)
+    receipt={'identity':{'cell_id':'unit'},'last_sequence':1,'last_record_sha256':rows[1]['record_sha256'],
+             'trace_bytes':len(lines[0])+len(lines[1]),'accepted_actions':1}
+    result=module.verify_progress_prefix(io.BytesIO(b''.join(lines[:2])+b'{"interrupted'),receipt)
+    assert result=={'last_kind':'action','accepted_actions':1,'trace_bytes':receipt['trace_bytes']}
+    for key,value in [('last_record_sha256','0'*64),('trace_bytes',receipt['trace_bytes']-1),
+                      ('accepted_actions',2),('last_sequence',2)]:
+        with pytest.raises(ValueError):module.verify_progress_prefix(io.BytesIO(data),{**receipt,key:value})

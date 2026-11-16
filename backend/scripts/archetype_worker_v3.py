@@ -84,7 +84,11 @@ def read_progress(path,identity,mode):
             or type(row['accepted_actions']) is not int or not 0<=row['accepted_actions']<=10000
             or row['complete_game_or_verification'] is not False):
         raise ValueError('Invalid partial progress receipt')
-    cpu=row['cpu_usage']
+    validate_cpu_usage(row['cpu_usage'])
+    return row
+
+
+def validate_cpu_usage(cpu):
     if type(cpu) is not dict or set(cpu)!={'category_seconds','category_calls','process_cpu_seconds','unattributed_cpu_seconds'}:
         raise ValueError('Invalid partial CPU fields')
     seconds,calls=cpu['category_seconds'],cpu['category_calls']
@@ -97,7 +101,6 @@ def read_progress(path,identity,mode):
         raise ValueError('Invalid partial CPU measurement')
     if sum(seconds.values())>cpu['process_cpu_seconds']+1e-6:
         raise ValueError('Partial CPU categories overlap or exceed process CPU')
-    return row
 
 
 def game_phase(decks,cell,policy,identity,directory,accounting,*,choose=None,
@@ -179,7 +182,9 @@ def validate_request(request):
             or type(request['mode']) is not str or request['mode'] not in ('game','verify')):
         raise ValueError('Invalid v3 worker request')
     plan=request['plan'];validate_plan(plan)
-    if plan['kind']!='pilot' or not any(digest(request['cell'])==digest(x)for x in plan['cells']):
+    if (plan['kind']!='pilot' or not is_sha(plan['runtime_sha256'])
+            or request['runtime_sha256']!=plan['runtime_sha256']
+            or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
         raise ValueError('Only an exact newly registered pilot cell may execute')
     validate_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
     seconds=request['wall_seconds']

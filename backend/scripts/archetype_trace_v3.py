@@ -131,6 +131,48 @@ def load_json(data):
     return json.loads(data, object_pairs_hook=_unique, parse_constant=_invalid_constant)
 
 
+def _checked_line(raw, sequence, previous):
+    if not raw.endswith(b'\n'):
+        raise ValueError('Incomplete trace record')
+    try:
+        row=load_json(raw)
+    except (ValueError,UnicodeError,RecursionError)as exc:
+        raise ValueError('Invalid trace JSON')from exc
+    if (type(row)is not dict or not CHAIN_KEYS.issubset(row)
+            or type(row['sequence'])is not int or row['sequence']!=sequence
+            or row['previous_record_sha256']!=previous or not is_sha(row['record_sha256'])
+            or row.get('kind')not in KINDS or (sequence==0)!=(row.get('kind')=='initial')):
+        raise ValueError('Trace ordering or binding differs')
+    if record_digest({k:v for k,v in row.items()if k!='record_sha256'})!=row['record_sha256']:
+        raise ValueError('Trace record digest differs')
+    return row
+
+
+def verify_progress_prefix(stream,receipt):
+    sequence=receipt.get('last_sequence');count=receipt.get('accepted_actions');size=receipt.get('trace_bytes')
+    if (type(sequence)is not int or not 0<=sequence<=10002 or type(count)is not int
+            or not 0<=count<=10000 or type(size)is not int or not 0<size<=MAX_TRACE_BYTES
+            or not is_sha(receipt.get('last_record_sha256'))):
+        raise ValueError('Invalid progress boundary')
+    previous=None;total=0;actions=0;ended=False;rejected=False;kind=None
+    for index in range(sequence+1):
+        raw=stream.readline(MAX_TRACE_BYTES-total+1);total+=len(raw)
+        if not raw or total>MAX_TRACE_BYTES or ended:
+            raise ValueError('Progress points beyond a complete trace prefix')
+        row=_checked_line(raw,index,previous);previous=row['record_sha256'];kind=row['kind']
+        if index==0 and digest(row.get('identity'))!=digest(receipt.get('identity')):
+            raise ValueError('Progress identity differs from trace root')
+        if kind in ('action','rejected'):
+            if rejected or type(row.get('step'))is not int or row['step']!=actions:
+                raise ValueError('Trace prefix action count differs')
+            if kind=='action':actions+=1
+            else:rejected=True
+        ended=kind=='final'
+    if total!=size or previous!=receipt['last_record_sha256']or actions!=count:
+        raise ValueError('Progress hash, byte boundary or action count differs')
+    return {'last_kind':kind,'accepted_actions':actions,'trace_bytes':total}
+
+
 def read_records(stream, *, max_bytes=MAX_TRACE_BYTES):
     if type(max_bytes) is not int or not 0 < max_bytes <= MAX_TRACE_BYTES:
         raise ValueError('Invalid trace quota')
@@ -142,21 +184,9 @@ def read_records(stream, *, max_bytes=MAX_TRACE_BYTES):
         total += len(raw)
         if total > max_bytes:
             raise TraceLimit('Trace exceeds declared quota')
-        if final or not raw.endswith(b'\n'):
+        if final:
             raise ValueError('Unexpected or incomplete trace record')
-        try:
-            row = load_json(raw)
-        except (ValueError, UnicodeError, RecursionError) as exc:
-            raise ValueError('Invalid trace JSON') from exc
-        if (type(row) is not dict or not CHAIN_KEYS.issubset(row)
-                or type(row['sequence']) is not int or row['sequence'] != sequence
-                or row['previous_record_sha256'] != previous
-                or not is_sha(row['record_sha256']) or row.get('kind') not in KINDS
-                or (sequence == 0) != (row.get('kind') == 'initial')):
-            raise ValueError('Trace ordering or binding differs')
-        body = {key:value for key,value in row.items() if key != 'record_sha256'}
-        if record_digest(body) != row['record_sha256']:
-            raise ValueError('Trace record digest differs')
+        row=_checked_line(raw,sequence,previous)
         previous, final = row['record_sha256'], row['kind'] == 'final'
         sequence += 1
         yield row

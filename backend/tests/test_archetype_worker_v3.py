@@ -158,7 +158,7 @@ def request():
     import hashlib
     from scripts.archetype_plan_v3 import build_plan
     module=subject();source=Path(module.__file__).resolve();root=source.parents[2]
-    plan=build_plan('a'*40,'archetype-pilot-20261116-v3-unit-worker')
+    plan=build_plan('a'*40,'archetype-pilot-20261116-v3-unit-worker',runtime_sha256='a'*64)
     return {'schema':3,'mode':'game','plan':plan,'cell':plan['cells'][0],
         'cpu':min(os.sched_getaffinity(0)),'cpu_seconds':1200,'wall_seconds':1500.,
         'memory_bytes':2147483648,'runtime_sha256':'a'*64,

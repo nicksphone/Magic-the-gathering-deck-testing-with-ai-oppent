@@ -58,7 +58,7 @@ def test_exact_old_full_state_equivalence_and_new_sequential_roundtrip():
         assert current['legal_moves_sha256']==digest(previous['legal_moves'])
         assert current['rng_sha256']==digest(previous['after']['rng_state'])
     assert subject().replay_trace(iter(new))=={'matched':True,'actions':4,
-        'status':'tick_limit','restart_roundtrips':4}
+        'status':'tick_limit','restart_roundtrips':4,'outcome':outcome}
 
 
 def test_noncheckpoint_actions_have_only_digests_and_checkpoint64_is_exact():
@@ -128,6 +128,12 @@ def test_replay_refuses_noncanonical_action_parameters_even_if_engine_ignores_th
     with pytest.raises(subject().TraceDivergence) as error:
         subject().replay_trace(iter(rechained(rows)))
     assert error.value.step==0
+
+
+def test_verification_exposes_the_full_replayed_outcome_for_parent_binding():
+    rows,outcome,_=make_trace()
+    replay=subject().replay_trace(iter(rows))
+    assert replay.get('outcome')==outcome
 
 
 @pytest.mark.parametrize('value',[-1,True])

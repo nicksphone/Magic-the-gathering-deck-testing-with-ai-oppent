@@ -236,4 +236,4 @@ def replay_trace(records, *, boundary=None, accounting=None):
     _check(final, {'outcome':outcome_for(state,steps,first['policy'],error),
                    'snapshot':last.value,'snapshot_sha256':last.sha256}, steps)
     return {'matched':True,'actions':steps,'status':final['outcome']['status'],
-            'restart_roundtrips':steps}
+            'restart_roundtrips':steps,'outcome':deepcopy(final['outcome'])}

@@ -75,3 +75,13 @@ def test_new_run_id_changes_all_cell_identities_and_outputs_are_fresh():
     p['policy']['health_gate']['crashes']=99
     assert q['policy']['health_gate']['crashes']==0
     assert not(set(q['seeds'])&{2026111901,2026111902,*range(2026111801,2026111821)})
+
+
+def test_issued_plan_can_freeze_runtime_while_unbound_preview_is_not_an_execution_admission():
+    preview=plan()
+    assert 'runtime_sha256' in preview,'V3 plan does not bind its issued runtime'
+    assert preview['runtime_sha256'] is None
+    issued=subject().build_plan('a'*40,'archetype-pilot-20261116-v3-issued',runtime_sha256='b'*64)
+    assert issued['runtime_sha256']=='b'*64
+    subject().validate_plan(issued)
+    with pytest.raises(ValueError):subject().build_plan('a'*40,'archetype-pilot-20261116-v3-issued',runtime_sha256='bad')
