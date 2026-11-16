@@ -1451,6 +1451,14 @@ authorized by these scoped repairs.
 
 ## Gate 1: Reliable Local Human Playtesting
 
+Current reconciliation (2026-11-16, reviewed main `91c0db9d`): see
+[landed changes, bounded host results and remaining limits](docs/testing/current-release-status-20261116.md).
+Battle HTTP/recovery, canonical-midgame browser flows and Siege reload goldens
+are in main. These close their named cases, not entire gate checkboxes. The
+manual clean-checkout workflow is published but still needs a permitted user to
+dispatch and obtain a successful final-source result. Historical component
+results elsewhere in this plan are not transferred to the new composition.
+
 Existing implementations have scoped evidence in the historical plan. Remaining
 items below require current-source acceptance, not another rewrite of working
 features or claims based on helpers alone.
