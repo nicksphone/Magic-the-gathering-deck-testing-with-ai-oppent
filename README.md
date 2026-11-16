@@ -529,6 +529,8 @@ keyword. The [rules/choice/color scope](docs/testing/rules-choice-color-composit
 
 ### Built local table (recommended quick-start)
 
+Use Python 3.12 and Node 24.22.0; hosted workflows pin this exact Node release.
+
 Use Linux, CPython **3.12.3** with venv/ensurepip available, and Node **24.22.0**
 with npm. The backend wheel lock targets Linux x86_64/glibc 2.39; other
 interpreters/platforms need separate validation. Install tools first if venv
