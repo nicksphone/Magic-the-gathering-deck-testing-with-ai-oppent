@@ -1,0 +1,46 @@
+name: Clean Checkout Acceptance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24.22.0'
+      - name: Install current Chrome from its signed repository
+        run: bash .github/scripts/install-ci-vendor-browser.sh chrome
+      - name: Fresh installs and full configured acceptance
+        env:
+          MTG_ACCEPT_PYTHON: python
+          MTG_CHROME: /opt/google/chrome/chrome
+          # Matches the existing CI browser job; not a browser sandbox claim.
+          MTG_BROWSER_NO_SANDBOX: '1'
+          TMPDIR: ${{ runner.temp }}
+        run: bash scripts/accept-clean-checkout.sh "$GITHUB_SHA"
+      - name: Stage results and test logs (no browser profiles or databases)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: clean-checkout-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/mtg-clean-acceptance-*/revision.txt
+            ${{ runner.temp }}/mtg-clean-acceptance-*/results.tsv
+            ${{ runner.temp }}/mtg-clean-acceptance-*/ACCEPTED.tsv
+            ${{ runner.temp }}/mtg-clean-acceptance-*/runtime.json
+            ${{ runner.temp }}/mtg-clean-acceptance-*/api.xml
+            ${{ runner.temp }}/mtg-clean-acceptance-*/logs/*.log
+          if-no-files-found: warn
+          retention-days: 7
