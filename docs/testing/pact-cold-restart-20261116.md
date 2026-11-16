@@ -25,11 +25,14 @@ source pins, existing fixture or browser runner change.
 
 ## Command and evidence
 
-Use a clean disposable checkout with the backend dependencies installed and
-**no legacy `backend/mtg_lab.db` in the source tree**. The app intentionally
-refuses that legacy path even when `MTG_DATABASE_PATH` names a separate test DB.
-Use a fresh checkout if a source-tree DB is present; do not delete an operator's
-saved-game database or remove its locks to make this test start.
+Use a disposable checkout with the backend dependencies installed. The test
+**does not require `backend/mtg_lab.db` to be absent**: it creates its own empty
+temporary SQLite file before starting the first worker. The explicit configured
+path therefore already exists, so a default DB left by an earlier test cannot
+trigger the new-path/legacy-data guard. This makes startup independent of that
+test-order condition. The test neither opens nor deletes the default database
+or its locks. Its owned-file initialization is not an export or migration of
+operator saved games; the production guard is unchanged.
 
 ```bash
 cd backend
@@ -58,3 +61,24 @@ after correcting that disposable checkout, the four-case run passed. The guard
 was retained. This host result covers the ASGI/SQLite process-restoration cases
 above, not an uninterrupted browser connection or the later composed browser
 program. The local timeout remains a separate result, not a passing local run.
+
+
+## CI order-dependence correction — 2026-11-16
+
+PR #87 [CI run 43914513053](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/43914513053)
+subsequently failed `backend-workers (2)` at
+`test_pact_cold_restart.py:29`: the child process returned nonzero. Claude
+reproduced the cause with a stray source-tree `backend/mtg_lab.db`: the original
+test supplied a missing configured path, so the production guard refused to
+silently abandon the legacy database. The earlier clean-checkout four-pass
+result did not cover this shard-order condition; requiring a clean default DB
+was not a sufficient test-isolation fix.
+
+Commit `ea759dbf59493929b983960bc7da33af392f78cd` pre-creates only the owned
+temporary file with `sqlite3.connect(...).close()`, before any child app import.
+Claude reports the original fails with a stray default DB and the fixed module
+passes **4/4 with it present and 4/4 without it**. Those are separate host runs,
+not eight distinct cases or a new full CI result. The fixed [CI run 43925771281](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/43925771281) must still
+finish independently; no shard success or full-suite total is implied here.
+The earlier local TestClient timeout remains separate and has not been
+reclassified as a pass.
