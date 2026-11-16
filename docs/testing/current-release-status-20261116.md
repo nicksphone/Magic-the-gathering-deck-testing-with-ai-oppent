@@ -5,6 +5,12 @@ This is a source/status reconciliation, not a new full test or deployed-server
 qualification. Historical results retain their original revisions and scopes.
 No overall RC or AI-strength acceptance is declared.
 
+Wording follow-up checked against main
+`984acd1a89216e9277ddd9d563bac8f37abd406c`: OpenTelemetry 1.45.2 is already
+applied, and the recorded user deferral for separate-device LAN/manual CA trust
+is preserved below. Other historical source/result scopes are unchanged. This
+follow-up runs no tests, workflows or deployment.
+
 ## Landed source and bounded results
 
 | Work | Landed source | Evidence and limits |
@@ -49,17 +55,23 @@ acceptance run. A merge/push is not deployment of a running server.
   one shared BasicAuth identity. Capacity ownership is a same-host, same-file
   lock, not distributed coordination or user/seat authorization. Single-user
   docs/enforcement follow-up is separate; raw developer servers are not a secure
-  multi-user service. Assigned-LAN routing, client certificate trust and final
-  browser/HTTPS topology acceptance remain open.
+  multi-user service. Separate-device LAN routing and manual CA-trust checks are
+  **user-deferred for RC, not passed**, as recorded in the release ledger.
+  They remain unfinished before wider deployment. Final local HTTPS/authentication
+  and Linux Chrome, Brave and Firefox acceptance remain in RC scope.
 - **Gate 3 #4:** dated host scans found no npm production advisories; the dev lint
   chain has the accepted temporary minimatch exception owned by Claude, pending
-  compatible upstream updates. The reviewed base still pins OpenTelemetry API
-  1.45.1; its approved 1.45.2 coordinated patch is a separate branch awaiting
-  integration/CI and a fresh composed scan. A zero-production npm count does not
-  dismiss developer-server or CI toolchain exposure.
+  compatible upstream updates. PR #66 already applied OpenTelemetry API
+  **1.45.2**, including its wheel hash and coordinated runtime inventory; do not
+  bump it again. The final composed advisory scan and disposition confirmation
+  remain open; see the [applied patch status](dependency-advisory-review-20261115.md#applied-patch-status--2026-11-16)
+  and the [user workflow actions](release-acceptance-status.md#2026-11-16-user-actions-for-final-acceptance-evidence).
+  A zero-production npm count does not dismiss developer-server or CI toolchain
+  exposure.
 - **Gate 3 #5/#6:** final clean-machine operation, backup/restore, long-session
-  soak, accessibility, user-selected topology and release/deployment sign-off
-  remain separate gates. This reconciliation does not mark them complete.
+  soak, accessibility, local operator acceptance and release/deployment sign-off
+  remain separate gates, with the LAN/manual CA-trust deferral above preserved.
+  This reconciliation does not mark them complete.
 
 ## Action needed for Gate 1 #7 evidence
 
