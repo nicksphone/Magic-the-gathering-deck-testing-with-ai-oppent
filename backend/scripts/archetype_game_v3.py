@@ -225,8 +225,7 @@ def replay_trace(records, *, boundary=None, accounting=None):
         if capture(restarted, accounting).sha256 != after.sha256:
             raise TraceDivergence(steps, ['snapshot_roundtrip'])
         if boundary is not None:
-            with accounting.measure('handler_check'):
-                boundary(first, {**row,'before':before.value,'after':after.value,'legal_moves':legal})
+            boundary(first, {**row,'before':before.value,'after':after.value,'legal_moves':legal})
         state, steps = restarted, steps+1
     if final is None:
         raise TraceDivergence(steps, ['missing_final'])

@@ -127,6 +127,10 @@ def _invalid_constant(_value):
     raise ValueError('Nonfinite trace number')
 
 
+def load_json(data):
+    return json.loads(data, object_pairs_hook=_unique, parse_constant=_invalid_constant)
+
+
 def read_records(stream, *, max_bytes=MAX_TRACE_BYTES):
     if type(max_bytes) is not int or not 0 < max_bytes <= MAX_TRACE_BYTES:
         raise ValueError('Invalid trace quota')
@@ -141,7 +145,7 @@ def read_records(stream, *, max_bytes=MAX_TRACE_BYTES):
         if final or not raw.endswith(b'\n'):
             raise ValueError('Unexpected or incomplete trace record')
         try:
-            row = json.loads(raw, object_pairs_hook=_unique, parse_constant=_invalid_constant)
+            row = load_json(raw)
         except (ValueError, UnicodeError, RecursionError) as exc:
             raise ValueError('Invalid trace JSON') from exc
         if (type(row) is not dict or not CHAIN_KEYS.issubset(row)
