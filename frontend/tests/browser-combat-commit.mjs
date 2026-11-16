@@ -55,3 +55,6 @@ await episode();
 await assert.rejects(episode({ rejectedRead: true }), /State request failed: 403/);
 await assert.rejects(episode({ committedBlocks: false }), { code: 'ERR_ASSERTION' });
 console.log('PASS actual combat automation waits for committed revisions, never retries writes, and retains block/payment assertions');
+
+// Run after the capacity scenarios restore their process-local fetch stand-in.
+await import('./browser-direct-combat-commit.test.mjs');

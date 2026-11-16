@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 import { visibleCardPoint } from './visible-card-point.mjs';
 
 const backend = 'http://127.0.0.1:10199';
@@ -22,6 +22,16 @@ for (const seat of [1, 2]) {
     await evaluate(`(() => {const data=new DataTransfer(); const source=document.querySelector(${JSON.stringify(card(source))}); const target=document.querySelector(${JSON.stringify(card(target))}); source.dispatchEvent(new DragEvent('dragstart',{bubbles:true,cancelable:true,dataTransfer:data})); target.dispatchEvent(new DragEvent('dragover',{bubbles:true,cancelable:true,dataTransfer:data})); target.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:data})); })()`);
   }
   async function state() { return (await fetch(`${backend}/matches/${fixture.id}`)).json(); }
+  async function committed(before) {
+    // App clears legal moves (and the form) before awaiting its POST. Form
+    // disappearance proves submission, not an authoritative state transition.
+    const accepted = await waitForApiState(`${backend}/matches/${fixture.id}`, value => value.revision > before);
+    await waitFor(`document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(fixture.id)}
+      && document.querySelector('.battlefield')?.dataset.matchRevision === '${accepted.revision}'
+      && !document.querySelector('fieldset:disabled')
+      && !document.body.textContent.includes('Match operation pending')`);
+    return accepted;
+  }
   try {
     await waitFor("!document.body.innerText.includes('Restoring saved session') && document.querySelector('.saved-games')");
     await evaluate(`localStorage.setItem('mtg.activeMatch',${JSON.stringify(fixture.id)})`);
@@ -39,13 +49,13 @@ for (const seat of [1, 2]) {
     await waitFor("document.body.innerText.includes('Declare attackers (2)') && document.querySelectorAll('.combat-band').length === 2");
     await click('Declare attackers (2)');
     await waitFor("!document.querySelector('#attack-declaration')");
-    let current = await state();
+    let current = await committed(revision);
     assert.deepEqual(current.attackers, ['hero','angel']);
     assert.deepEqual(current.attack_bands, [['hero','angel']]);
     for (let i=0; i<4 && current.step !== 'declare_blockers'; i++) {
       await click('Pass Priority');
       await waitFor(`!document.querySelector('fieldset:disabled')`);
-      current = await state();
+      current = await committed(current.revision);
     }
     await waitFor("document.body.innerText.includes('Declare blockers (0)')");
     await pointerClick('bears');
@@ -58,7 +68,7 @@ for (const seat of [1, 2]) {
     await waitFor("document.body.innerText.includes('Declare blockers (1)')");
     await click('Declare blockers (1)');
     await waitFor("!document.querySelector('#block-declaration')");
-    current = await state();
+    current = await committed(current.revision);
     assert.deepEqual(current.blocks, {hero:['bears'],angel:['bears']});
     console.log(`PASS seat ${seat}: real pointer card selection; browser drag/drop handlers; legal band; flying rejection; click/drag block assignment; remote form submission and authoritative band propagation`);
   } finally {
