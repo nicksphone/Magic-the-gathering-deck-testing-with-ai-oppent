@@ -266,3 +266,10 @@ https://caddyserver.com/docs/caddyfile/directives/handle_path
 https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
 https://caddyserver.com/docs/caddyfile/options
 https://caddyserver.com/docs/command-line
+
+## Deployment scale limit
+
+The package supports one trusted operator and one Uvicorn worker per local
+SQLite/runtime. It is not a multi-user or multi-tenant service. See
+[the single-operator deployment contract](../../docs/testing/single-operator-deployment.md)
+for the ownership locks, enforced launcher settings, test command and LAN limits.
