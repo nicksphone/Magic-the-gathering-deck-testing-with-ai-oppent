@@ -1,5 +1,66 @@
 # Release Acceptance Status
 
+## 2026-11-16 user actions for final acceptance evidence
+
+Documentation follow-up reviewed main
+`984acd1a89216e9277ddd9d563bac8f37abd406c`. No new test, workflow dispatch or
+deployment is performed by this edit. Earlier results retain their named source
+and scope; the actions below require the intended final main composition.
+
+Two status corrections are explicit:
+
+- Separate-device LAN routing and manual CA-trust checks remain **user-deferred
+  for RC, not passed**. This preserves the recorded user decision, rather than
+  reinstating an external-device RC blocker. Local HTTPS/authentication and
+  Linux Chrome, Brave and Firefox acceptance remain in scope. Wider deployment
+  still needs the deferred checks and operator authorization.
+- OpenTelemetry API **1.45.2 is already applied** by PR #66, with the lock's
+  wheel hash and coordinated runtime inventory. It is not a pending version
+  bump. Final composed scans and maintainer dispositions remain required; see
+  [the advisory review](dependency-advisory-review-20261115.md#applied-patch-status--2026-11-16).
+
+A repository user with workflow-dispatch rights must perform these actions
+after intended fixes/dependencies are merged. Claude's token received 403 for
+dispatch; committing a workflow file is not execution evidence.
+
+1. **Gate 1 #7 — Clean Checkout Acceptance:** open **Actions → Clean Checkout
+   Acceptance → Run workflow**, select **main**, then run it. CLI equivalent:
+
+   ```sh
+   gh workflow run clean-checkout-acceptance.yml --ref main --repo nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent
+   ```
+
+   Record the actual run ID and full `head_sha`; require it to be the intended
+   final revision. The workflow calls `scripts/accept-clean-checkout.sh` with
+   `GITHUB_SHA`. Require every configured stage to succeed and retain revision,
+   `results.tsv`, `ACCEPTED.tsv`, runtime metadata, JUnit and per-program browser
+   logs from its artifact. Report exact exits/case/episode counts. Provisioning
+   failure, an absent completion record or an unfinished run leaves #7 open.
+   Hosted Chrome uses the workflow's explicit no-sandbox setting; this is not
+   native-protected Chrome/Brave/Firefox acceptance. See the
+   [clean-checkout runbook](clean-checkout-acceptance-20261115.md).
+2. **Gate 3 #4 — Dependency Advisory Review:** open **Actions → Dependency
+   Advisory Review → Run workflow**, select **main**, then run it. CLI equivalent:
+
+   ```sh
+   gh workflow run dependency-advisory-review.yml --ref main --repo nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent
+   ```
+
+   Record run ID, full `head_sha`, lock/input hashes and scanner versions. Review
+   the uploaded full-lock and production-only npm JSON, all **28** application
+   pip rows, exits and query-error reports. An advisory finding can make the
+   wrapper nonzero; distinguish complete findings from failed/partial queries.
+   Claude must confirm remediation or the documented temporary dev-only
+   minimatch exception and its owner/revisit trigger. Do not demand an invented
+   zero-advisory result or dismiss developer tooling because production npm is
+   clear. Missing packages, DNS failure or an undispatched/incomplete run leave
+   #4 open. See the [advisory procedure and decisions](dependency-advisory-review-20261115.md).
+
+Neither action alone accepts the release. Local HTTPS/authentication, the three
+native Linux browsers, rules/knowledge/AI evaluation and remaining operational
+requirements retain their own gates. A workflow result cannot be transferred to
+a later source or lock composition without appropriate revalidation.
+
 ## October 23 Trace Query And Evaluation Status
 
 [PR 30](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/30)
