@@ -25,14 +25,18 @@ source pins, existing fixture or browser runner change.
 
 ## Command and evidence
 
-From a clean disposable checkout with the backend dependencies installed:
+Use a clean disposable checkout with the backend dependencies installed and
+**no legacy `backend/mtg_lab.db` in the source tree**. The app intentionally
+refuses that legacy path even when `MTG_DATABASE_PATH` names a separate test DB.
+Use a fresh checkout if a source-tree DB is present; do not delete an operator's
+saved-game database or remove its locks to make this test start.
 
 ```bash
 cd backend
 python -B -m pytest -q tests/test_pact_cold_restart.py
 ```
 
-Expected collection is four tests. Host execution is pending. Local collection
+Expected collection is four tests. Local collection
 and source syntax checks pass, but the attempted `pay-1` case timed out after
 45 seconds in the first worker's ASGI request; this is **one failed local test**,
 not a pass or a skip. A separate eight-second bounded diagnostic showed the first POST blocked in
@@ -44,3 +48,13 @@ These are ASGI/SQLite process-restoration tests. They do not establish TCP fault
 handling, an uninterrupted browser session across server restart, or full RC
 acceptance. Browser refresh while the payment prompt is pending has separate
 coverage; those results must not be combined into a browser-restart claim.
+
+
+## Host result — 2026-11-16
+
+Claude ran commit `3b1518f2` on the host: **4 passed, 0 failed**. An initial
+scratch-checkout attempt encountered the legacy source-tree database guard;
+after correcting that disposable checkout, the four-case run passed. The guard
+was retained. This host result covers the ASGI/SQLite process-restoration cases
+above, not an uninterrupted browser connection or the later composed browser
+program. The local timeout remains a separate result, not a passing local run.
