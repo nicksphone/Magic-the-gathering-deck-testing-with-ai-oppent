@@ -4,9 +4,10 @@
 exclusions. Earlier eleven-deck counts/policies are retained as the superseded
 v1 design, not instructions to run it or claims that its admission passed.**
 
-This branch is a plan and inert planning/analysis harness only. It neither runs
-AI games nor changes AI, rules, decks or source pins. Claude must review this
-plan before a separate execution adapter and measured run. No earlier 110-series
+The original planner/analysis module remains inert. The separate cell adapter
+and pilot driver described at the end now provide executable code, with **no
+measured pilot or matrix run**. AI, rules, decks and existing source pins are
+unchanged. A measured run still needs maintainer approval. No earlier 110-series
 prefix, timeout prefix, snapshot or result may be imported or resumed.
 
 ## Predeclared experiment
@@ -220,3 +221,90 @@ enter bounds, never draw/win adjudication. Same engine seed/swapped seats does
 not imply deck-fixed hands. Seed-block CI and hidden-information/trace policies
 remain as above. AI strength is not accepted. No adapter or game execution is
 added by this version change.
+
+
+## Execution adapter and pilot driver (code only; no measured run)
+
+The new `scripts.archetype_matrix_game` cell adapter uses the real
+`MatchFactory`, master `AIAgent`, `RulesEngine` and `checked_action`, with the
+normal agent's hidden-information projection. Every accepted action retains
+full before/after snapshots including RNG, actor, ordered legal moves, completed
+action, reasoning, knowledge-use metadata and separate decision/transition
+latency. It never substitutes a pass after a rejected AI action. Engine wins,
+draws, deck-out, limits and errors remain distinct outcomes.
+
+A fresh verifier process rebuilds the initial game from the same canonical
+rows/seed/ID and replays every action. It compares full snapshots and legal
+moves and serializes/restores every boundary; differences stop at the first
+step/field without normalizing values. Selected boundaries (first, last and
+every 100th accepted action) additionally enter the **real direct action
+handler** with an explicitly imported engine position. The checker observes
+the checked transition before application bookkeeping, then verifies exact
+application state/controller SQLite eviction/reload and original-key retry.
+These are selected-boundary checks, **not a continuous API-played game, HTTP
+transport, browser acceptance or a fresh-process app/SQLite restart**. Fresh
+process verification here applies to the engine trace. No expert decision-
+quality scores are produced; reason strings are not strength evidence.
+
+`archetype_matrix_execution` admits frozen full-matrix or pilot cells. The only
+batch CLI supplied here is the **36-game pilot**, with fresh IDs beginning
+`archetype-pilot-20261116-v2-`. It refuses edited schedules/budgets, dirty or
+wrong source revisions, a source-local application database, an existing output
+directory, unavailable CPU affinity slots or insufficient observed headroom.
+It requires Linux CPython 3.12.3 and all 28 installed application versions to
+match the lock; the recorded distribution inventory is version identity, not
+proof of wheel-byte provenance. Use a fresh hash-locked environment and a clean
+disposable clone, not a developer installation.
+
+The controller runs at most two cells concurrently. Each cell's game and fresh
+verifier run sequentially within the shared 120s wall/90 CPU-second budget;
+the verifier's remaining integral CPU allowance rounds down. Linux CPU-limit
+signals have integral-second granularity and a one-second hard fail-safe. Each
+worker has a 2 GiB `RLIMIT_AS` address-space ceiling and one CPU-affinity slot;
+RSS is recorded separately. Admission requires at least three affinity slots
+(two workers plus controller headroom) and 5 GiB observed `MemAvailable`. These
+are **per-process limits/cooperative admission, not cgroup accounting, physical
+reservations or hostile-code isolation**; an operator must account for container
+quotas and competing work. Audit hooks refuse accidental descendants, network
+connections and undeclared SQLite connections. Existing image-cache globals are
+bound to a private per-cell offline cache before engine/app imports; no fetch or
+developer token-index input is used. Image URI conventions remain unchanged.
+
+Every launched process is actually waited for. Timeouts terminate only its owned
+process group. Unexpected crashes, detectable host suspend/clock discontinuity,
+source/runtime drift or controller interruption invalidate the run and stop new
+launches. Partial receipts remain failures; a failed verifier cannot retain a
+resolved game win. Handled game errors/resource limits remain explicit outcomes
+in the scheduled denominator. No resume, retry, partial-prefix acceptance or
+automatic cleanup exists. Keep incomplete evidence and issue a new run ID after
+review. A controller killed outright leaves no complete marker; workers also
+have their own wall timer and CPU/address-space limits.
+
+After **separate approval to run**, from `backend/` in a clean committed clone
+with a fresh hash-locked Python environment (all paths below are examples):
+
+```sh
+python -B -m scripts.archetype_matrix_pilot plan \
+  archetype-pilot-20261116-v2-RUNID /absolute/private/pilot-plan.json
+python -B -m scripts.archetype_matrix_pilot run \
+  /absolute/private/pilot-plan.json /absolute/private/new-pilot-output --execute-pilot
+```
+
+The parent directory must already be private and operator-controlled, and the
+output must be absent, canonical, local and outside the checkout. Traces, logs,
+SQLite files and per-cell receipts are private; do not commit or publish them.
+`PILOT-COMPLETE.json` means all 36 cells were accounted for, **not healthy engine
+acceptance**. Inspect its outcome counts and every failed cell. Forecasts use
+all observed cell times (including timeouts), give mean/p50/p95 and a 1,440-game
+mean/p95 scenario plus trace-volume projection. They are estimates, not a budget
+approval, and are absent for incomplete runs. The pilot can never be merged
+into the matrix or accept RC/AI strength. No full-matrix batch command is added.
+
+Tests (unit/synthetic subprocesses and small canonical transitions only):
+
+```sh
+python -B -m pytest -q tests/test_archetype_matrix_plan.py \
+  tests/test_archetype_matrix_execution.py tests/test_archetype_matrix_game.py \
+  tests/test_archetype_matrix_api_check.py tests/test_archetype_matrix_pilot.py \
+  tests/test_archetype_matrix_worker.py
+```
