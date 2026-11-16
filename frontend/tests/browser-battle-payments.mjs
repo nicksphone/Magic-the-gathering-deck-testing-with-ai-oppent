@@ -6,7 +6,7 @@ const backend = 'http://127.0.0.1:10199';
 const frontend = 'http://127.0.0.1:15173';
 const warningOnly = process.env.MTG_BATTLE_WARNING_ONLY === '1';
 const browser = await openBrowser(`${frontend}/`);
-const {evaluate, waitFor, click, command, close} = browser;
+const {evaluate, waitFor, click, command, reload, close} = browser;
 let state;
 let id;
 
@@ -16,8 +16,9 @@ async function read(path) {
   return response.json();
 }
 
-async function load(seat, mode, unsupported = false) {
-  const suffix = unsupported ? '/unsupported' : '';
+async function load(seat, mode, variant = 'funded') {
+  assert.ok(['funded', 'unsupported', 'unaffordable'].includes(variant));
+  const suffix = variant === 'funded' ? '' : `/${variant}`;
   const response = await fetch(`${backend}/fixture/battle-payment${suffix}?seat=${seat}&mode=${mode}`, {
     method: 'POST', signal: AbortSignal.timeout(15000),
   });
@@ -150,7 +151,7 @@ async function episode(seat, mode) {
 }
 
 async function unsupported(seat) {
-  await load(seat, 'human_vs_human', true);
+  await load(seat, 'human_vs_human', 'unsupported');
   await waitFor(`[...document.querySelectorAll('div.block-panel > h3')].some(el => el.textContent === 'Diagnostic unsupported choice (P${seat})')`);
   const controls = await evaluate(`(() => {
     const panel = [...document.querySelectorAll('div.block-panel')].find(el => el.querySelector(':scope > h3')?.textContent === 'Diagnostic unsupported choice (P${seat})');
@@ -164,10 +165,58 @@ async function unsupported(seat) {
   console.log(`PASS explicit unknown-control warning, no fabricated choice button, seat ${seat}`);
 }
 
+async function unaffordable(seat) {
+  await load(seat, 'human_vs_human', 'unaffordable');
+  assert.equal(state.mode, 'human_vs_human');
+  assert.equal(state.pending_mechanic_choice, null, 'The fixture must not inject a payment choice');
+  await cast(move => move.card_name === "Summoner's Pact");
+  await advanceUntil(s => s.pending_mechanic_choice?.kind === 'deferred_upkeep_payment', 'unaffordable Pact upkeep');
+  assert.equal(state.active_player, seat);
+  assert.equal(state.pending_mechanic_choice.player_id, seat);
+  assert.deepEqual(state.pending_mechanic_choice.options, ['decline']);
+  async function declineOnly() {
+    const menu = await legal();
+    assert.equal(menu.player_id, seat);
+    assert.equal(menu.moves.length, 1);
+    assert.equal(menu.moves[0].kind, 'deferred_upkeep_payment');
+    assert.deepEqual(menu.moves[0].options, ['decline']);
+    await waitFor(`!document.querySelector('fieldset:disabled') && [...document.querySelectorAll('div.block-panel > h3')].some(el =>
+      el.textContent === 'Pay {2}{G}{G} or lose the game (P${seat})')`);
+    const controls = await evaluate(`(() => {
+      const panels = [...document.querySelectorAll('div.block-panel')].filter(el =>
+        el.querySelector(':scope > h3')?.textContent === 'Pay {2}{G}{G} or lose the game (P${seat})');
+      return {panels: panels.length,
+        buttons: panels.flatMap(panel => [...panel.querySelectorAll('button')].map(button =>
+          ({label: button.textContent.trim(), disabled: button.matches(':disabled')}))),
+        unsupported: document.body.textContent.includes('Unsupported mechanic choice:')};
+    })()`);
+    assert.deepEqual(controls, {panels: 1,
+      buttons: [{label: 'Decline payment; lose the game', disabled: false}], unsupported: false},
+      'A supported unaffordable choice must offer only the real decline control');
+  }
+  await declineOnly();
+  const beforeReload = structuredClone(state);
+  await reload();
+  await visible();
+  state = await read(`/matches/${id}`);
+  assert.deepEqual(state, beforeReload, 'Refresh must preserve the entire unpaid choice/state/revision');
+  await declineOnly();
+  const beforeDecline = state.revision;
+  await press('Decline payment; lose the game');
+  assert.equal(state.revision, beforeDecline + 1, 'One decline must commit exactly once');
+  assert.equal(state.pending_mechanic_choice, null);
+  assert.equal(state.winner, 3-seat);
+  await waitFor(`document.querySelector('.game-result')?.textContent.includes('P${3-seat} wins')`);
+  console.log(`PASS declared canonical midgame human_vs_human seat ${seat}: real unfunded Pact, decline-only controls, exact pending refresh, one losing commit`);
+}
+
 try {
   if (warningOnly) console.log('Focused warning-only diagnostic; not the full midgame browser cohort');
-  else for (const mode of ['human_vs_human', 'player_vs_ai']) {
-    for (const seat of [1, 2]) await episode(seat, mode);
+  else {
+    for (const mode of ['human_vs_human', 'player_vs_ai']) {
+      for (const seat of [1, 2]) await episode(seat, mode);
+    }
+    for (const seat of [1, 2]) await unaffordable(seat);
   }
   for (const seat of [1, 2]) await unsupported(seat);
 } finally {

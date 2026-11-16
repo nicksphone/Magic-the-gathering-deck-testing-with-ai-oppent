@@ -11,6 +11,25 @@ then declines another to reach a game result. It reloads the page while payment
 is pending. Two additional UI negatives require an explicit warning and no
 fabricated choice button for `diagnostic_unknown`.
 
+The extended program adds **two further human-vs-human episodes**, one per
+seat, for an unaffordable Pact. Its new declared-midgame variant moves the
+initial Forests back into the library at fixture birth, preserving the canonical
+objects and deck stock. Real zero-cost Pact casting, its library search and
+native turn progression create the upkeep debt; no pending choice or delayed
+trigger is injected. The existing fixture helper and original natural BO3
+programs remain unchanged.
+
+For those episodes, the actual API must offer exactly `['decline']`. The
+actor-bound App panel must have exactly one enabled “Decline payment; lose the
+game” button, no Pay button and no unsupported-control warning. A completed
+page reload must preserve the entire public match response, including the
+choice, options, resources and revision. One real decline must increment the
+revision exactly once and render the other player's win. The default program
+therefore declares **eight** episodes: the original four funded flows, two new
+unaffordable flows and the original two warning negatives. Warning-only mode
+still runs only the original two negatives. These are declared episodes, not
+new execution results.
+
 ## Run
 
 Install the locked app dependencies and frontend dependencies as for the existing
@@ -84,3 +103,28 @@ warning for seat 1`; the mutation was reverted. This is the intended warning RED
 not a bootstrap failure. The later Vite patch and final full clean-checkout
 composition still require their own acceptance run; see
 [current status](current-release-status-20261116.md).
+
+## Extended fixture checks and remaining gaps
+
+The new whole `test_battle_payment_browser_unaffordable.py` module passes six
+local pure-engine cases. It checks canonical stock and an initially absent
+choice/debt; genuine Pact cast/search/opponent-upkeep/next-own-upkeep progression;
+the actual decline-only legal offer; snapshot round-trip; atomic rejection of an
+unoffered Pay; and the real losing decline for both seats. This is not HTTP,
+browser or a new natural-game result. Run from `backend/`:
+
+```sh
+python -B -m pytest -q tests/test_battle_payment_browser_unaffordable.py
+```
+
+The extended eight-episode browser program still needs its own host/CI run with
+the command above. The earlier six-PASS host result is not transferred to the
+new two episodes. No runner, driver, source pin or original fixture/helper is
+changed; the existing wrapper adds a test-only unaffordable-birth endpoint.
+
+Still open: partial/blocked Battle damage and player-versus-Battle routing in
+the actual UI; simultaneous upkeep obligations and continuation after the first
+choice; and an actual backend restart while Pact payment is pending. Existing
+HTTP goldens, sequential debts and page refresh are not those browser cases.
+Final-source full-cohort, native vendor, clean-checkout and broader Gate 1/RC
+acceptance remain separate.
