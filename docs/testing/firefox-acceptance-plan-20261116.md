@@ -45,7 +45,7 @@ no driver, fixture, source pin or workflow and starts no browser/server.
    Firefox BiDi session, fresh profile and actual child handles. Missing startup
    evidence, unknown child identity, failed close, unsupported wire command or
    unavailable required response body must invalidate the run, never become a
-   gameplay pass. No old private archive or task247 controller is needed.
+   gameplay pass. Use committed current source, not a historical private archive.
 5. Add adapter-specific bootstrap/command/closure controls and host-run the
    complete component checks. This is preparatory evidence, not game acceptance:
 
@@ -104,3 +104,5 @@ current-source changes/checks. No summed historical counts or strength percentag
 Even a passing loopback Firefox run leaves assigned-device LAN routing,
 certificate trust, long-session soak/accessibility and full RC sign-off separate.
 This plan itself adds **zero** Firefox gameplay evidence and no CI execution.
+
+Protocol reference for the adapter review: [Mozilla Remote Protocols](https://firefox-source-docs.mozilla.org/remote/index.html) and [Remote Agent security](https://firefox-source-docs.mozilla.org/remote/Security.html). These references do not constitute a native run.
