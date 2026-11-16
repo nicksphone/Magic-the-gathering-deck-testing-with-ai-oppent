@@ -31,24 +31,34 @@ Do not expose the raw backend/Vite server as a public multiplayer service.
 
 ## Running and exposure limits
 
-For direct local development, make the scope explicit:
+For the local built table, use the [README quick-start](../../README.md#setup):
+install the locked backend and frontend dependencies, build with same-origin
+`/api`, then run `scripts/start-local.sh` with the same explicit private local
+`MTG_DATABASE_PATH` each time. It serves UI/API/images at
+**http://127.0.0.1:5173** with one worker and no login or TLS. See
+[launcher details](local-loopback-launcher.md). Do not start a second backend or
+Vite alongside it. The optional developer backend (9999) and Vite server (5173)
+are a separate two-terminal mode, not the quick-start or HTTPS package.
 
-```sh
-cd backend
-python -m uvicorn main:app --host 127.0.0.1 --port 9999 --workers 1
-```
+For HTTPS use `ops/caddy/README.md`, validate private configuration and launch
+its supervisor. Keep keys/config/runtime private; the default proxy bind is
+loopback. Use built dist, not Vite dev/preview, for packaged serving. One
+BasicAuth identity is shared across the table/API; seat selection is not
+authorization between people. Neither mode is a public multiplayer service.
 
-This starts an unauthenticated local developer backend, not the HTTPS package.
-For packaged use follow `ops/caddy/README.md`, validate private configuration,
-and launch its supervisor. Keep keys/config/runtime private; the default proxy
-bind is loopback. Use the built dist, not Vite dev/preview, for packaged serving.
-One BasicAuth identity is shared across the whole table/API; changing browser
-seat selection is not authorization between people.
+Stop and drain the owner before the offline
+[backup/restore procedure](saved-game-backup-restore.md). Restore to a distinct
+file outside the checkout, keep the source stopped, and start the same built
+launcher with the recovered path. The source-tree default requires a reviewed
+export/relocation first; never delete user data or persistent locks to bypass
+startup. A checkpoint does not include later actions or receipts.
 
 Private LAN binding is an optional *configuration* subject to the package's
 validation. Certificate trust on the client, actual interface routing, firewall,
 HTTPS/auth/browser behavior and the chosen topology still need end-to-end
-acceptance. A passing settings/loopback test does not qualify a LAN host. No
+acceptance. Separate-device LAN/manual CA-trust checks are user-deferred for RC, not passed.
+Local HTTPS and native-browser acceptance remain in scope. A passing
+settings/loopback test does not qualify a LAN host. No
 public-Internet or multi-tenant security claim follows from BasicAuth alone.
 
 ## Enforcement tests and limits
@@ -67,3 +77,16 @@ proxy contract catches removal/reordering of the single configured auth block;
 it does not authenticate a live HTTP/TLS request or qualify a Caddy binary.
 Existing package security and native topology tests remain separate requirements.
 No production behavior or source pin is modified by adding these tests/docs.
+
+
+## Known limitations
+
+The [README list](../../README.md#known-limitations-and-next-upgrades) and
+[current release gates](current-release-status-20261116.md) remain authoritative
+for broader rules, card data, AI quality, native browsers and clean-checkout
+acceptance. In particular, the maintainer keeps the historical untyped
+`legacy_unknown` finisher/source-movement seam as a documented RC limitation:
+no normal-LIFO exploit is shown and its two strict xfails remain ledgered in
+[known failures](known-failures.md). No guard or old-save migration is approved.
+Successful backup/reconstruction is not proof that every old untyped frame is
+safe to resume under arbitrary ordering.
