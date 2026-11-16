@@ -9,7 +9,9 @@ from a restore. Keep the original database until recovery has been checked.
 
 These commands assume the application already uses an absolute, canonical
 `MTG_DATABASE_PATH` **outside the checkout**, on a supported local filesystem.
-Use the same application revision and Python environment for the drill. Replace
+Use the same application revision, built frontend and Python environment for
+the drill; the [README quick-start](../../README.md#setup) selects an external DB
+from the first launch. Replace
 all example paths with your own; do not use a production file for a rehearsal.
 
 1. Stop the launcher/backend normally. Wait for it to exit and for outstanding
@@ -45,20 +47,22 @@ all example paths with your own; do not use a production file for a rehearsal.
 
    Restore-only mode proves SQLite self-consistency, not checkpoint provenance.
    Compare its fingerprints with those recorded when the checkpoint was made.
-5. Start the single-worker application with `MTG_DATABASE_PATH` set to the
-   **existing recovered file**. From `backend/`:
+5. Start the built single-worker table with `MTG_DATABASE_PATH` set to the
+   **existing recovered file**. From the repository root:
 
    ```bash
    MTG_DATABASE_PATH=/absolute/private-recovery/recovered.sqlite3 \
-     /absolute/venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000 --workers 1
+     MTG_LOCAL_PYTHON="$PWD/backend/.venv/bin/python" \
+     bash scripts/start-local.sh
    ```
 
-   Keep the original backend stopped. Use the separately configured local
-   frontend if inspecting the match in the UI. Confirm the recovered saved match
-   IDs, revisions, pending choices and legal moves before making new decisions. Reconcile authoritative state
+   Keep the original backend stopped. Open **http://127.0.0.1:5173**; no separate
+   Vite/backend server is needed. Confirm recovered match IDs, revisions,
+   pending choices and legal moves before making new decisions. Reconcile state
    before retrying a lost request; preserve its original idempotency key/body.
    Reusing a key with different intent must conflict, and a new key with a
-   stale revision must conflict. A much older backup cannot know later receipts.
+   stale revision must conflict. An older backup cannot know later receipts.
+
 6. Stop the recovery instance cleanly before archiving it. Archive only closed,
    verified copies to remote/NFS storage; run the application on local storage.
 
@@ -97,3 +101,9 @@ TCP loss or browser refresh. These tests do not establish machine-loss
 recovery, backup retention/encryption, a different-version migration, or a
 complete RC acceptance run. Test counts belong in the PR/CI results after an
 actual run, not in this procedure.
+
+
+Restoring a snapshot does not migrate missing historical provenance. The
+maintainer retains the `legacy_unknown` finisher seam and its two strict xfails
+as a documented RC limitation; see [the failure ledger](known-failures.md).
+Do not infer a frame's historical ownership from the card's current zone.

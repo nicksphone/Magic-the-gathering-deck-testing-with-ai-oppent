@@ -1,5 +1,7 @@
 # MTG Deck Testing Lab
 
+[Local quick-start](#setup) · [Backup and restore](docs/testing/saved-game-backup-restore.md) · [Operator limits](docs/testing/single-operator-deployment.md)
+
 Current source, scoped results and remaining gates: [2026-11-16 release status](docs/testing/current-release-status-20261116.md).
 Main contains the Battle/payment browser and recovery fixes; this is not RC
 sign-off or a claim that the final clean-checkout workflow has run.
@@ -525,58 +527,89 @@ keyword. The [rules/choice/color scope](docs/testing/rules-choice-color-composit
 
 ## Setup
 
-For one foreground Linux operator entry, use the existing
-[private HTTPS launcher](ops/caddy/README.md): configure the qualified Python
-environment, built frontend and pinned Caddy binary, then run
-`MTG_OPERATOR_CONFIG=/absolute/private/operator.json python3 ops/caddy/run.py`.
-It coordinates both internal services; no desktop framework or system service
-is required. The default is loopback-only; an explicit validated private-IPv4
-frontend bind is optional, while the backend stays on loopback. The
-[CF1 native HTTPS qualification](docs/testing/caddy-operator-current-acceptance.md)
-does not qualify LAN deployment, clean-machine installation or client trust in
-Chrome, Brave and Firefox. Certificate trust remains an explicit manual choice.
-The separate development-server commands below are not that packaged entry.
+### Built local table (recommended quick-start)
 
-Use Python 3.12 and Node 24.22.0; hosted workflows pin this exact Node release.
-From the repository root, start the backend:
+Use Linux, CPython **3.12.3** with venv/ensurepip available, and Node **24.22.0**
+with npm. The backend wheel lock targets Linux x86_64/glibc 2.39; other
+interpreters/platforms need separate validation. Install tools first if venv
+creation fails; an incomplete install is not an accepted runtime.
+
+From a clean checkout's repository root:
 
 ```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --host 127.0.0.1 --port 9999 --workers 1
+python3.12 -m venv backend/.venv
+backend/.venv/bin/python -m pip install --require-hashes --only-binary=:all: \
+  -r backend/requirements-py312-linux.lock
+backend/.venv/bin/python -m pip check
+(cd frontend && npm ci && VITE_API_BASE_URL=/api npm run build)
 ```
 
-For the qualified CPython 3.12.3/Linux x86_64/glibc 2.39 environment, a complete
-wheel-hash lock is also available at `backend/requirements-py312-linux.lock`.
-Use it instead of the direct-pin requirements when reproducing the verified
-offline installation. See [hash-lock qualification](docs/testing/python-hash-lock-qualified.md)
-for the exact wheelhouse command and platform limits. Other platforms and
-clean-machine deployment remain separate qualification work.
-The reviewed main lock still pins OpenTelemetry API 1.45.1; its approved 1.45.2
-security update is pending. Check the [current dependency disposition](docs/testing/current-release-status-20261116.md)
-before treating an install as release/security acceptance.
+Package registries are needed for this install. For a verified local wheelhouse,
+use the separate [offline hash-lock procedure](docs/testing/python-hash-lock-qualified.md).
+The current lock includes OpenTelemetry API **1.45.2**; final composed advisory
+scans/dispositions remain separate from installing that patch.
 
-In another terminal, start the frontend:
+For a **fresh installation**, choose a private directory on local storage outside
+the checkout. Resolve the directory so the DB path is canonical (no symlink or
+network mount), then start the built table:
 
 ```bash
-cd frontend
-npm ci
-npm run dev -- --host 127.0.0.1 --port 5173
+umask 077
+mkdir -p "$HOME/.local/share/mtg-deck-testing-lab"
+mtg_data_dir=$(realpath "$HOME/.local/share/mtg-deck-testing-lab")
+chmod 700 "$mtg_data_dir"
+MTG_DATABASE_PATH="$mtg_data_dir/mtg.sqlite3" \
+  MTG_LOCAL_PYTHON="$PWD/backend/.venv/bin/python" \
+  bash scripts/start-local.sh
 ```
 
-Open `http://127.0.0.1:5173`. These commands are local developer access, not
-a LAN or authenticated deployment. The development proxy forwards `/api` and `/card-images` to port 9999.
-Production defaults to same-origin `/api`; configure a reverse proxy for that
-path, stripping its prefix, and `/card-images`. For a separate API origin, set
-`VITE_API_BASE_URL` before building; use HTTPS when the page uses HTTPS.
+Open **http://127.0.0.1:5173**. The launcher serves the built UI, `/api` and
+`/card-images` with one Uvicorn worker; do not also start Vite or another backend.
+Lifespan initializes the schema and built-in decks, so no separate seed command
+is required. Check `http://127.0.0.1:5173/api/health` if startup fails. Preserve
+the same absolute `MTG_DATABASE_PATH` on every later launch; Ctrl-C stops and
+drains the backend normally. The launcher does not install or rebuild anything.
 
-Operation is **private, single-user and single-worker**. Human versus human is
-a shared-device sandbox, not an authenticated two-account game. Do not expose
-the development servers publicly. Per-match process locks are not distributed
-coordination or authorization. `MTG_DEBUG_HANDS=1` plus the UI's debug toggle can
-reveal AI hands for trusted testing; leave it off outside that context.
+**Existing data:** do not silently switch to a fresh file. Startup refuses a
+new relocated path if a legacy `backend/mtg_lab.db` already exists. Keep that DB,
+stop its owner, and arrange a reviewed export/relocation; do not delete it or
+its locks to get past the guard. With no override, the app still uses the
+backend-local default; the maintenance CLI deliberately refuses that default.
+Starting outside the checkout from day one supports the documented
+[backup/restore procedure](docs/testing/saved-game-backup-restore.md).
+
+See [launcher behavior and checks](docs/testing/local-loopback-launcher.md) and
+[single-operator limits](docs/testing/single-operator-deployment.md). This is
+trusted local **HTTP**, with no TLS or account login. Other local processes can
+reach loopback; it is not a multi-user security boundary. Human/human shares
+one operator identity. Keep `MTG_DEBUG_HANDS` off unless deliberately inspecting
+private hands during trusted testing.
+
+### Development and HTTPS are separate modes
+
+For source hot-reload work, the optional two-terminal developer setup is:
+
+```bash
+# Repository root; use the same explicit DB path selected above.
+(cd backend && MTG_DATABASE_PATH="$mtg_data_dir/mtg.sqlite3" \
+  .venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 9999 --workers 1)
+# In another terminal:
+(cd frontend && npm run dev -- --host 127.0.0.1 --port 5173)
+```
+
+Stop the built launcher first. Vite proxies `/api` and `/card-images` to 9999;
+these development servers are not the packaged or authenticated entry. The
+built launcher instead serves same-origin `/api` itself. An externally targeted
+`VITE_API_BASE_URL` build is not the local quick-start configuration.
+
+For the separately configured private HTTPS package, follow
+[ops/caddy/README.md](ops/caddy/README.md), including its built frontend, qualified
+Python, pinned Caddy, private config and single BasicAuth identity. Its supervisor
+coordinates the services; the raw local/developer backend supplies no equivalent
+login. Do not expose either quick-start server publicly. Separate-device LAN and
+manual CA-trust checks remain **user-deferred for RC, not passed**. Local HTTPS,
+native Chrome/Brave/Firefox, final clean-checkout and release gates keep their
+own acceptance requirements.
 
 ## Architecture
 
@@ -677,7 +710,9 @@ source preservation, prior failures and remaining release limits.
 The recent
 declared Python dependency upgrade passes 600 coupled checks across 13 complete
 API, private-choice, library, recovery, session, sideboard and image modules.
-The refreshed requirements advisory scan is clean; remaining TestClient/httpx
+That historical requirements scan was clean for its then-current inputs; it is
+not the final composed advisory result. See the [current review and accepted
+exception](docs/testing/dependency-advisory-review-20261115.md). TestClient/httpx
 and datetime deprecation warnings are not silently suppressed.
 The earlier
 six-patch composition passed 2,024 checks across 83 modules. Separate token/cold
@@ -685,7 +720,8 @@ classification and trigger-context compositions passed 153 and 123 checks.
 Human-flow qualification passed 212 assertions across 16 actual-App scenarios.
 Counts overlap and are not independent matches. Fresh declared Python/npm
 installation passes the 157 affected backend checks and complete frontend
-tests/lint/build; the source-map-js 1.2.2 lockfile has a clean refreshed npm audit.
+tests/lint/build on that historical composition; its source-map-js audit result
+does not cover later dependency changes. Final composed scans remain separate.
 The older 12,890-check full-suite attempt exceeded its two-hour bound at 85%,
 without a terminal summary. Full current-source release acceptance remains open.
 
@@ -750,6 +786,16 @@ not user matches or databases. Preserve existing snapshots when deploying and
 start fresh matches when comparing newly compiled rule behavior.
 
 ## Known Limitations and Next Upgrades
+
+- Historical untyped (`legacy_unknown`) resumed-frame cleanup can prematurely
+  move a separately recast source if the old finisher is selected while the new
+  spell is pending. No normal-LIFO gameplay exploit has been shown. The
+  maintainer keeps this as a documented RC limitation with **two strict xfails**;
+  no guard or snapshot migration is approved. See the
+  [known-failure ledger](docs/testing/known-failures.md).
+- Backup/restore is point-in-time recovery, not replication or cross-version
+  migration. Reconcile saved state before retrying a lost request; preserve its
+  original body/key. Read the [operator procedure](docs/testing/saved-game-backup-restore.md).
 
 - Canonical audits expose incomplete immediate exile/return compilation,
   missing self-land animation and temporary-control admission, and missing

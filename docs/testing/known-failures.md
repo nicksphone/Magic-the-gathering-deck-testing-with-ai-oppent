@@ -6,7 +6,11 @@ failures must remain visible in test summaries and are not RC passes.
 
 ## Legacy untyped resolution-finisher source cleanup
 
-- Owner: Claude/project maintainer. Status: **open policy decision**, no rules fix.
+- Owner: Claude/project maintainer. Decision **2026-11-16: retain as a documented
+  RC limitation**, with no guard or migration approved. No natural-LIFO exploit
+  has been shown; changing stack cleanup would require a new source-review layer
+  and old-save compatibility work without demonstrated normal-gameplay gain.
+  Both strict xfails remain; they are not passes.
 - Tests: `tests/test_legacy_unknown_source_recast.py::test_untyped_historical_finisher_must_not_move_distinct_recast_spell[1]`
   and `[2]`; both strict xfails. The typed-activation controls are ordinary passes.
 - Seam: `finish_stack_resolution` treats `legacy_unknown` as a spell for source
