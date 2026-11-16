@@ -128,3 +128,19 @@ choice; and an actual backend restart while Pact payment is pending. Existing
 HTTP goldens, sequential debts and page refresh are not those browser cases.
 Final-source full-cohort, native vendor, clean-checkout and broader Gate 1/RC
 acceptance remain separate.
+
+
+## Simultaneous-debt extension
+
+Two additional declared canonical midgame human-vs-human episodes cover both
+seats with eight Forests and two genuine Pact casts/searches. No debt or prompt
+is injected. The player selects a real simultaneous-trigger order, pays first
+while the second remains owed in the same upkeep, refreshes at the second prompt
+without changing public state/revision, and pays again. Each payment commits
+once and taps four Forests; drawing starts only after both debts resolve.
+
+Claude host-ran the original isolated branch `654d78c1`: 15 Python tests and
+eight browser PASS lines (six predecessor episodes plus these two). That is
+source-specific evidence, not a composed-program result. The merged #82 base
+already has eight episodes; this intermediate extension expects ten. Composition
+with routing and a new host run remain separate.
