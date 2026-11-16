@@ -1,5 +1,9 @@
 # MTG Deck Testing Lab
 
+Current source, scoped results and remaining gates: [2026-11-16 release status](docs/testing/current-release-status-20261116.md).
+Main contains the Battle/payment browser and recovery fixes; this is not RC
+sign-off or a claim that the final clean-checkout workflow has run.
+
 AI progress: [what is implemented, what remains, and current game coverage](AI-STATUS.md).
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
@@ -474,7 +478,7 @@ to claim support.
 - Ninjutsu preserves explicit source/return choices and the activated source's
   hand-zone identity through snapshots. Pending abilities do not move a card
   that left and reentered hand; legacy missing-reference payloads fail closed.
-  This correction is qualified in the unreleased candidate, not yet deployed.
+  This correction is in main; deployment and broader acceptance are separate.
 - Supported modern and legacy entry observers retain source/controller receipts
   and dispatch complete draw, life, counter and article-mill instructions.
   Ninjutsu entry uses the ordinary zone transition, so entry counters and
@@ -499,7 +503,7 @@ to claim support.
   instructions are separated from supported cycling-trigger paragraphs.
 - Bounded nth-spell triggers for supported complete draw/token clauses, with
   both-player turn resets and cast-versus-copy distinction. Complex rewards
-  remain explicitly unsupported; this addition is in the unreleased candidate.
+  remain explicitly unsupported; this addition is in main, not a deployment claim.
 - Artifact/enchantment creature-token descriptors retain their types, subtypes,
   colors, statistics and keywords rather than treating a card type as its name.
 - Seat-aware legal-action controls, offered cycling-X selection, private card
@@ -541,7 +545,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 9999 --reload
+uvicorn main:app --host 127.0.0.1 --port 9999 --workers 1
 ```
 
 For the qualified CPython 3.12.3/Linux x86_64/glibc 2.39 environment, a complete
@@ -550,17 +554,20 @@ Use it instead of the direct-pin requirements when reproducing the verified
 offline installation. See [hash-lock qualification](docs/testing/python-hash-lock-qualified.md)
 for the exact wheelhouse command and platform limits. Other platforms and
 clean-machine deployment remain separate qualification work.
+The reviewed main lock still pins OpenTelemetry API 1.45.1; its approved 1.45.2
+security update is pending. Check the [current dependency disposition](docs/testing/current-release-status-20261116.md)
+before treating an install as release/security acceptance.
 
 In another terminal, start the frontend:
 
 ```bash
 cd frontend
 npm ci
-npm run dev -- --host 0.0.0.0 --port 5173
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Open `http://<server-ip>:5173`. `0.0.0.0` is a bind address, not a browser
-address. The development proxy forwards `/api` and `/card-images` to port 9999.
+Open `http://127.0.0.1:5173`. These commands are local developer access, not
+a LAN or authenticated deployment. The development proxy forwards `/api` and `/card-images` to port 9999.
 Production defaults to same-origin `/api`; configure a reverse proxy for that
 path, stripping its prefix, and `/card-images`. For a separate API origin, set
 `VITE_API_BASE_URL` before building; use HTTPS when the page uses HTTPS.

@@ -1,6 +1,8 @@
 # AI Status Checklist
 
-Updated: 2026-11-07. Live gameplay source: `3c054542` (unchanged).
+Updated: 2026-11-16. Reviewed main source: `91c0db9d`. Historical result
+sections below retain their own source scope; `3c054542` is not the current
+unchanged gameplay composition. See [current release status](docs/testing/current-release-status-20261116.md).
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -8,6 +10,15 @@ and AI release acceptance are NOT complete. No reliable percentage estimate.**
 Checked items below mean the named implementation exists and has evidence in
 its stated scope. They do not mean optimal decisions or bug-free play across
 all cards. This is the AI checklist, not the whole application's RC checklist.
+
+## Current source and evaluation limits
+
+Main now includes deferred-upkeep payment/continuation and AI payment policy,
+plus agent/resource/pending-effect changes since the old status revision. The
+Battle/payment browser extension covers declared canonical midgame flows, not
+new natural-game strength evidence. The predeclared matrix remains plan/harness
+work with admission blockers; no games, pilot duration or score improvement are
+claimed. The rejected old 110-series prefix is not evaluation evidence.
 
 ## Implemented And Verified In Bounded Checks
 

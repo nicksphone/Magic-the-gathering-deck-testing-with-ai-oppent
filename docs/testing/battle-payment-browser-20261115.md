@@ -65,10 +65,22 @@ belongs in the PR.
   player 1 snow mana pool`; all six episode/negative fixture responses pass that
   parser after the correction. This is fixture evidence, not a browser pass.
 - The local fresh-copy Vite development build completed. Local browser execution
-  was blocked by socket/listen/crashpad permission errors; **no browser episode
-  or warning-removal RED is claimed yet**.
+  was blocked by socket/listen/crashpad permission errors; that local attempt executed no browser episode. Host results are recorded
+  below.
 - Frontend lint and production build passed on the copied source using the
   existing dependency cache. This is not a fresh locked-dependency installation.
-- Host/CI browser counts and the warning-removal RED remain to be recorded.
+- The focused host browser counts and warning-removal RED are recorded below;
+  final combined-source/full-workflow results remain separate.
   Fresh dependency installation, real TCP response loss, the complete browser
   cohort and the wider Gate 1/RC requirements remain separate acceptance work.
+
+## Host result recorded 2026-11-15
+
+Claude ran branch commit `bf347e3f` on a clean clone with npm ci, venv Python
+and Chrome: **six PASS episodes, exit 0** (four canonical-midgame flows and two
+warning negatives). Warning-only baseline passed both seats. Removing only the
+warning node in a disposable clone failed at `Missing explicit unsupported-control
+warning for seat 1`; the mutation was reverted. This is the intended warning RED,
+not a bootstrap failure. The later Vite patch and final full clean-checkout
+composition still require their own acceptance run; see
+[current status](current-release-status-20261116.md).
