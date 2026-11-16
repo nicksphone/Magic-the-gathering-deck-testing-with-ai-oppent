@@ -210,6 +210,10 @@ def resolve_defeat(state, controller, payload):
         return
     from effects.handlers import exile_permanent
     exile_permanent(state, controller, {'target_card_id': target})
+    # The departed Siege leaves combat before the transformed-cast choice pauses
+    # resolution. Keep live targets identical to snapshot restoration (506.4).
+    from rules_engine.combat import reconcile_combat_targets
+    reconcile_combat_targets(state)
     permission = {'permission_kind': 'battle_transformed', 'target_card_id': target,
                   'reference': {'incarnation': object_incarnation(card),
                                 'zone_change_sequence': card.zone_change_sequence},
