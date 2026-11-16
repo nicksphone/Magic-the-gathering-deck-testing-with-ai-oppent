@@ -84,3 +84,37 @@ warning for seat 1`; the mutation was reverted. This is the intended warning RED
 not a bootstrap failure. The later Vite patch and final full clean-checkout
 composition still require their own acceptance run; see
 [current status](current-release-status-20261116.md).
+
+
+## Partial, blocked and player routing (test-only extension)
+
+Six additional declared canonical midgame, human-vs-human episodes cover both
+seats in three cases. Each really casts and resolves Invasion of Zendikar, makes
+its search choice, selects one creature and explicitly chooses its defender in
+the UI. Draft edits must leave the revision unchanged. Accepted attacks and
+blocks are checked against the authoritative state before combat damage:
+
+- Partial Siege attack: defense falls from three to one; both lives stay 20.
+- Player attack with a Siege present: the defender loses two life; defense stays
+  three. The UI must route the attack to the selected player.
+- Blocked Siege attack: an opposing Grizzly Bears is a declared birth input;
+  both Bears trade, defense stays three, and neither player loses life.
+
+None defeats or transforms the Siege. The tests require its protector and visible
+defense to remain correct and no defeat trigger or cast choice to appear. Run the
+focused browser command above; this branch expects twelve PASS lines (six old,
+six routing). This is code awaiting host/browser execution, not a browser result.
+Other staged payment extensions add their own counts only after composition.
+
+Backend checks passed locally: **15 passed, 0 failed** (nine existing fixture
+checks plus six routing cases, two existing dependency deprecation warnings).
+The selected runner byte-inverse test passed; no browser run is claimed.
+Reproduce the backend checks separately:
+
+```bash
+cd backend
+python -B -m pytest -q tests/test_battle_payment_browser_fixture.py tests/test_battle_browser_routing.py
+```
+
+The existing fixture and pinned runner remain unchanged. Simultaneous-debt
+continuation and pending-Pact backend restart have separate branches/evidence.
