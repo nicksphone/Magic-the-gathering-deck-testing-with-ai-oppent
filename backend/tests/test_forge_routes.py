@@ -136,7 +136,9 @@ class ForgeRouteTests(unittest.TestCase):
         self.assertEqual(self.manager.calls, [])
 
     def test_internal_runtime_error_is_not_echoed(self):
-        from native_forge import ForgeError
+        # Use the class forge_routes catches: test_native_forge replaces sys.modules['native_forge'],
+        # so a fresh import here can be a different ForgeError depending on test order.
+        from forge_routes import ForgeError
 
         def unavailable(*_args):
             raise ForgeError(503, "forge_unavailable", "Forge runtime unavailable")
