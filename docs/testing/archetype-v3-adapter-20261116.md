@@ -145,3 +145,31 @@ checks. It used the existing local application environment, not a fresh
 hash-locked installation. The 12 v3 module/test source hashes matched before
 and after the run and matched the branch files. The entire backend suite and
 host/CI execution are not claimed by this scoped result.
+
+
+## Card-order fidelity revision (not a new pilot result)
+
+The stopped trace1 pilot and its root cause are documented in
+[the diagnosis](archetype-v3-trace1-diagnosis-20261116.md). Its failed evidence
+remains unchanged. The candidate adapter uses **trace wire schema 4** and a new
+record-chain domain. Initial/final and checkpoint records retain ordered card-ID
+lists; each action binds before/after order digests. Replay validates that order
+against genuine transitions, restores it during each serde restart, and preserves
+it in selected direct-handler snapshots. Canonical full-state hashes retain their
+v2 value semantics; order is additional authenticated evidence. AI input-order
+mutation also refuses. No logs, rules, AI or historical source pins are changed.
+
+The CLI/module names and request envelope remain v3; the trace format is v4.
+Old trace1 plans/records are not silently upgraded. After review, choose a fresh
+ID such as `archetype-pilot-20261116-v3-trace2` and issue a new plan against the
+exact merged candidate/runtime. Do not reuse the earlier example's trace1 ID,
+reset the registry or resume its stopped schedule. No new plan or pilot has been
+issued/launched by this revision.
+
+
+Fidelity candidate checks on the existing local application environment:
+**91 passed, 0 failed**, with four existing Pydantic `datetime.utcnow()` warnings,
+across the game/trace/worker/plan v3 modules. This includes the real SBA
+RED/GREEN, unchanged v2 transition digests and positive/negative direct-handler
+order checks. It is not a fresh install, full backend or new pilot result;
+broader composed verification is recorded separately when run.

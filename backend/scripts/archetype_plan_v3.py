@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 
 from scripts.archetype_matrix_plan import build_plan as build_source_matrix
-from scripts.archetype_trace_v3 import CHECKPOINT_INTERVAL, MAX_TRACE_BYTES, digest, is_sha
+from scripts.archetype_trace_v3 import CHECKPOINT_INTERVAL, MAX_TRACE_BYTES, TRACE_SCHEMA, digest, is_sha
 
 MAX_CPU_SECONDS = 1200
 MAX_WALL_SECONDS = 1500
@@ -40,9 +40,10 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
     policy = deepcopy(matrix['policy'])
     policy.update(max_seconds=MAX_WALL_SECONDS, max_cpu_seconds_per_game=MAX_CPU_SECONDS)
     policy['health_gate']['max_resource_limit_cells'] = 0
-    trace = {'schema':3,'checkpoint_interval':CHECKPOINT_INTERVAL,'max_bytes':MAX_TRACE_BYTES,
+    trace = {'schema':TRACE_SCHEMA,'checkpoint_interval':CHECKPOINT_INTERVAL,'max_bytes':MAX_TRACE_BYTES,
              'progress_interval':16,'state_hash':'sha256_canonical_complete_snapshot',
-             'chain_hash':'sha256_domain_mtg-archetype-v3-record',
+             'chain_hash':'sha256_domain_mtg-archetype-v4-record',
+             'cards_order':'explicit_initial_checkpoint_final_lists_and_per_action_digests',
              'extra_checkpoints':['handler_first_every100_last','choice_change','pregame_completion','final'],
              'sequential_replay_every_action':True,'serde_every_action':True,
              'ai_mutation_check':True,'quota_overflow':'trace_limit_incomplete_no_truncation'}
