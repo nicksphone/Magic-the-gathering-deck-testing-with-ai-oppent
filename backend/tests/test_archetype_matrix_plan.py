@@ -12,14 +12,14 @@ def outcomes(plan):
     return [dict(cell_id=c['cell_id'], revision=plan['revision'], status='resolved', winner=c['deck_a_seat'], termination='life', trace_sha256='b'*64) for c in plan['cells']]
 
 def test_schedule(plan):
-    assert len(plan['decks']) == 11 and len(plan['cells']) == 2200
-    assert len({c['cell_id'] for c in plan['cells']}) == 2200
-    assert all(sum(c['seed']==s for c in plan['cells'])==110 for s in SEEDS)
+    assert len(plan['source_decks']) == 11 and len(plan['decks']) == 9 and len(plan['cells']) == 1440
+    assert len({c['cell_id'] for c in plan['cells']}) == 1440
+    assert all(sum(c['seed']==s for c in plan['cells'])==72 for s in SEEDS)
     assert plan['execution_implemented'] is False and plan['policy']['resume'] is False
 
 def test_all_win_and_isolation(plan):
     rows=outcomes(plan); original=deepcopy([plan,rows]); result=summarize(plan,rows)
-    assert len(result['pairs']) == 55
+    assert len(result['pairs']) == 36
     assert all(p['paired_score_ci95']==[1,1] and p['complete_seed_pairs']==20 for p in result['pairs'])
     assert [plan,rows] == original and result['strength_claim'] is False
 
@@ -71,6 +71,14 @@ def test_health_and_resource_policy_predeclared(plan):
 def test_actual_seed_only_admission_screen():
     from scripts.archetype_matrix_plan import admission_report
     r=admission_report()
-    assert len(r['decks'])==11 and r['matrix_runnable'] is False
+    assert len(r['decks'])==11 and r['matrix_runnable'] is True and r['original_roster_runnable'] is False
     assert all(not d['canonical_missing'] for d in r['decks'])
     assert {d['deck'] for d in r['decks'] if d['screen']=='stop'}=={'Burn','Mono Red Aggro'}
+
+
+def test_exclusions_are_whole_decks_and_old_seeds_never_scheduled(plan):
+    assert set(plan["excluded_decks"])=={"Burn","Mono Red Aggro"}
+    assert not (set(plan["decks"]) & set(plan["excluded_decks"]))
+    assert all(c["deck_a"] not in plan["excluded_decks"] and c["deck_b"] not in plan["excluded_decks"] for c in plan["cells"])
+    assert not (set(plan["seeds"]) & set(range(2026111501,2026111521)))
+    assert plan["policy"]["health_gate"]["max_resource_limit_cells"]==14

@@ -9,7 +9,9 @@ from pathlib import Path
 import random
 import re
 
-SEEDS = list(range(2026111501, 2026111521))
+SEEDS = list(range(2026111801, 2026111821))
+EXCLUSIONS = {name: "Seed-only admission stops on Rift Bolt suspend and Searing Blaze linked/landfall damage; no rules bypass"
+              for name in ("Burn", "Mono Red Aggro")}
 STATUSES = {"resolved", "draw", "timeout", "tick_limit", "turn_limit", "error", "replay_divergence"}
 
 
@@ -24,17 +26,21 @@ def build_plan(revision, builtin_source):
     decks = ast.literal_eval(next(n.value for n in tree.body if isinstance(n, ast.AnnAssign)
                                  and isinstance(n.target, ast.Name) and n.target.id == "BUILTIN_DECKS"))
     names = sorted(decks)
-    if len(names) != 11:
+    if len(names) != 11 or not set(EXCLUSIONS).issubset(names):
         raise ValueError("Roster changed; review the plan before execution")
+    source_decks = decks
+    decks = {name: source_decks[name] for name in names if name not in EXCLUSIONS}
+    names = sorted(decks)
     cells = []
     for a, b in combinations(names, 2):
         for seed in SEEDS:
             for seat in (1, 2):
                 identity = {"deck_a": a, "deck_b": b, "seed": seed, "deck_a_seat": seat}
                 cells.append({"cell_id": digest(identity), **identity})
-    plan = {"schema": 1, "run_id": "archetype-20261115-v1", "revision": revision,
+    plan = {"schema": 1, "run_id": "archetype-admitted-20261116-v2", "revision": revision,
             "builtin_sha256": hashlib.sha256(builtin_source.encode()).hexdigest(),
-            "decks": decks, "seeds": SEEDS.copy(), "cells": cells,
+            "source_decks": source_decks, "decks": decks, "excluded_decks": EXCLUSIONS.copy(),
+            "seeds": SEEDS.copy(), "cells": cells,
             "policy": {"unit": "single_game", "difficulty": "master", "sideboard": "none",
                        "max_seconds": 120, "max_ticks": 10000, "max_turns": 100,
                        "workers": 2, "cpu_cores_per_worker": 1, "max_cpu_seconds_per_game": 90,
@@ -44,7 +50,7 @@ def build_plan(revision, builtin_source):
                        "health_gate": {"crashes": 0, "illegal_accepted_actions": 0,
                                        "replay_divergences": 0, "parity_divergences": 0,
                                        "missing_traces": 0, "missing_cells": 0,
-                                       "max_resource_limit_fraction": 0.01,
+                                       "max_resource_limit_fraction": 0.01, "max_resource_limit_cells": 14,
                                        "all_decks_admitted": True, "accepts_ai_strength": False},
                        "timeout_score": None, "draw_score": 0.5, "deck_out": "engine_rules",
                        "resume": False, "retries": 0, "legacy_results": "forbidden",
@@ -81,7 +87,9 @@ def admission_report():
                         "known_gaps": [{"card": g["card_name"], "reasons": g["mechanics"]} for g in gaps],
                         "screen": "stop" if missing or gaps else "pass_known_gap_screen"})
     return {"scope": "seed-only canonical readiness and exploratory known-gap screen; not runtime certification",
-            "decks": results, "matrix_runnable": all(row["screen"] == "pass_known_gap_screen" for row in results)}
+            "decks": results, "excluded_decks": EXCLUSIONS.copy(),
+            "original_roster_runnable": all(row["screen"] == "pass_known_gap_screen" for row in results),
+            "matrix_runnable": all(row["screen"] == "pass_known_gap_screen" for row in results if row["deck"] not in EXCLUSIONS)}
 
 
 def paired_interval(scores, seed):
@@ -93,9 +101,9 @@ def paired_interval(scores, seed):
 
 def summarize(plan, records):
     # Rebuild the declared roster/schedule/policy to reject edited budgets/cells.
-    builtin = "BUILTIN_DECKS: dict[str, str] = " + repr(plan["decks"])
+    builtin = "BUILTIN_DECKS: dict[str, str] = " + repr(plan["source_decks"])
     rebuilt = build_plan(plan["revision"], builtin)
-    for key in ("schema", "run_id", "seeds", "cells", "policy", "execution_implemented"):
+    for key in ("schema", "run_id", "source_decks", "decks", "excluded_decks", "seeds", "cells", "policy", "execution_implemented"):
         if plan[key] != rebuilt[key]:
             raise ValueError("Plan differs from predeclared policy")
     if type(records) is not list:

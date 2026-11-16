@@ -1,5 +1,9 @@
 # Archetype matrix proposal — no measured games
 
+**Current proposal is version 2 below (2026-11-16), with two explicit whole-deck
+exclusions. Earlier eleven-deck counts/policies are retained as the superseded
+v1 design, not instructions to run it or claims that its admission passed.**
+
 This branch is a plan and inert planning/analysis harness only. It neither runs
 AI games nor changes AI, rules, decks or source pins. Claude must review this
 plan before a separate execution adapter and measured run. No earlier 110-series
@@ -178,3 +182,41 @@ lag implemented features and need separate review/qualification, not bypass.
 Rerun on the final measured revision. Do not omit the two stopped decks, swap
 cards, or infer that unflagged mechanics work. No execution adapter is added by
 these amendments.
+
+
+## Version 2: explicitly admitted nine-deck scope (2026-11-16)
+
+Decision under the maintainer's authorized exclusion option: do not change rules
+or relax coverage diagnostics to force Burn/Mono Red admission. Existing Suspend
+and linked-landfall damage implementations have context-specific contracts; the
+seed-only screen still lacks that admission context. Treating these as two small
+missing handlers would overstate correctness. Their warnings remain unchanged.
+
+Predeclare **whole-deck exclusions** of Burn and Mono Red Aggro for this new run,
+with reasons embedded in `excluded_decks`. Keep all eleven original deck texts
+in `source_decks`; schedule exactly the other nine (36 pairs). No card swaps or
+hidden filtering: `decks` contains nine exact original lists. The `admission`
+command reports both original-roster failure and nine-deck screen success. A
+passing screen is still not runtime certification. Recheck before execution.
+
+New run ID: `archetype-admitted-20261116-v2`. Fresh seeds **2026111801–2026111820**,
+both orientations: **1,440 single games**. No v1/110-series/pilot records may be
+imported. This cannot close all-archetype/full-eleven-deck evaluation or make
+claims about the excluded decks. Restoring a deck later requires a new reviewed
+plan and fresh complete run, not appending games to v2.
+
+Unchanged worker/limit policy: two workers, one core/2 GiB each, 90 CPU-seconds,
+120 wall-seconds, 10,000 actions, 100 turns per game. Ceiling is **48 worker-hours,
+24 elapsed hours at two workers plus overhead**. Expected duration remains
+UNKNOWN pending a new separate v2 pilot: nine adjacent pairs around the sorted
+scheduled-roster cycle, seeds **2026111901/2026111902**, both orientations =36
+games. Forecast from actual measured times before full-run budget approval.
+Crash/sleep invalidates the run; new ID/output directory, no resume.
+
+The frozen health gate applies only to v2: all 1,440 cells/traces, zero crashes/
+illegal accepted actions/replay/parity divergences; at most 1% resource-limited
+cells, i.e. **14 cells maximum** (not rounding 14.4 up). Unresolved cells still
+enter bounds, never draw/win adjudication. Same engine seed/swapped seats does
+not imply deck-fixed hands. Seed-block CI and hidden-information/trace policies
+remain as above. AI strength is not accepted. No adapter or game execution is
+added by this version change.
