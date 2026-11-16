@@ -12,7 +12,7 @@ def main():
     import main as app
     from fastapi.testclient import TestClient
     from tests.temporary_characteristics_http_fixture import owned_database
-    from tests.test_saved_game_backup_restore import saved_rows
+    from tests.saved_game_rows import saved_rows
 
     def stored():
         # JSON representation only converts SQLite tuples to lists, no filtering.

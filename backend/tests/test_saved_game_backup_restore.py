@@ -19,15 +19,8 @@ from sqlmodel import Session, create_engine
 from persistence.capacity import owner_for_engine
 from scripts.verify_storage_restore import fingerprint, verify_restore
 from tests.temporary_characteristics_http_fixture import owned_database
+from tests.saved_game_rows import saved_rows  # noqa: F401
 from tests.test_battle_http_recovery import combat, headers, recovery_api  # noqa: F401
-
-
-def saved_rows(path):
-    """Application records only; capacity epochs legitimately change on startup."""
-    queries = {'activematchrecord': 'SELECT * FROM activematchrecord ORDER BY id',
-               'matchstartreceipt': 'SELECT * FROM matchstartreceipt ORDER BY key'}
-    with closing(sqlite3.connect(path)) as conn:
-        return {name: conn.execute(query).fetchall() for name, query in queries.items()}
 
 
 def test_registered_owner_backup_restores_populated_schema_without_overwrite(tmp_path, monkeypatch):
