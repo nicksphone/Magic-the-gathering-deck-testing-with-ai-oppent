@@ -203,3 +203,21 @@ expected-version fixture or production source was edited in this review.
 These decisions supersede the earlier awaiting-decision wording. Gate 3 #4
 remains OPEN until the selected remediation branches pass CI and the final
 composed dependency scans/dispositions are confirmed.
+
+## Applied patch status — 2026-11-16
+
+Reviewed main `51d75a3f` already contains PR #66 (`c9a2f0c5`, patch commit
+`8c9cdb99`). OpenTelemetry API **1.45.2 is applied**, not merely proposed:
+`backend/requirements-py312-linux.lock` selects wheel SHA256
+`2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34`.
+The hosted-clean wheel/metadata inventory and synthetic runtime expectation are
+aligned. All 28 application lock rows remain consistent; the installer is a
+separate 29th inventory row. No second bump is needed.
+
+This supersedes the earlier pending-integration wording. Vite 6.4.6 and the
+accepted temporary minimatch exception remain as recorded. The **final composed
+scan is still pending**: a permitted repository user must dispatch **Dependency
+Advisory Review** on the intended main revision and retain its run ID/reports.
+A changed lock is not by itself a successful scan or fresh-install/CI result.
+Gate 3 #4 stays OPEN until that run and the maintainer dispositions are confirmed.
+This follow-up changes only this document; no dependency pin is changed again.
