@@ -8,6 +8,7 @@ import main
 from persistence.db import engine
 from persistence.repository import Repository
 from tests.battle_payment_browser_fixture import midgame, unsupported_midgame
+from tests.battle_payment_simultaneous_fixture import simultaneous_midgame
 from tests.ui_v2_fixture_server import app, publish
 
 
@@ -25,6 +26,14 @@ def unsupported(seat: int = 1):
     if seat not in (1, 2):
         raise HTTPException(422, "Expected seat one or two")
     state, ids = unsupported_midgame(seat)
+    return publish_midgame(state, ids, seat, "human_vs_human")
+
+
+@app.post("/fixture/battle-payment/simultaneous")
+def simultaneous(seat: int = 1):
+    if seat not in (1, 2):
+        raise HTTPException(422, "Expected seat one or two")
+    state, ids = simultaneous_midgame(seat)
     return publish_midgame(state, ids, seat, "human_vs_human")
 
 

@@ -84,3 +84,30 @@ warning for seat 1`; the mutation was reverted. This is the intended warning RED
 not a bootstrap failure. The later Vite patch and final full clean-checkout
 composition still require their own acceptance run; see
 [current status](current-release-status-20261116.md).
+
+
+## Simultaneous-debt continuation (test-only extension)
+
+Two additional **declared canonical midgame**, human-vs-human episodes cover both
+seats. At birth the variant has eight Forests and two library search targets;
+no obligation or pending choice is injected. Both Pacts are really cast and
+searched, and the player chooses the order of their simultaneous upkeep triggers
+through the rendered control. The first payment must leave the second debt owed
+in the same upkeep. A page refresh at the second prompt must preserve the full
+public state and revision; each payment commits exactly once, taps four Forests,
+and permits drawing only after both obligations have resolved.
+
+Local fixture, engine and serializer checks: **15 passed, 0 failed** (nine existing
+plus six new; existing dependency cache, not a fresh lock install). The selected
+runner byte-inverse contract also passes. Browser acceptance is separate. Run:
+
+```bash
+cd backend
+python -B -m pytest -q tests/test_battle_payment_browser_fixture.py tests/test_battle_payment_simultaneous.py
+```
+
+The focused browser command above now expects eight PASS lines (the previous six
+plus these two). This extension has not yet been host/browser-run. The separately
+staged unaffordable-Pact extension adds two more episodes when composed; its
+results must be recorded against that combined revision. Partial/blocked Battle
+UI routing and a real backend restart during a pending Pact remain open.
