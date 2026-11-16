@@ -91,6 +91,7 @@ while IFS= read -r -d '' path; do
   install -D "$path" "$scratch/$path"
 done < <(git ls-files -z --cached --others --exclude-standard -- backend frontend)
 cp "$scratch/frontend/tests/ui_fixture_server.py" "$scratch/frontend/tests/ui_v2_fixture_server.py" "$scratch/backend/tests/"
+cp "$scratch/frontend/tests/battle_payment_fixture_server.py" "$scratch/backend/tests/"
 # Private Git inventory outside the test root lets independent gates recopy the
 # same frozen source, without making guarded fixture imports look like live Git.
 env -u GIT_DIR -u GIT_WORK_TREE git init --bare -q "$profile/source.git"
@@ -109,7 +110,7 @@ VITE
 cd "$scratch"
 
 start_backend() {
-  (cd "$scratch/backend" && exec setsid env MTG_TRUSTED_ORIGINS=http://127.0.0.1:15173 "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec setsid env MTG_TRUSTED_ORIGINS=http://127.0.0.1:15173 "$python_bin" -m uvicorn tests.battle_payment_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
@@ -179,6 +180,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && run_browser_program "browser-life-conversion.mjs" timeout 120s node tests/browser-life-conversion.mjs)
 (cd frontend && run_browser_program "browser-land-types.mjs" timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && run_browser_program "browser-human-actions.mjs" timeout 300s node tests/browser-human-actions.mjs)
+(cd frontend && run_browser_program "browser-battle-payments.mjs" timeout 300s node tests/browser-battle-payments.mjs)
 (cd frontend && run_browser_program "browser-zone-keyword-actions.mjs" timeout 300s node tests/browser-zone-keyword-actions.mjs)
 (cd frontend && run_browser_program "browser-built-app-mana-routes.mjs" timeout 180s node tests/browser-built-app-mana-routes.mjs)
 (cd frontend && run_browser_program "browser-ordered-targets.mjs" timeout 120s node tests/browser-ordered-targets.mjs)

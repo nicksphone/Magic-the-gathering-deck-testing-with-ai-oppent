@@ -271,6 +271,17 @@ test('ordinary-only launcher hook preserves the entire original program by byte 
   const zoneScenario = '(cd frontend && run_browser_program "browser-zone-keyword-actions.mjs" timeout 300s node tests/browser-zone-keyword-actions.mjs)\n';
   assert.equal(source.split(zoneScenario).length, 2);
   source = source.replace(zoneScenario, '');
+  // Undo exactly the separately exercised Battle payment scenario, its disposable
+  // fixture-server copy and server selection before the old hash. The original-program hash is unchanged.
+  const battleScenario = '(cd frontend && run_browser_program "browser-battle-payments.mjs" timeout 300s node tests/browser-battle-payments.mjs)\n';
+  assert.equal(source.split(battleScenario).length, 2);
+  source = source.replace(battleScenario, '');
+  const battleCopy = 'cp "$scratch/frontend/tests/battle_payment_fixture_server.py" "$scratch/backend/tests/"\n';
+  assert.equal(source.split(battleCopy).length, 2);
+  source = source.replace(battleCopy, '');
+  const battleApp = 'tests.battle_payment_fixture_server:app';
+  assert.equal(source.split(battleApp).length, 2);
+  source = source.replace(battleApp, 'tests.ui_v2_fixture_server:app');
   // Undo only the separately tested program-reporting layer before the old hash.
   let wrapped = 0;
   source = source.replace(/run_browser_program ("[a-z0-9._-]+"|"\$scenario") (timeout \d+s )?(node|bash) ("tests\/\$scenario"|(?:frontend\/)?tests\/[a-z0-9._-]+)/g,
