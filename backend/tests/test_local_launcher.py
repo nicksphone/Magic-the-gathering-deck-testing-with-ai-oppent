@@ -19,9 +19,10 @@ def test_launcher_executes_one_loopback_factory_worker(tmp_path):
     (root/'frontend/dist').mkdir(parents=True); (root/'frontend/dist/index.html').write_text('<html>built</html>')
     script=root/'scripts/start-local.sh'; script.write_bytes(SCRIPT.read_bytes())
     fake=tmp_path/'python'; record=tmp_path/'argv.json'
-    fake.write_text('#!'+os.sys.executable+'\nimport json,os,sys\nopen(os.environ["LAUNCH_RECORD"],"w").write(json.dumps({"argv":sys.argv[1:],"origin":os.environ["MTG_TRUSTED_ORIGINS"],"cwd":os.getcwd(),"uvicorn_env":[k for k in os.environ if k.startswith("UVICORN_")]}))\n')
+    fake.write_text('#!'+os.sys.executable+'\nimport json,os,sys\nopen(os.environ["LAUNCH_RECORD"],"w").write(json.dumps({"argv":sys.argv[1:],"self":sys.argv[0],"origin":os.environ["MTG_TRUSTED_ORIGINS"],"cwd":os.getcwd(),"uvicorn_env":[k for k in os.environ if k.startswith("UVICORN_")]}))\n')
     fake.chmod(0o700)
-    result=subprocess.run(['bash',str(script)],env={**os.environ,'MTG_LOCAL_PYTHON':str(fake),'LAUNCH_RECORD':str(record),'WEB_CONCURRENCY':'8','UVICORN_RELOAD':'1','UVICORN_LIFESPAN':'off'},capture_output=True,text=True,timeout=10)
+    venv_python=tmp_path/'venv-python'; venv_python.symlink_to(fake)  # like a venv's bin/python
+    result=subprocess.run(['bash',str(script)],env={**os.environ,'MTG_LOCAL_PYTHON':str(venv_python),'LAUNCH_RECORD':str(record),'WEB_CONCURRENCY':'8','UVICORN_RELOAD':'1','UVICORN_LIFESPAN':'off'},capture_output=True,text=True,timeout=10)
     assert result.returncode==0,result.stderr
     row=json.loads(record.read_text()); args=row['argv']
     assert args[:4]==['-m','uvicorn','local_web:create_app','--factory']
@@ -29,6 +30,7 @@ def test_launcher_executes_one_loopback_factory_worker(tmp_path):
     assert '--reload' not in args and row['origin']=='http://127.0.0.1:5173'
     assert row['uvicorn_env']==[] and args[args.index('--lifespan')+1]=='on'
     assert Path(row['cwd'])==root/'backend'
+    assert row['self']==str(venv_python)  # symlink not resolved to its target
 
 
 @pytest.mark.parametrize('port',['80','65536','0','not-a-port'])

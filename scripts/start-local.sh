@@ -16,7 +16,8 @@ if [[ ! -f "$root/frontend/dist/index.html" || -L "$root/frontend/dist" || -L "$
   echo 'Missing regular frontend build: run npm ci and npm run build in frontend first.' >&2
   exit 2
 fi
-python_bin=$(realpath "$python_bin")
+# -s: keep a venv interpreter symlink; resolving it would drop the venv site-packages.
+python_bin=$(realpath -s "$python_bin")
 # Uvicorn's environment must not enable reload or disable ownership lifespan.
 for setting in ${!UVICORN_@}; do unset "$setting"; done
 unset WEB_CONCURRENCY
