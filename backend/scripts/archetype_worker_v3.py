@@ -8,7 +8,7 @@ import sys
 import time
 
 from scripts.archetype_plan_v3 import MAX_CPU_SECONDS, MAX_WALL_SECONDS, MEMORY_BYTES, validate_plan
-from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
+from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TRACE_SCHEMA, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
 
 
 def validate_limits(cpu, cpu_seconds, memory_bytes):
@@ -144,7 +144,7 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
         raise ValueError('Verification trace/counter binding differs')
     with trace.open('rb') as stream:
         first=next(read_records(stream))
-    expected={'identity':identity,'schema':3,'deck_a':decks[0],'deck_b':decks[1],
+    expected={'identity':identity,'schema':TRACE_SCHEMA,'deck_a':decks[0],'deck_b':decks[1],
               'seed':cell['seed'],'game_id':cell['cell_id'],'policy':policy}
     if any(digest(first.get(k))!=digest(v)for k,v in expected.items()):
         raise ValueError('Verification header differs from admitted cell')
@@ -209,7 +209,7 @@ def validate_request(request):
 def request_identity(request):
     return {'cell_id':request['cell']['cell_id'],'plan_sha256':digest(request['plan']),
             'source_sha256':digest(request['source']),'runtime_sha256':request['runtime_sha256'],
-            'trace_schema':3}
+            'trace_schema':TRACE_SCHEMA}
 
 
 def main(argv=None):
@@ -254,7 +254,7 @@ def main(argv=None):
             result.update(game_phase(decks,request['cell'],request['plan']['policy'],identity,
                                      directory,accounting))
         else:
-            from scripts.archetype_matrix_api_check import HandlerChecks
+            from scripts.archetype_handler_v3 import HandlerChecks
             verify_started=time.monotonic()
             with HandlerChecks(database) as handler:
                 result.update(verify_phase(decks,request['cell'],request['plan']['policy'],identity,

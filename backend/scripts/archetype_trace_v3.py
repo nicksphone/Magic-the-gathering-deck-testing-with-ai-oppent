@@ -5,7 +5,8 @@ import json
 import re
 import time
 
-MAX_TRACE_BYTES = 64*1024*1024
+MAX_TRACE_BYTES = 128*1024*1024
+TRACE_SCHEMA = 4
 CHECKPOINT_INTERVAL = 64
 CHAIN_KEYS = frozenset({'sequence', 'previous_record_sha256', 'record_sha256'})
 KINDS = frozenset({'initial', 'action', 'rejected', 'final'})
@@ -24,7 +25,7 @@ def digest(value):
 
 
 def record_digest(value):
-    return hashlib.sha256(b'mtg-archetype-v3-record\0'+canonical(value)).hexdigest()
+    return hashlib.sha256(b'mtg-archetype-v4-record\0'+canonical(value)).hexdigest()
 
 
 def is_sha(value):

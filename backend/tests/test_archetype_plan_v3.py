@@ -24,7 +24,7 @@ def test_pilot_has_exact_fresh_36_cells_and_combined_budgets():
     assert p['policy']['max_cpu_seconds_per_game']==1200 and p['policy']['max_seconds']==1500
     assert p['policy']['difficulty']=='master' and p['policy']['workers']==2
     assert p['trace_policy']['checkpoint_interval']==64
-    assert p['trace_policy']['max_bytes']==64*1024**2
+    assert p['trace_policy']['max_bytes']==128*1024**2
     assert p['accepts_matrix_or_strength'] is False and p['statistical_gate_complete'] is False
     assert p['worker_hour_budget']=={'campaign':48,'pilot_cells':15,'health_cells':30,'overhead':3}
     assert module.execution_matrix(p)['decks']==p['source_matrix']['decks']
@@ -85,3 +85,30 @@ def test_issued_plan_can_freeze_runtime_while_unbound_preview_is_not_an_executio
     assert issued['runtime_sha256']=='b'*64
     subject().validate_plan(issued)
     with pytest.raises(ValueError):subject().build_plan('a'*40,'archetype-pilot-20261116-v3-issued',runtime_sha256='bad')
+
+
+def test_order_fidelity_policy_bumps_trace_format_and_refuses_old_plan_contract():
+    p = plan()
+    assert p['trace_policy']['schema'] == 4
+    assert p['trace_policy']['chain_hash'] == 'sha256_domain_mtg-archetype-v4-record'
+    assert p['trace_policy']['cards_order'] == 'explicit_initial_checkpoint_final_lists_and_per_action_digests'
+    p['trace_policy']['schema'] = 3
+    p['trace_policy']['chain_hash'] = 'sha256_domain_mtg-archetype-v3-record'
+    p['trace_policy'].pop('cards_order')
+    with pytest.raises(ValueError): subject().validate_plan(p)
+
+
+def test_trace2_quota_proposal_is_128MiB_without_relaxing_checkpoints_or_time_budgets():
+    from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TraceWriter
+    import io
+    p = plan()
+    assert MAX_TRACE_BYTES == 128*1024**2
+    assert p['trace_policy']['max_bytes'] == MAX_TRACE_BYTES
+    assert TraceWriter(io.BytesIO()).max_bytes == MAX_TRACE_BYTES
+    assert p['trace_policy']['checkpoint_interval'] == 64
+    assert p['trace_policy']['extra_checkpoints'] == ['handler_first_every100_last','choice_change','pregame_completion','final']
+    assert p['policy']['max_cpu_seconds_per_game'] == 1200
+    assert p['policy']['max_seconds'] == 1500 and p['worker_hour_budget']['campaign'] == 48
+    p['trace_policy']['max_bytes'] = 64*1024**2
+    with pytest.raises(ValueError): subject().validate_plan(p)
+    with pytest.raises(ValueError): TraceWriter(io.BytesIO(), max_bytes=MAX_TRACE_BYTES+1)

@@ -67,7 +67,7 @@ def test_noncheckpoint_actions_have_only_digests_and_checkpoint64_is_exact():
     assert outcome['accepted_actions']==70
     assert 'checkpoint' not in actions[62] and 'checkpoint' not in actions[64]
     assert actions[63]['checkpoint_reasons']==['periodic']
-    assert set(actions[63]['checkpoint'])=={'before','after'}
+    assert set(actions[63]['checkpoint'])=={'before','after','before_cards_order','after_cards_order'}
     assert 'handler' in actions[0]['checkpoint_reasons']
     assert 'pregame' in actions[1]['checkpoint_reasons']
     assert 'final' in actions[-1]['checkpoint_reasons']
@@ -78,7 +78,7 @@ def test_noncheckpoint_actions_have_only_digests_and_checkpoint64_is_exact():
 
 
 @pytest.mark.parametrize('field',['actor','action','legal_moves_sha256','before_sha256',
-    'after_sha256','rng_sha256','progress','log_delta','checkpoint','missing_checkpoint'])
+    'after_sha256','rng_sha256','before_cards_order_sha256','after_cards_order_sha256','progress','log_delta','checkpoint','missing_checkpoint'])
 def test_rechained_semantic_corruption_fails_at_first_action(field):
     rows,_,_=make_trace();rows=deepcopy(rows);row=rows[1]
     if field=='actor':row['actor']=2
@@ -152,7 +152,245 @@ def test_replay_refuses_self_consistent_actions_after_the_declared_tick_boundary
               emit=old.append,choose=choose)
     rows[0]['policy']['max_ticks']=4
     rows[4]['checkpoint_reasons']=['final']
-    rows[4]['checkpoint']={'before':old[4]['before'],'after':old[4]['after']}
+    rows[4]['checkpoint']={'before':old[4]['before'],'after':old[4]['after'],
+                           'before_cards_order':rows[0]['cards_order'].copy(),
+                           'after_cards_order':rows[0]['cards_order'].copy()}
     with pytest.raises(subject().TraceDivergence) as error:
         subject().replay_trace(iter(rechained(rows)))
     assert error.value.step==4
+
+
+def simultaneous_combat_fixture(monkeypatch):
+    """Declared combat birth, then real attack/block/damage-choice transitions."""
+    import json
+    from pathlib import Path
+    from game_state.state import Step, Zone
+    from rules_engine.action_validation import checked_action
+    from rules_engine.engine import RulesEngine
+    from scripts import archetype_matrix_game as previous
+    original = previous.initial_state
+    root = Path(__file__).parent/'fixtures'
+    raw_a = json.loads((root/'library_canonical_88/grizzly-bears-scryfall-raw.json').read_text())
+    raw_b = json.loads((root/'ai_decisions_canonical_cdba/runeclaw-bear-scryfall-raw.json').read_text())
+    a = [{**raw_a, 'card_name':raw_a['name'], 'quantity':60}]
+    b = [{**raw_b, 'card_name':raw_b['name'], 'quantity':60}]
+
+    def born(deck_a, deck_b, seed, game_id):
+        state = original(deck_a, deck_b, seed, game_id)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.turn = 3
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_ATTACKERS
+        ids = []
+        for pid in (1, 2, 2):
+            cid = next(cid for cid, card in state.cards.items() if card.owner == pid and card.zone != Zone.BATTLEFIELD)
+            card = state.cards[cid]
+            getattr(state.players[pid], card.zone.value).remove(cid)
+            card.move_to_zone(Zone.BATTLEFIELD)
+            state.players[pid].battlefield.append(cid)
+            card.summoning_sick = False
+            ids.append(cid)
+        # Dictionary order is an engine-observable representation, not a rules edit.
+        state.cards = dict(reversed(list(state.cards.items())))
+        rules = RulesEngine()
+        state = checked_action(state, rules, 1, {'type':'attack', 'attackers':[ids[0]]})
+        for _ in range(12):
+            if state.step == Step.DECLARE_BLOCKERS:
+                break
+            state = checked_action(state, rules, state.priority_player, {'type':'pass_priority'})
+        assert state.step == Step.DECLARE_BLOCKERS
+        state = checked_action(state, rules, 2, {'type':'block', 'blocks':{ids[0]:ids[1:]}})
+        assert state.step == Step.DECLARE_BLOCKERS and state.blocks
+        return state
+
+    monkeypatch.setattr(previous, 'initial_state', born)
+    monkeypatch.setattr(subject(), 'initial_state', born)
+    return a, b
+
+
+def combat_choice(state, moves, actor):
+    move = next((m for m in moves if m['type']=='choose_mechanic' and m.get('kind')=='combat_damage'), None)
+    action = ({'type':'choose_mechanic','damage_assignment':{
+        target:move['count'] if index == 0 else 0 for index,target in enumerate(move['options'])}}
+              if move else {'type':'pass_priority'})
+    return SimpleNamespace(action=action, reasoning='declared combat unit', knowledge_usage=None)
+
+
+def test_real_simultaneous_sba_deaths_replay_keeps_native_card_order_and_v2_digests(monkeypatch):
+    from scripts import archetype_matrix_game as previous
+    from scripts.archetype_trace_v3 import TraceWriter, read_records, digest
+    a, b = simultaneous_combat_fixture(monkeypatch)
+    stream = io.BytesIO(); writer = TraceWriter(stream)
+    policy = {'max_ticks':4,'max_turns':100}
+    old = []
+    expected = previous.play_game(a,b,seed=221,game_id='ordered-combat-unit',policy=policy,
+                                 emit=old.append,choose=combat_choice)
+    outcome = subject().play_game(a,b,seed=221,game_id='ordered-combat-unit',policy=policy,
+                                 identity={'cell_id':'ordered-unit'},emit=writer.emit,choose=combat_choice)
+    rows = list(read_records(io.BytesIO(stream.getvalue())))
+    assert outcome == expected and outcome['accepted_actions'] == 4 and outcome['status'] == 'tick_limit'
+    assert any(sum('State-based action:' in line for line in row['after']['log']) >= 2 for row in old[1:-1])
+    for current, before in zip(rows[1:-1], old[1:-1]):
+        assert current['before_sha256'] == digest(before['before'])
+        assert current['after_sha256'] == digest(before['after'])
+    assert subject().replay_trace(iter(rows))['matched'] is True
+
+
+def test_capture_preserves_native_order_separately_from_v2_snapshot_digest():
+    from scripts.archetype_trace_v3 import CpuAccounting, digest
+    from scripts.archetype_matrix_game import initial_state, snapshot
+    from game_state.serializers import deserialize_match_snapshot
+    state = initial_state(decks(), decks(), 998, 'order-capture-unit')
+    state.cards = dict(reversed(list(state.cards.items())))
+    captured = subject().capture(state, CpuAccounting())
+    assert captured.sha256 == digest(snapshot(state))
+    assert captured.value == snapshot(state)
+    assert captured.cards_order == list(state.cards)
+    assert captured.cards_order_sha256 == digest(list(state.cards))
+    restored = deserialize_match_snapshot(subject().ordered_snapshot(captured.value, captured.cards_order))
+    assert list(restored.cards) == list(state.cards)
+    assert digest(snapshot(restored)) == captured.sha256
+    assert list(state.cards) != list(captured.value['cards'])
+
+
+@pytest.mark.parametrize('bad', ['missing', 'duplicate', 'extra', 'nonstring', 'notlist'])
+def test_ordered_snapshot_refuses_incomplete_or_ambiguous_card_coverage(bad):
+    from scripts.archetype_trace_v3 import CpuAccounting
+    from scripts.archetype_matrix_game import initial_state
+    captured = subject().capture(initial_state(decks(), decks(), 998, 'bad-order-unit'), CpuAccounting())
+    order = captured.cards_order.copy()
+    if bad == 'missing': order.pop()
+    elif bad == 'duplicate': order[-1] = order[0]
+    elif bad == 'extra': order.append('not-a-card')
+    elif bad == 'nonstring': order[0] = None
+    else: order = tuple(order)
+    before = deepcopy(captured.value)
+    with pytest.raises(ValueError): subject().ordered_snapshot(captured.value, order)
+    assert captured.value == before
+
+
+@pytest.mark.parametrize('where', ['initial', 'checkpoint', 'final', 'old_schema'])
+def test_rechained_order_evidence_and_old_schema_cannot_be_silently_accepted(where):
+    from scripts.archetype_trace_v3 import digest
+    rows, _, _ = make_trace()
+    if where == 'initial':
+        rows[0]['cards_order'].reverse()
+        rows[0]['cards_order_sha256'] = digest(rows[0]['cards_order'])
+    elif where == 'checkpoint': rows[1]['checkpoint']['after_cards_order'].reverse()
+    elif where == 'final':
+        rows[-1]['cards_order'].reverse()
+        rows[-1]['cards_order_sha256'] = digest(rows[-1]['cards_order'])
+    else: rows[0]['schema'] = 3
+    with pytest.raises(subject().TraceDivergence): subject().replay_trace(iter(rechained(rows)))
+
+
+def test_ai_cannot_reorder_cards_without_triggering_input_mutation_guard():
+    def bad(state, moves, actor):
+        state.cards = dict(reversed(list(state.cards.items())))
+        return choose(state, moves, actor)
+    with pytest.raises(subject().TraceDivergence) as error: make_trace(decision=bad)
+    assert error.value.fields == ['AI_input_mutation']
+
+
+def test_selected_handler_boundary_receives_native_ordered_snapshots(monkeypatch):
+    from scripts.archetype_trace_v3 import TraceWriter, read_records, digest
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from rules_engine.action_validation import checked_action
+    from rules_engine.engine import RulesEngine
+    a, b = simultaneous_combat_fixture(monkeypatch)
+    stream = io.BytesIO(); writer = TraceWriter(stream)
+    subject().play_game(a,b,seed=221,game_id='ordered-boundary-unit',policy={'max_ticks':4,'max_turns':100},
+        identity={'cell_id':'ordered-boundary-unit'},emit=writer.emit,choose=combat_choice)
+    rows = list(read_records(io.BytesIO(stream.getvalue()))); observed = []
+    def boundary(first, row):
+        assert digest(list(row['before']['cards'])) == row['before_cards_order_sha256']
+        assert digest(list(row['after']['cards'])) == row['after_cards_order_sha256']
+        state = deserialize_match_snapshot(deepcopy(row['before']))
+        after = checked_action(state, RulesEngine(), row['actor'], row['action'])
+        assert digest(serialize_match_snapshot(after)) == row['after_sha256']
+        assert digest(list(after.cards)) == row['after_cards_order_sha256']
+        observed.append(row['step'])
+    assert subject().replay_trace(iter(rows), boundary=boundary)['matched']
+    assert observed == [0, 1, 2, 3]
+
+
+def test_real_handler_sqlite_check_matches_the_simultaneous_death_boundary(monkeypatch, tmp_path):
+    from pathlib import Path
+    from scripts.archetype_trace_v3 import TraceWriter, read_records
+    from scripts.archetype_handler_v3 import HandlerChecks
+    a, b = simultaneous_combat_fixture(monkeypatch)
+    stream = io.BytesIO(); writer = TraceWriter(stream)
+    subject().play_game(a,b,seed=221,game_id='ordered-sqlite-unit',policy={'max_ticks':4,'max_turns':100},
+        identity={'cell_id':'ordered-sqlite-unit'},emit=writer.emit,choose=combat_choice)
+    rows = list(read_records(io.BytesIO(stream.getvalue())))
+    source_db = Path(__file__).resolve().parents[1]/'mtg_lab.db'
+    original = source_db.lstat() if source_db.exists() else None
+    checks = []
+    with HandlerChecks(tmp_path/'ordered-parity.sqlite3') as handler:
+        def boundary(first, row):
+            if row['step'] == 2:
+                checks.append(handler(first,row))
+        assert subject().replay_trace(iter(rows),boundary=boundary)['matched']
+    assert len(checks) == 1 and checks[0]['transition_equal'] and checks[0]['sqlite_roundtrip']
+    assert all(checks[0][key] is True for key in ('cards_order_transition_equal','cards_order_sqlite_roundtrip','cards_order_restored'))
+    assert (source_db.lstat() if source_db.exists() else None) == original
+
+
+@pytest.mark.parametrize('loss', ['transition', 'sqlite', 'restore'])
+def test_order_only_handler_mutations_fail_without_weakening_v2_snapshot_checks(monkeypatch, tmp_path, loss):
+    import json
+    from scripts.archetype_trace_v3 import TraceWriter, read_records, digest
+    from scripts.archetype_handler_v3 import HandlerChecks
+    from persistence.repository import Repository
+    from game_state.serializers import serialize_match_snapshot
+    a, b = simultaneous_combat_fixture(monkeypatch)
+    stream = io.BytesIO(); writer = TraceWriter(stream)
+    subject().play_game(a,b,seed=221,game_id='ordered-handler-negative',policy={'max_ticks':4,'max_turns':100},
+        identity={'cell_id':'ordered-handler-negative'},emit=writer.emit,choose=combat_choice)
+    rows = list(read_records(io.BytesIO(stream.getvalue())))
+    altered = []
+    with HandlerChecks(tmp_path/'negative.sqlite3') as handler:
+        if loss == 'transition':
+            original = handler.main.checked_action
+            def unordered(*args, **kwargs):
+                state = original(*args, **kwargs)
+                before = digest(serialize_match_snapshot(state))
+                state.cards = dict(sorted(state.cards.items()))
+                assert digest(serialize_match_snapshot(state)) == before
+                altered.append(True)
+                return state
+            monkeypatch.setattr(handler.main, 'checked_action', unordered)
+        elif loss == 'sqlite':
+            original = Repository.save_active_match
+            saves = []
+            def unordered(self, match_id, state_json, controller_json):
+                saves.append(True)
+                if len(saves) == 1:
+                    return original(self, match_id, state_json, controller_json)
+                state = json.loads(state_json)
+                before = digest(state)
+                state['cards'] = dict(sorted(state['cards'].items()))
+                assert digest(state) == before
+                altered.append(True)
+                return original(self, match_id, json.dumps(state), controller_json)
+            monkeypatch.setattr(Repository, 'save_active_match', unordered)
+        else:
+            original = handler.main._restore_active_matches
+            def unordered(*args, **kwargs):
+                result = original(*args, **kwargs)
+                for match in handler.main.ACTIVE_MATCHES.values():
+                    before = digest(serialize_match_snapshot(match.state))
+                    match.state.cards = dict(sorted(match.state.cards.items()))
+                    assert digest(serialize_match_snapshot(match.state)) == before
+                altered.append(True)
+                return result
+            monkeypatch.setattr(handler.main, '_restore_active_matches', unordered)
+        def boundary(first, row):
+            if row['step'] == 2:
+                return handler(first, row)
+        with pytest.raises(subject().TraceDivergence) as error:
+            subject().replay_trace(iter(rows), boundary=boundary)
+        expected = {'transition':'handler_transition_cards_order',
+                    'sqlite':'handler_sqlite_cards_order','restore':'handler_restored_cards_order'}
+        assert altered and error.value.fields == [expected[loss]]
