@@ -93,6 +93,8 @@ class ScryfallSyncService:
                     "loyalty": face.get("loyalty"),
                     "colors": face.get("colors"),
                     "image_uri": cls._extract_face_image_uri(face),
+                    # Printed Battle defense is needed before entry counters exist.
+                    **({"defense": face["defense"]} if face.get("defense") is not None else {}),
                 }
             )
         return out

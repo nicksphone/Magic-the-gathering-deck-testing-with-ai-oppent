@@ -34,7 +34,7 @@ PUBLIC_INPUT_PINS = {
     'backend/decks/catalog.py': 'a3907784a4f097c6a460d38a46569dd1bd68ccf26b903d083ce6b77f4ac08aa0',
     'backend/decks/historical_event_catalog.json': '2c589f58596f09b3d3b2e7387e5bebe23030fa5c5c11c510f48f655e2c200277',
     'backend/tests/current_built_browser_server.py': '0550d53c8d754b98bc81e276de265b05323d2940457c2436dafa7a295ac04ff3',
-    'backend/card_data/sync.py': 'bb2f0f8fa1c2048c2ce4e1238434b18827418a175219f39e674ba6b9a0d2192b',
+    'backend/card_data/sync.py': '366554ba64259b59fa7c4d4342a48a80fa9e2874cd07e56b242fd4cd9e0503a2',
     'backend/tests/fixtures/human_transform_audit/canonical.json': 'd5f3d85b5ede1e70b0572a75f5b0059df273d372ed84255b42092f4dc5423743',
     'backend/tests/fixtures/human_transform_audit/provenance.json': '34ccb890bf6412176ee35dabd124953bcf4cc72289784ebb62edec120ad58688',
 }
