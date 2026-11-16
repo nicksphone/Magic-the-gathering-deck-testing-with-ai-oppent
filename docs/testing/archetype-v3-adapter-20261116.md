@@ -25,7 +25,7 @@ AI strength remains unaccepted.
 - `archetype_trace_v3` writes a SHA256 record chain with per-action complete
   state/legal/RNG digests. Full before/after states appear every 64 actions,
   at changed choice/pregame boundaries, selected handler boundaries and final
-  actions. Initial/final full state is retained. A **64-MiB quota** refuses the
+  actions. Initial/final full state is retained. A **128-MiB candidate quota** (64 MiB in stopped trace1) refuses the
   complete next record before writing it; it never silently trims a trace.
 - `archetype_game_v3` retains real checked actions and unchanged master
   decisions. Canonical bytes are hashed once per captured state. It still
@@ -95,7 +95,7 @@ For example, after the environment and the specific fresh run ID are approved:
 ```bash
 cd /absolute/clean-checkout/backend
 /absolute/fresh-venv/bin/python -B -m scripts.archetype_pilot_v3 plan \
-  archetype-pilot-20261116-v3-trace1 /absolute/private/v3-plan.json
+  archetype-pilot-20261116-v3-trace2 /absolute/private/v3-plan.json
 
 # Run only after reviewing that issued plan and receiving launch approval.
 /absolute/fresh-venv/bin/python -B -m scripts.archetype_pilot_v3 run \
@@ -138,7 +138,8 @@ python -B -m pytest -q \
   tests/test_interface_scope_76_mutations.py
 ```
 
-Local result on 2026-11-16: **375 passed, 0 failed/errors/skipped, 83.96 seconds**,
+Original implementation (`a77eddc0`, before the fidelity/quota revision) local
+result on 2026-11-16: **375 passed, 0 failed/errors/skipped, 83.96 seconds**,
 with one existing Pydantic `datetime.utcnow()` deprecation warning. This is
 107 new v3 checks, 75 existing adapter checks and 193 source-compatibility
 checks. It used the existing local application environment, not a fresh
@@ -173,3 +174,21 @@ across the game/trace/worker/plan v3 modules. This includes the real SBA
 RED/GREEN, unchanged v2 transition digests and positive/negative direct-handler
 order checks. It is not a fresh install, full backend or new pilot result;
 broader composed verification is recorded separately when run.
+
+
+The separate [trace2 quota proposal](archetype-trace2-quota-proposal-20261116.md)
+raises the candidate trace ceiling to 128 MiB while retaining all checkpoint and
+time/CPU policies. Its 36-cell trace-only ceiling is 4.5 GiB, with no valid
+completed-game forecast from the stopped prefix. It preserves prior campaign
+charges and the 30-hour conditional health reserve. Review/approval, a new source-
+bound plan and an idle-host decision remain required; no new run is started.
+
+
+Final local composed fidelity + quota candidate verification:
+**396 passed, 0 failures/errors/skips, 93.71 seconds**, with five existing
+Pydantic `datetime.utcnow()` warnings. This is 128 v3 checks, 75 unchanged v2
+adapter checks and 193 interface-scope pin checks in one invocation. JUnit
+contains 396 distinct cases. All 13 v3 module/test hashes matched before/after
+and the branch bytes; engine/rules/AI/v2/pin files are unchanged. The runtime was
+the existing local application environment, not a fresh hash-locked install.
+Host/CI checks, a new issued plan and any new pilot remain separate.
