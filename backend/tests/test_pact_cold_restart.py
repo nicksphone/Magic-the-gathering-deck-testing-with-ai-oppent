@@ -4,6 +4,7 @@ No application DB or source cache is used. This does not certify a live browser
 or TCP connection across restart; pending-browser refresh has separate coverage.
 """
 import json
+import sqlite3
 import os
 from pathlib import Path
 import subprocess
@@ -18,6 +19,9 @@ def test_pending_pact_and_accepted_receipt_survive_cold_app_processes(tmp_path, 
     backend = Path(__file__).resolve().parents[1]
     database = tmp_path / "pact.sqlite3"
     assert not database.exists()
+    # Pre-create the owned file so the startup legacy-database guard (which fires for a
+    # missing configured path whenever backend/mtg_lab.db exists) cannot depend on test order.
+    sqlite3.connect(database).close()
     environment = {**os.environ, "MTG_DATABASE_PATH": str(database),
                    "PYTHONPATH": str(backend), "PYTHONDONTWRITEBYTECODE": "1"}
     worker = Path(__file__).with_name("pact_cold_restart_worker.py")
