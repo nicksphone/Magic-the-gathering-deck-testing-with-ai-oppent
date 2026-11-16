@@ -117,17 +117,16 @@ browser or a new natural-game result. Run from `backend/`:
 python -B -m pytest -q tests/test_battle_payment_browser_unaffordable.py
 ```
 
-The extended eight-episode browser program still needs its own host/CI run with
-the command above. The earlier six-PASS host result is not transferred to the
-new two episodes. No runner, driver, source pin or original fixture/helper is
+Claude host-verified PR #82 with eight browser PASS lines (six predecessor
+episodes plus both unaffordable cases). Its browser CI job in run `43893763013`
+also passed. Those results precede the later composed program. No runner, driver, source pin or original fixture/helper is
 changed; the existing wrapper adds a test-only unaffordable-birth endpoint.
 
-Still open: partial/blocked Battle damage and player-versus-Battle routing in
-the actual UI; simultaneous upkeep obligations and continuation after the first
-choice; and an actual backend restart while Pact payment is pending. Existing
-HTTP goldens, sequential debts and page refresh are not those browser cases.
-Final-source full-cohort, native vendor, clean-checkout and broader Gate 1/RC
-acceptance remain separate.
+The additional simultaneous and routing cases below close those specific
+source-branch gaps, subject to a composed host run. ASGI/SQLite pending-Pact
+restart has separate four-case host evidence in PR #87; that does not establish
+an uninterrupted browser across restart. Final-source full-cohort, native
+vendor, clean-checkout and broader Gate 1/RC acceptance remain separate.
 
 
 ## Simultaneous-debt extension
@@ -142,5 +141,62 @@ once and taps four Forests; drawing starts only after both debts resolve.
 Claude host-ran the original isolated branch `654d78c1`: 15 Python tests and
 eight browser PASS lines (six predecessor episodes plus these two). That is
 source-specific evidence, not a composed-program result. The merged #82 base
-already has eight episodes; this intermediate extension expects ten. Composition
-with routing and a new host run remain separate.
+already has eight episodes; the intermediate simultaneous-only commit
+`7643cdb1` expected ten. The final composition below adds six routing episodes
+and requires a new host run.
+
+
+## Composed routing and payment cohort
+
+This branch starts from merged main
+`ec26f6f5ef68003d731a85648b2f40c282a4d449` and unions the test-only load
+variants, fixture endpoints and episode calls. It retains all host-tested funded,
+unaffordable, simultaneous and routing episode bodies. It changes no production,
+original fixture, natural BO3 program, browser driver or pinned runner.
+
+The final focused program expects **16 PASS lines**:
+
+| Episodes | Count |
+| --- | ---: |
+| Original funded Battle/Pact flows: two seats × human/human and human/AI | 4 |
+| Original explicit unsupported-control warning negatives | 2 |
+| Unaffordable Pact, both seats | 2 |
+| Simultaneous Pact debts and first-choice continuation, both seats | 2 |
+| Partial Siege, player defender, blocked Siege: both seats | 6 |
+
+Each routing case really casts/searches the Battle and selects one attacker and
+its explicit defender through the UI. Draft edits must not change the revision.
+The partial Siege ends at defense one and both lives 20; a player attack leaves
+defense three and deals two to that player; a blocked Siege attack trades both
+Bears while defense remains three and both lives stay 20. The opponent's Bear
+is a birth input only. No defeat trigger or back-face cast choice may appear.
+The public view must retain the correct protector, and the UI must display the
+retained defense.
+
+Claude host-ran isolated routing commit `bbfd43d3`: 15 Python tests and 12 browser
+PASS lines (six predecessor episodes plus six routing). Together with the source-
+specific simultaneous result above, these are **not** a new 16-episode result.
+A new host run on the exact composed commit is required with the command above;
+its result is pending here. Warning-only mode still runs just the original two
+negative cases, and their warning-removal RED remains separate.
+
+The full local fixture/lifecycle selection is:
+
+```sh
+cd backend
+python -B -m pytest -q \
+  tests/test_battle_payment_browser_fixture.py \
+  tests/test_battle_payment_browser_unaffordable.py \
+  tests/test_battle_payment_simultaneous.py \
+  tests/test_battle_browser_routing.py
+```
+
+On the exact merged-main composition, these four whole modules completed
+**27 passed, 0 failed**, with two existing dependency deprecation warnings. The
+selected runner byte-inverse contract passed one test, and JavaScript/Python
+syntax checks passed. This used the existing local dependency cache, not a fresh
+hash-locked install. No counts from separate runs should be added into a claimed
+full-suite result.
+The source-specific four-test cold restart result and limitations are recorded
+in PR #87's `pact-cold-restart-20261116.md`; that file is not part of this browser
+branch yet.
