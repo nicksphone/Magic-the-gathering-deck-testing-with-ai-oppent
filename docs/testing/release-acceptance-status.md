@@ -1,5 +1,85 @@
 # Release Acceptance Status
 
+## 2026-11-16 integration through PR #92 (not RC acceptance)
+
+Reviewed main: `495d820325179a625b5a63b2d62847718d5d5706`. The following
+merges are verified against local Git history. No CI run, full-suite total or
+deployment result is inferred from a merge. PR #85/#86's isolated browser work
+was composed in #88; those numbers are not additional main merges in this list.
+
+| PR | Merge SHA | Merged scope |
+| --- | --- | --- |
+| [#80](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/80) | `7b1b707a` | Direct-combat browser waits for committed revision; deterministic stale-read contract. |
+| [#81](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/81) | `5188a269` | Bounded knowledge/data evidence and its limits. |
+| [#82](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/82) | `ec26f6f5` | Both-seat unaffordable-Pact browser episodes. |
+| [#83](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/83) | `eb7cbb4e` | c2 pilot diagnosis and bounded profiling; no accepted matrix result. |
+| [#84](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/84) | `54c50a91` | v3 digest-chain/checkpoint adapter, pilot and campaign accounting. |
+| [#87](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/87) | `eaba2945` | Pending-Pact ASGI/SQLite cold-process reconstruction and test-order isolation. |
+| [#88](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/88) | `fdab4c4e` | Composed simultaneous-debt and Battle-routing browser cohort. |
+| [#89](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/89) | `2de3a167` | Legacy stack cleanup decision memo; no rules change. |
+| [#90](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/90) | `0dd99fc0` | Consistent install/build/loopback launcher/restore/operator documentation. |
+| [#91](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/91) | `45ba938e` | Pilot evidence-scope template, not a result. |
+| [#92](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/92) | `495d8203` | Authenticated card-order fidelity fix and 128-MiB trace ceiling. |
+
+### Pilot evidence: failed predecessors remain failed
+
+- **c2**, `archetype-pilot-20261116-v2-c2`, source `93bd5971`: all **36/36**
+  cells ended at the 90-CPU-second limit; no completed game/replay result.
+  Streaming diagnosis counted **12,228 accepted actions**, turns **9–16** and
+  **7,985,144,851 trace bytes**. Games progressed in the observed prefixes;
+  no stationary priority loop was demonstrated. Bounded cell-000 profiling
+  implicated snapshot construction and AI simulations, rather than disk writes
+  alone. Scheduling completion is not pilot usability, a completed-game timing
+  forecast or matrix acceptance. See the [c2 diagnosis](archetype-pilot-c2-diagnosis-20261116.md).
+- **v3 trace1**, `archetype-pilot-20261116-v3-trace1`, source `54c50a91`:
+  **12/36** accounted, with **9 resolved, 1 replay divergence, 1 trace-limit
+  timeout and 1 canceled peer labeled error**; `complete: false`, `usable: false`.
+  Cell 010's first divergence was zero-based action **647**: canonical adapter
+  capture/restore lost `state.cards` insertion order, changing simultaneous-SBA
+  log order. It triggered fail-fast cancellation; 24 cells never started.
+  Cell 001 refused the next whole trace record after **1,151 actions** and
+  **65,890,540 bytes**, at **985.111 CPU seconds**: a trace quota, not CPU/wall
+  exhaustion. Cell 011 was peer SIGTERM cancellation, not a recorded independent
+  engine exception. The nine verified games total **5,689 actions**, turns
+  **16–29**, with five seat-1 and four seat-2 wins, **accounting only**. No
+  strength estimate or completed-game forecast follows from this incomplete
+  prefix. See the [trace1 diagnosis](archetype-v3-trace1-diagnosis-20261116.md).
+
+PR #92 preserves explicit card-map order at capture/replay and selected handler/
+SQLite boundaries while retaining canonical state digests; it does not sort or
+ignore logs or change rules/AI. Its declared real-combat/SBA regression failed
+before and passed after; v2 digest equivalence is retained. The local explicit
+17-module check recorded **396 passed, 0 failed/errors/skips** (128 v3, 75 v2,
+193 pin checks), using the existing local environment, not a fresh locked install
+or full backend run. The new **128-MiB** quota keeps 64-action and decision-boundary
+checkpoints and the 1,200-CPU/1,500-wall-second cell limits. It is not a guarantee
+against another quota failure. The [quota arithmetic](archetype-trace2-quota-proposal-20261116.md)
+retains prior campaign charges; no stopped run is resumed or reclassified.
+
+### Trace2 launch: result pending
+
+Claude reports issuing and launching **`archetype-pilot-20261116-v3-trace2`**
+on a clean clone of **`495d8203`**, with the same hash-locked environment and
+plan file SHA-256
+`79beba36d65d6745a363f2e9a4063ee8c5fb25f553b1e6bea77746cdcc26389d`.
+This records operator-supplied launch metadata only. Its private outputs have
+**not been read for this update**; completion, statuses, timing, replay health
+and usability are unknown. No new result, forecast or acceptance is claimed.
+The separately approved future 72-game health-only scope is not the original
+statistical gate and has no run result here.
+
+### Open acceptance work
+
+The final-source clean-checkout and dependency-advisory workflow evidence still
+needs the user actions below; no new dispatch result is supplied here. Local
+HTTPS/authentication and native Linux Chrome, Brave and Firefox acceptance,
+remaining rules/data/knowledge scope, long-session/accessibility/operator checks
+and release sign-off remain distinct. Separate-device LAN/manual CA trust stays
+**user-deferred for RC, not passed**. The legacy source-movement seam remains a
+documented limitation with two strict xfails; the manager chose no rules change
+for RC. AI strength and full statistical matrix acceptance remain unaccepted.
+See the [current open-item reconciliation](current-release-status-20261116.md#what-remains-open).
+
 ## 2026-11-16 user actions for final acceptance evidence
 
 Documentation follow-up reviewed main
