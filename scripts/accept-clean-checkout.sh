@@ -51,7 +51,7 @@ stage api-contracts timeout 600s bash -c 'cd backend; exec "$1" -m pytest -q -p 
 stage runtime-dist timeout 180s "$py" ops/caddy/test_runtime_dist_boundary.py
 stage runtime-inventory timeout 180s "$py" ops/caddy/test_runtime_inventory.py
 stage runtime-source timeout 180s "$py" ops/caddy/test_runtime_source_artifacts.py
-stage frontend-tests timeout 600s env MTG_TEST_PYTHON="$py" npm --prefix frontend test
+stage frontend-tests timeout 600s env TMPDIR=/tmp MTG_TEST_PYTHON="$py" npm --prefix frontend test
 stage frontend-lint timeout 180s npm --prefix frontend run lint
 stage frontend-build timeout 180s npm --prefix frontend run build
 # No program selection: run the entire configured cohort, including fallback UI.
