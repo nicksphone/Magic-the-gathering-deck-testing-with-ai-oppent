@@ -192,3 +192,83 @@ References: [adapter/runbook](archetype-v3-adapter-20261116.md),
 [trace1 diagnosis](archetype-v3-trace1-diagnosis-20261116.md),
 [c2 diagnosis](archetype-pilot-c2-diagnosis-20261116.md) and
 [AI status](../../AI-STATUS.md).
+
+## Reading a future health result — operator checklist (2026-11-17)
+
+This section explains how to read a future result from the separately approved
+72-game health implementation. At this edit, PR #95 is awaiting its CI rerun
+and merge; the operator will issue and launch the health plan only afterwards.
+Implementation approval is not launch approval. This section records no
+health execution or result. Review output only after the operator confirms the run
+has terminated; keep complete traces, hands, actions, reasoning, logs, databases
+and registry payloads private. Publish reviewed aggregates and identity hashes.
+
+### Check identity and closure before interpreting status
+
+1. Record the actual terminal exit and exact run ID. Match the issued plan's
+   full clean source commit, runtime digest, 72 ordered cell IDs, all 36 pairs,
+   new seed and both seats to the final report and bound per-cell receipts.
+   Compare file-byte hashes with file-byte hashes and canonical-object digests
+   with canonical-object digests. A directory or elapsed time is not evidence
+   of termination or completion.
+2. Require a role-specific `HEALTH-COMPLETE.json` or `HEALTH-INCOMPLETE.json` and
+   the matching closed registry record. Match its report hash and prior/current
+   campaign and health charges. Check actual attempted child wait/accounting
+   closure, the health-overrun flag, charged totals against the 30-hour health
+   and 48-hour campaign limits, and remaining allocations. The report
+   is published before registry closure; it cannot certify final accounting
+   alone. A publication-time overrun can leave a nominal report while the CLI
+   refuses success and the closed ledger records the overrun.
+3. Check completeness against the entire declared schedule, not a count alone:
+   no duplicate, undeclared or missing IDs. Check each game/verification identity,
+   trace hash, verified full outcome and selected parity evidence. Keep the
+   terminal exit, report and ledger together; contradictions leave acceptance
+   unverified, not repaired by choosing the most favorable artifact.
+
+If a guard fails before a report exists, record that refusal and its stage;
+do not infer an accounted health result. If child closure is unproven, the
+registry remains blocking. Never delete owner locks, reset HOME, move the
+registry, overwrite a run or resume it to obtain a cleaner result.
+
+### Interpret accounting and health separately
+
+| Evidence | Meaning and reporting |
+| --- | --- |
+| `complete: true`, `health_passed: true`, exit 0, matching closed budget-valid ledger | All declared games completed under the frozen limits with the configured replay/serde and selected handler/SQLite checks. This is a health pass only for that exact scope/source/runtime. |
+| `complete: true`, `health_passed: false` | Schedule accounting completed, but health failed. `HEALTH-COMPLETE.json` is not a pass certificate. Include every resource/error/divergence outcome; do not remove the expensive cell. |
+| `complete: false` or missing/contradictory evidence | Incomplete or unverified. Report attempted, unstarted, missing and censored cells separately. A resolved subset cannot accept the original declaration. |
+| A CPU/wall/memory/trace/action/turn limit | Incomplete game, no winner or draw score. Preserve the exact termination, actual waited CPU/wall, last authenticated action/turn and available partial attribution; unknown interrupted work is not zero. |
+| A canceled peer after fail-fast stop | Censored attempt, not automatically an independent engine exception or a loss. Distinguish actual exception evidence from a signal/cancellation label. Unstarted cells are not censored attempted games. |
+| A genuine engine `draw` or deck-out outcome with complete verification | Retain the engine outcome under the frozen policy; distinguish it from resource exhaustion. |
+| Budget refusal, overrun or unproven child closure | Not acceptance, even if a preliminary report or some game receipts look successful. Preserve every charge and the permanent run-ID consumption. |
+
+Zero resource-limit tolerance is predeclared: **one limited cell fails health**.
+One of 72 is 1.389%, not rounded to zero; do not relax the integer threshold after
+seeing results. Failure is a plausible and acceptable result to report given
+the earlier pilot's 1/36 timeout. It is not a reason to change AI quality,
+budgets, seeds or deck lists in place. Any further attempt needs its own reviewed
+plan, fresh ID, remaining-budget check and explicit operator launch approval.
+
+### What may be claimed
+
+After all identity, receipt and closure checks, a passing result supports:
+
+> On the recorded source/runtime/plan, all 72 declared single games passed the
+> configured engine-health checks, every-action replay/serde and selected
+> direct-handler/SQLite comparisons, within their declared resource policy.
+
+Report exact status/termination counts, completed and partial action counts,
+turn ranges, CPU and replay-time availability, missing attribution, trace bytes
+and charged slot time. Keep actual CPU, summed cell durations and two-slot
+campaign charges separate. State any failures or censorship in the conclusion.
+A failed run supports a diagnosis of its observed failure, not the quoted pass.
+
+Selected direct-handler/SQLite parity is not HTTP/browser parity or independent
+Oracle correctness. Swapped seats share one engine seed, not deck-fixed hands;
+one seed supplies no independent seed-cluster interval or AI-strength estimate.
+Outcome counts are accounting, not a playing-strength percentage. The result
+cannot complete the original 1,440-game statistical gate, qualify excluded decks,
+turn old pilot failures into passes or establish RC readiness. Forecast fields
+remain null even for a health pass; do not fill them from a surviving subset.
+Current-source CI, browser/operator, rules/data, statistical/strength and release
+sign-off retain their separate requirements.
