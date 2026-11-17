@@ -33,6 +33,14 @@ def rows(p):
              'child_handles_reaped':True}for c in p['cells']]
 
 
+
+def bytecode_off(monkeypatch):
+    """The controller/worker guards require -B; CI invokes pytest without it, so tests that call
+    main() in-process model the flag explicitly (subprocess tests pass real flags)."""
+    import types
+    monkeypatch.setattr(sys,'flags',types.SimpleNamespace(optimize=0,dont_write_bytecode=1))
+
+
 def test_health_report_is_health_only_and_one_limited_cell_fails_without_losing_accounting():
     m=subject();p=plan();r=rows(p)
     good=m.health_report(r,p)
@@ -172,6 +180,7 @@ def test_health_worker_admission_is_distinct_from_default_pilot_and_checks_both_
     def limits(*args):raise LimitBoundary
     monkeypatch.setattr(worker,'apply_limits',limits)
     path=tmp_path/'authored-worker-request.json';path.write_text(json.dumps(req))
+    bytecode_off(monkeypatch)
     with pytest.raises(ValueError):worker.main([str(path)])
     with pytest.raises(LimitBoundary):health_worker.main([str(path)])
     wrong=deepcopy(req);wrong['source']['files'].pop('backend/scripts/archetype_health_worker_v3.py')
@@ -196,6 +205,7 @@ def test_run_only_cli_requires_explicit_flag_and_never_creates_a_plan(tmp_path,m
         seen.append((value,out));return {'complete':True,'health_passed':False,'accounted':72,
                                         'statuses':{'resolved':71,'timeout':1},'accepts_matrix_or_strength':False}
     monkeypatch.setattr(m,'run_health',run)
+    bytecode_off(monkeypatch)
     with pytest.raises(SystemExit):m.main(['run',str(p),str(tmp_path/'out')])
     with pytest.raises(SystemExit):m.main(['plan','new-id',str(tmp_path/'new-plan')])
     assert seen==[] and not(tmp_path/'new-plan').exists()
