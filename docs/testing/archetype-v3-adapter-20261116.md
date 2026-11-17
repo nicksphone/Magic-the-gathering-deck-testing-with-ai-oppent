@@ -299,3 +299,48 @@ serde/handler and owned child checks come from the scoped adapter tests.
 No full backend suite, CI, new plan, health launch, real registry operation,
 statistical acceptance or strength result is claimed. Host/CI verification is
 still required before plan review and any separate launch approval.
+
+## Health run terminal record — 2026-11-17
+
+**Health FAILED by predeclared zero tolerance: 71/72 resolved, one CPU-limit
+timeout, no replay divergence among the 71 verified games.** Accounting is
+complete; `health_passed: false` and `usable: false`. No timeout is scored as
+a loss or draw, and no policy is changed by this record.
+
+| Operator-reported launch | Value, checked against authorized terminal metadata where available |
+| --- | --- |
+| Run ID | `archetype-health-20261116-v3-trace1` |
+| Measured full source revision | `1a54be1f7fc71884336d790c55bb935a7037fbb0` |
+| Issued plan **file-byte** SHA-256 | `601a8d68cf04c02ac4734bef034f9a58390dad1eafdd9da933c346e509859dc4` |
+| Actual launch time | 2026-11-17 03:39:15 UTC; operator reports output directory creation at 03:39:16 UTC |
+| Completion timestamp | 2026-11-17 06:46:40 UTC, operator-supplied final-report mtime; not a captured shell-exit timestamp |
+| Runtime/install | Operator reports clean clone and same hash-locked venv; exact bound runtime digest is in the detailed result |
+
+The grammar hard-codes `20261116` in the run ID; that token is **not** the
+calendar launch date. The final report's canonical plan digest is
+`c921d07f6e731c187ca5c0aa7992f2ad934ad4d238587766200b01327da11a35`, distinct from the plan-file hash.
+
+The single limited game is **Drain Deck, seat 1 vs Ramp, seat 2** (ordinal 032):
+**1,199.940 CPU / 1,202.771 wall seconds**, exit -24/SIGXCPU, at last recorded
+turn **26 / postcombat main**, with **761** written actions and **25,597,276**
+trace bytes. Its CPU progress receipt covers 752 actions; the nine later trace
+actions do not extend that receipt's CPU attribution. All 71 resolved games
+passed the bound per-action replay/serde and selected direct-handler/SQLite
+checks: 36,404 actions/restarts and 470 selected boundaries. This is not HTTP,
+browser or independent rules/AI correctness evidence.
+
+The operator supplied the terminal summary fields `complete: true`,
+`health_passed: false`, statuses `resolved: 71` / `timeout: 1`, and
+`accepts_matrix_or_strength: false`. Numeric controller exit: **not captured**
+(detached launch); it is not inferred from the CLI implementation. The operator
+reports a closed registry with child handles reaped, neither health nor pilot
+budget exceeded, and matching report hash
+`e213787c3e81779eb288afa92536a5d2ed64a9b531e554c68b3ee5488598c22c`. The analysis did not read the registry.
+Report and post-publication ledger figures are kept distinct in the
+[detailed health result](archetype-v3-pilot-evidence-template-20261116.md#72-game-health-result--2026-11-17).
+
+No rerun, resume, new plan, AI/rules change or limit increase occurred for this
+read-only review. Forecasts remain null; health-only evidence does not close
+the original statistical gate, establish strength or accept RC. See the
+[timeout evidence and options](archetype-health-timeout-options-20261117.md)
+before considering any separately approved experiment.
