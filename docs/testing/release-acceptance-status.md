@@ -1,13 +1,17 @@
 # Release Acceptance Status
 
-## 2026-11-17 advisory follow-up (lock refresh pending)
+## 2026-11-17 advisory follow-up (host validated; pinned CI pending)
 
-Advisory-only follow-up on source `ba847621`: the manager supplied completed
-run 44183595243 and registry metadata. Picomatch's no-patch dev-only exception
-and the pending compatible minimatch lock refresh are recorded in the
-[current advisory review](dependency-advisory-review-20261115.md#composed-scan-and-dev-tooling-follow-up--2026-11-17).
-This does not update the earlier CI/browser evidence or certify the next lock;
-Vite remains 6.4.6. No dependency install, upgrade or test ran in this sandbox.
+Advisory lock follow-up: **`04088d21`** (base `ba847621`) refreshes only the
+lint-tool dependency closure, with package.json unchanged and Vite still 6.4.6.
+The manager reports Node **26.8.1** / npm **11.19** engine-strict install, lint,
+build and tests all exit 0. Full audit falls **13 → 10 high / 0 moderate**,
+all from picomatch; production audit remains **0**. **Minimatch's exception is
+retired for this lock**. Picomatch's manager-owned exception remains, review by
+**2026-12-01** or an earlier release/GHSA trigger. **Node 24.22.0 CI validation
+is still pending**, not inferred from Node 26 host results. See the
+[verified advisory results](dependency-advisory-review-20261115.md#verified-lock-refresh-and-host-results--04088d21).
+This follow-up ran no install or tests locally and claims no new CI/browser pass.
 
 ## 2026-11-17 reconciliation through PR #99 (not RC acceptance)
 
@@ -70,17 +74,15 @@ required checks have not changed. See the
   **403**. Run the existing workflow on the intended final main SHA and retain
   its actual revision, stage results and artifacts; publishing the script or
   workflow is not acceptance. See the [user actions](release-acceptance-status.md#2026-11-16-user-actions-for-final-acceptance-evidence).
-- **Dependency Advisory Review — remediation/validation open:** manager-reported
-  run **44183595243** on `6a440e39` completed with production npm **0**, pip **0**
-  and **13 dev-tooling findings** from picomatch/minimatch. Picomatch has no
-  published patch: the dated dev-only exception is owned by the manager, with
-  review by **2026-12-01** or any release above 4.0.7 / GHSA update. A compatible
-  lint-tool lock refresh should remove minimatch without an override or Vite
-  change; **retire the minimatch exception once that fixed lock lands**, after
-  lint/build/tests and rescan. The refresh is pending host execution, not
-  claimed done. Final changed-lock scans/dispositions remain required; the old
-  token 403 is no longer a claim that no advisory run has happened. See the
-  [current advisory follow-up](dependency-advisory-review-20261115.md#composed-scan-and-dev-tooling-follow-up--2026-11-17).
+- **Dependency Advisory Review — pinned-runtime validation open:** lock
+  **`04088d21`** removes the minimatch finding; its exception is **retired**.
+  Manager-reported Node **26.8.1** host install/lint/build/tests pass, full audit
+  has **10 high / 0 moderate**, all picomatch, and production npm is **0**.
+  Picomatch has no patch; its manager-owned dev-only exception remains, review
+  by **2026-12-01** or any release above 4.0.7 / GHSA update. **Node 24.22.0 CI
+  remains pending**, as does the final maintainer disposition; no CI pass is
+  inferred from the host run. The prior composed scan had pip **0**. See the
+  [verified advisory results](dependency-advisory-review-20261115.md#verified-lock-refresh-and-host-results--04088d21).
 - **Health-run accept/rerun decision:** the manager must decide how to handle the
   failed zero-tolerance result. It is still FAILED; no acceptance, new limit,
   resumed run or rerun is authorized by this status update. Any changed policy

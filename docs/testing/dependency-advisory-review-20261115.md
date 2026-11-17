@@ -1,8 +1,9 @@
 # Dependency advisory review
 
-No application dependency was installed, upgraded, removed or automatically
-fixed. Package manifests and lockfiles remain unchanged. This is not a clean
-security result. Completed host scans and proposed dispositions are recorded below; Gate 3 #4 remains open pending decisions and CI.
+The lint-tool lock refresh is recorded below at `04088d21`; this follow-up
+changes documentation only. Earlier scan inputs/results retain their original
+revisions. This is not a zero-finding security result: the picomatch exception
+remains, and Gate 3 #4 awaits final CI/maintainer disposition.
 
 ## Composed scan and dev-tooling follow-up — 2026-11-17
 
@@ -17,7 +18,7 @@ not independently reread for this follow-up; counts and registry metadata below
 are manager-supplied. Gate 3 #4 remains open for the selected remediation,
 exception disposition and validation; no blanket security clearance follows.
 
-| Advisory | Current locked package | Fixed-version finding | Action |
+| Advisory | Pre-refresh locked package | Fixed-version finding | Action |
 | --- | --- | --- | --- |
 | [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), picomatch ReDoS | `picomatch 4.0.7`, through Vite / tinyglobby / fdir and the TypeScript lint toolchain | Advisory covers `<=4.0.7` and lists **no patched version**. Host registry latest and highest published version are `4.0.7`. | Dated dev-only exception below; no invented replacement version. |
 | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), minimatch glob amplification | `minimatch 10.2.6`, through eslint/config-array/typescript-eslint | Affected `>=7.0.0 <11.0.1`; fixed in **11.0.1**. Host metadata: eslint `10.15.0` uses `^11.0.5`, typescript-estree `8.73.0` uses `^11.0.1`. | Refresh only the relevant lint-tool dependency closure within existing ranges; no override required. |
@@ -42,12 +43,52 @@ major bump and unreviewed global overrides. None resolves the absence of a
 patched picomatch release. The older Vite advisory cleared by PR #64 is a
 different advisory and must not be reintroduced to make today's audit quieter.
 
-**Lock refresh pending host execution on this branch.** Until its actual diff,
-clean install, lint, build, tests and rescan are recorded, minimatch is not
-claimed fixed and its old temporary exception is not yet retired. **Retire
-that exception when the reviewed fixed lock lands**, provided the rescan
-confirms GHSA-g3hv-75wg-m249 is absent. The picomatch exception is separate and
-does not authorize leaving a fixable minimatch version behind.
+### Verified lock refresh and host results — `04088d21`
+
+The manager generated and committed the refresh in **`04088d21`**, on top of
+`770575ab`. The generated lock diff was independently inspected locally;
+**package.json is unchanged**, no override was added, and the changes are
+confined to the lint-tool dependency closure:
+
+- eslint **10.11.0 → 10.15.0**, `@eslint/config-array` **0.23.5 → 0.23.6**;
+- typescript-eslint and the ten `@typescript-eslint/*` packages in the lock
+  **8.70.1 → 8.73.0**;
+- minimatch **10.2.6 → 11.0.9**, brace-expansion **5.0.12 → 5.0.13**, new
+  `@isaacs/nonrecursive-glob-match` **1.1.0**;
+- nested ignore **7.0.10 → 7.0.16** and semver **7.8.5 → 7.8.6**.
+
+**Vite 6.4.6, picomatch 4.0.7, fdir 6.5.0 and tinyglobby 0.2.17 remain
+unchanged**. There are no unrelated package moves. The refreshed lock SHA256 is
+`17da7305b4a44572aafe6e1f27a1ad646f5e21953b6cee8f674e5b908c70711a`.
+
+The manager reports the following host validation on **Node v26.8.1 / npm
+11.19**. These commands were not rerun in this sandbox; no test counts were
+supplied, so exits are recorded without inventing counts:
+
+| Host command | Reported result |
+| --- | --- |
+| `npm ci --engine-strict` | Exit 0 |
+| `npm run lint` | Exit 0 |
+| `npm run build` | Exit 0 |
+| `npm test` | Exit 0 |
+| `npm audit` (full lock) | **10 high**, **0 moderate**; all propagated from picomatch GHSA-fc5q-39xc-vjpf; no minimatch or eslint advisory entries |
+| `npm audit --omit=dev` | **0 findings** |
+
+The ten affected entries are six typescript-eslint-family entries plus fdir,
+picomatch, tinyglobby and Vite: **one underlying advisory**, not ten independent
+flaws. This is **13 → 10 findings**, not a clean full-lock audit. The original
+run 44183595243 above remains the pre-refresh scan, not this branch's CI result.
+
+**The minimatch temporary exception is retired as of this refreshed lock**:
+11.0.9 is outside GHSA-g3hv-75wg-m249's affected range and the host rescan reports
+that advisory absent. The separate picomatch exception below stays in effect,
+manager-owned, with review by **2026-12-01** and the earlier release/GHSA triggers.
+
+**Node 24.22.0 was unavailable on the host.** Engine-strict success under Node
+26 does not establish the pinned Node 24 runtime's compatibility. CI must still
+validate the exact lock on **Node 24.22.0**, including clean install, lint, build
+and tests; no CI or main-branch pass is inferred here. Gate 3 #4 is not closed by
+these host results alone.
 
 ### Picomatch temporary dev-only exception
 
@@ -82,13 +123,14 @@ does not authorize leaving a fixable minimatch version behind.
 
 This records the requested bounded risk disposition, not RC acceptance.
 Application/backend pins and the existing minimatch decision history below
-remain intact; the new fixed-lock status must be recorded separately.
+remain intact; its exception is superseded by the fixed-lock status above.
 
-### Exact host-side refresh and validation
+### Refresh procedure and pinned-runtime validation
 
-Use a clean/disposable checkout of `codex/g3-dev-glob-advisories`, with the
-maintainer's **Node 24.22.0** on PATH and working public-registry DNS. From its
-`frontend` directory, stop on any install or validation error:
+The first block is the refresh procedure supplied before `04088d21`, not an
+instruction to refresh the already-reviewed lock again in CI. It targeted a
+clean/disposable checkout with **Node 24.22.0** on PATH; the actual completed
+host run used Node 26.8.1 as disclosed above. From `frontend`:
 
 ```sh
 test "$(node --version)" = v24.22.0
@@ -111,7 +153,8 @@ changes must be individually explained, not accepted merely because npm made
 them. If unrelated churn occurs, stop and report the diff rather than editing
 integrity hashes manually or using force. Keep package.json unchanged.
 
-After that review, still on Node 24.22.0:
+For remaining CI/pinned-runtime validation, use the committed lock and
+**Node 24.22.0**; do not rerun `npm update`:
 
 ```sh
 npm ci --engine-strict --no-audit --no-fund
@@ -131,7 +174,7 @@ range as `18 || 20 || >=22`, but that alone does not establish compatibility of
 all newly resolved packages. Require successful lint/build/tests without relaxed
 assertions, no vulnerable minimatch copy, picomatch accounted separately and
 Vite still 6.4.6. Retain lock hash, exact tool versions, changed-package list and
-audit IDs/counts. Do not invent expected test totals for the future host run.
+audit IDs/counts. Do not invent expected test totals for the remaining pinned-runtime run.
 
 Finally rerun the existing composed advisory workflow/script on the final
 reviewed revision, including all 28 Python application packages. Local checks
