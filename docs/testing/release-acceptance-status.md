@@ -1,5 +1,14 @@
 # Release Acceptance Status
 
+## 2026-11-17 advisory follow-up (lock refresh pending)
+
+Advisory-only follow-up on source `ba847621`: the manager supplied completed
+run 44183595243 and registry metadata. Picomatch's no-patch dev-only exception
+and the pending compatible minimatch lock refresh are recorded in the
+[current advisory review](dependency-advisory-review-20261115.md#composed-scan-and-dev-tooling-follow-up--2026-11-17).
+This does not update the earlier CI/browser evidence or certify the next lock;
+Vite remains 6.4.6. No dependency install, upgrade or test ran in this sandbox.
+
 ## 2026-11-17 reconciliation through PR #99 (not RC acceptance)
 
 Reviewed main: `7af7734e6ec1eb21248498533461795dfcb04b19`. Merge identities are
@@ -61,11 +70,17 @@ required checks have not changed. See the
   **403**. Run the existing workflow on the intended final main SHA and retain
   its actual revision, stage results and artifacts; publishing the script or
   workflow is not acceptance. See the [user actions](release-acceptance-status.md#2026-11-16-user-actions-for-final-acceptance-evidence).
-- **Dependency Advisory Review — user dispatch needed:** the same token **403**
-  leaves the composed scan/dispositions open. OpenTelemetry **1.45.2 is already
-  applied**; this is not another bump request. Confirm current lock scans and
-  the documented dev-only minimatch exception, not an invented zero-advisory
-  result. See the [advisory status](dependency-advisory-review-20261115.md#applied-patch-status--2026-11-16).
+- **Dependency Advisory Review — remediation/validation open:** manager-reported
+  run **44183595243** on `6a440e39` completed with production npm **0**, pip **0**
+  and **13 dev-tooling findings** from picomatch/minimatch. Picomatch has no
+  published patch: the dated dev-only exception is owned by the manager, with
+  review by **2026-12-01** or any release above 4.0.7 / GHSA update. A compatible
+  lint-tool lock refresh should remove minimatch without an override or Vite
+  change; **retire the minimatch exception once that fixed lock lands**, after
+  lint/build/tests and rescan. The refresh is pending host execution, not
+  claimed done. Final changed-lock scans/dispositions remain required; the old
+  token 403 is no longer a claim that no advisory run has happened. See the
+  [current advisory follow-up](dependency-advisory-review-20261115.md#composed-scan-and-dev-tooling-follow-up--2026-11-17).
 - **Health-run accept/rerun decision:** the manager must decide how to handle the
   failed zero-tolerance result. It is still FAILED; no acceptance, new limit,
   resumed run or rerun is authorized by this status update. Any changed policy
