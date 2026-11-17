@@ -1,173 +1,194 @@
-# V3 pilot result — evidence-scope template
+# V3 trace2 pilot result — 2026-11-16
 
-**Template only. Do not fill result fields until the operator confirms the run
-has finished and authorizes output review.** No result is inferred from elapsed
-time, an output directory, progress receipts or successful launch. This document
-was prepared without reading the live pilot output or running games/tests.
-Replace `TBD` only with terminal evidence; leave unavailable measurements unknown.
+**Accounting complete; pilot unusable.** The operator confirmed termination
+before authorizing this read-only review. `PILOT-COMPLETE.json` accounts for
+36/36 cells: **35 resolved, one CPU-limit timeout**, with `complete: true`,
+`usable: false`, `budget_refused: false`, and all forecast fields `null`.
+The original plan is unchanged. No rerun, resume, new plan or game execution
+was performed for this review. This dated result fills the former evidence-scope
+template; it does not turn either failed predecessor into acceptance.
 
-## Identity and terminal evidence
+## Identity and evidence checked
 
-The operator reported this launch identity; it is not independently verified by
-this template:
-
-| Item | Value / evidence to record after completion |
+| Item | Reviewed identity |
 | --- | --- |
-| Run ID | `archetype-pilot-20261116-v3-trace1` |
-| Source commit | `54c50a91becc629f868f0b2a09814bf35a97e297` |
-| Issued plan **file** SHA-256, reported by operator | `ec53f5962d2a7302bd6b8e24403e0cc0860bf20bb9dbba486b99b8f279aa153b` |
-| Plan canonical-object digest (`plan_sha256` in controller report) | TBD |
-| Fresh hash-locked install record; exact interpreter/runtime identity | TBD; retain privately, summarize provenance without paths/credentials |
-| Source/runtime canonical digests and matching private artifact file hashes | TBD; label the two kinds of hash separately |
-| Actual terminal controller exit, start/end times, elapsed seconds | TBD |
-| Final report filename and file SHA-256 | TBD; `PILOT-COMPLETE.json`, `PILOT-INCOMPLETE.json`, or absent |
-| Report `complete`, `usable`, `budget_refused`, `forecast_reason` | TBD, with exact values/types |
-| Scheduled / accounted / missing / duplicate / undeclared cells | TBD; compare ordered IDs to the frozen plan, not just lengths |
-| Status and termination counts over **all** scheduled cells | TBD; retain missing cells explicitly |
-| Wait/accounting closure and registry state after termination | TBD; a closed registry is not a health pass |
+| Run ID | `archetype-pilot-20261116-v3-trace2` |
+| Measured source commit | `495d820325179a625b5a63b2d62847718d5d5706` |
+| Plan **file-byte** SHA-256 | `79beba36d65d6745a363f2e9a4063ee8c5fb25f553b1e6bea77746cdcc26389d` |
+| Plan **canonical-object** SHA-256 | `7e29a160fd142d766ada934a32e09f1b1a020a7a9e019a41035cf6114132481d` |
+| Source canonical-object SHA-256 | `a2aead6b678a7c0252c9fd6058960364662d8bd0440b313af9d9b184f3683b90` |
+| Runtime canonical-object SHA-256 | `d852ff25e25a0dc238a71f7ff9595f76f50dc0da184d2cddc1bb1181b3e0b72a` |
+| Source manifest file-byte SHA-256 | `ea08045e64dc9a4bf3b82b776d151d543860424d0cf397dccac5d2a543303b7a` |
+| Runtime manifest file-byte SHA-256 | `8c3aebc8be6a4832e85361b0ad29c1fe974b77900637e6b4113ac893f88a27a0` |
+| Final report file-byte SHA-256 | `8d8311c0180586dd5dcda1cacb2e7b93ee3e5723f9d488c82213671e28ec0893` |
 
-The plan file is pretty-printed JSON, while the report's `plan_sha256` uses the
-adapter's canonical JSON-object digest. They are different identities: compare
-like with like using the committed adapter's algorithm. The same distinction
-applies to published source/runtime objects versus their file-byte hashes.
-Do not call the supplied plan-file hash a matched report-object digest.
+The source/runtime/plan objects match the report's canonical digests; file hashes
+are kept distinct. All 36 ordered cell IDs match the frozen schedule without
+missing, duplicate or undeclared rows. All trace byte counts and whole-file hashes
+match their receipts. Every retained JSONL record was checked for complete line,
+sequence, previous-record binding and the trace-schema-4 domain-separated digest,
+with the initial identity bound to the expected cell/source/runtime/plan.
+This is an artifact audit, **not a fresh execution of replay**.
 
-A controller exit 0, a filename containing COMPLETE or `accounted: 36` alone is
-insufficient. Check the terminal process, final report, ordered schedule,
-source/runtime/plan bindings and applicable per-cell evidence together. Missing
-or contradictory evidence leaves the conclusion unverified; do not repair a
-report to make it consistent.
+All 71 attempted game/verification children have started-and-waited receipts;
+all cells report handles reaped and `run_invalid: false`. The operator reports
+the controller finished. Its actual shell exit/status receipt is not included
+in the reviewed output directory, so no numeric controller exit is asserted.
+No live registry was read or changed: final-report campaign figures below are
+point-in-time evidence, not a current registry-closure audit or future admission.
+The operator reports the same fresh hash-locked environment as trace1; the
+reviewed runtime object and all worker identities bind its exact digest.
 
-## Frozen scope and budgets to check against the actual plan
+## Frozen scope
 
-- **36 single games**, nine adjacent admitted deck pairs × two fresh seeds
-  (`2026112001`, `2026112002`) × both seats. No sideboarding; unchanged master AI
-  and rules. Burn/Mono Red exclusions remain the declared admission policy.
-- This is not all 36 deck pairs, the original 1,440-game/20-seed statistical
-  matrix, a natural BO3 cohort, or an AI-strength acceptance sample. Mirrored
-  seats share an engine seed but do not fix shuffles by named deck: swapped
-  seats can receive different hands/draws. Do not count games/seats as independent
-  seeds or manufacture a precise strength interval from this pilot.
-- Two concurrent worker slots, one-core affinity and 2-GiB address-space limit
-  per worker. Require the declared host headroom and idle-host condition to be
-  recorded. These are process/affinity controls, not cgroup reservations or a
-  measured aggregate-memory guarantee.
-- **1,200 CPU / 1,500 wall seconds per cell shared by play plus verification**;
-  no retry/resume. Check the active v3 policy, not the older budget nested in the
-  lineage-only source matrix. Tick/turn/trace limits and host sleep remain
-  failures, not draws, losses or completed wins.
-- Per-action complete state/legal/RNG digest chain; full checkpoints every 64
-  actions and at declared decision/handler/final boundaries. Sequential replay
-  and serialization round trips still run at every accepted action. A lighter
-  trace does not relax replay equality.
-- The campaign ceiling is 48 worker-hours: 15 pilot, 30 reserved for a separately
-  approved health run, three overhead. The registry carries prior charges across
-  new run IDs. Both slots are charged through controller lifetime, including
-  setup/idle/postprocessing; actual child CPU is a different measurement.
-  External installation/setup work also consumes operator-accounted overhead.
+- 36 single games: **nine adjacent pairs × two seeds × both seats**, on nine
+  unchanged admitted deck lists. The seeds remain 2026112001 and 2026112002;
+  Burn/Mono Red remain explicitly excluded. No sideboarding or AI/rules change.
+- Master AI; engine seed with seats swapped, not deck-fixed shuffles. Mirrored
+  seats need not receive the same hands/draws and are not independent seeds.
+- Two slots, one-core affinity and 2-GiB address-space cap per worker;
+  **1,200 CPU / 1,500 wall seconds shared by game plus verification**,
+  10,000 actions and 100 turns. These process/affinity limits are not cgroups
+  or an aggregate host-memory guarantee. Host-idle/headroom is an operator
+  prerequisite, not independently measured by this review.
+- Schema-4 authenticated explicit card order; full checkpoints every 64 actions
+  and at the declared decision/handler/final boundaries; every-action replay and
+  serde. **128 MiB per-cell trace limit**, whole-record refusal, no truncation.
+- No retries/resume; host sleep/crash invalidates rather than produces a draw.
+  This is not the original 1,440-game statistical gate, all 36 pairs, BO3,
+  AI-strength acceptance or RC acceptance.
 
-## Interpret the result
+## Timeout classification
 
-### If `complete: true` and `usable: true`
+The single limited cell is ordinal **001**. Its game child returned **-24
+(SIGXCPU)** and was waited, with termination `cpu_limit`. Actual waited CPU is
+**1,199.922 seconds**; cell wall is **1,205.364 seconds**, below the 1,500-second
+wall limit. This is **not** a trace, turn, action or memory-limit refusal.
 
-The committed controller requires the exact scheduled rows without invalidation,
-all statuses `resolved` or `draw`, successful bound verification, complete valid
-phase receipts, reaped attempted children and finite measured CPU totals. Its
-verification binds the whole outcome, including winner, to sequential replay;
-selected first/every-100th/last boundaries also compare real app-handler/SQLite
-state. These direct handler comparisons are **not HTTP or browser parity**.
+Its intact trace contains **1,282 accepted actions**, zero-based indices
+0–1281, ending at **turn 44 / upkeep**, and **78,417,648 bytes**, below the
+134,217,728-byte quota. The bound progress receipt also reports 1,282 actions.
+There is no final record, game outcome or verification attempt; `winner`,
+completed-action count and replay time are null. These partial actions are
+not a loss, draw or completed game. Peak child RSS is 109,957,120 bytes,
+not the configured address-space cap.
 
-After independently checking that evidence, the strongest supported statement is:
+The last flushed CPU receipt reaches 1,175.006 process-CPU seconds, including
+922.229 in AI (inclusive of its simulations) and 168.194 in snapshot work.
+The last operation after that receipt is unclassified; it cannot be assigned
+from the final action or from elapsed time. Whole-cell CPU not assigned to
+completed named buckets is **28.084 seconds**, including residual/setup and
+interrupted work, not necessarily all AI. `cpu_attribution_complete: false`
+is retained for this cell. There is no basis to call the timeout an adapter
+ordering recurrence or a demonstrated stuck loop.
 
-> On the exact source/runtime/plan above, all 36 declared pilot games completed
-> with genuine engine outcomes and passed the configured per-action replay,
-> serialization and selected handler/SQLite checks. The pilot is usable for its
-> bounded operational forecast. This does not accept the matrix, AI strength,
-> general rules correctness or RC.
+## Completed replay and selected parity
 
-Report the actual resolved/draw counts, resource/error/divergence counts and
-checks performed. An engine-consistent outcome can still contain a rules/AI
-quality defect that these equality checks do not detect. Do not translate replay
-agreement into independent Oracle correctness or experienced-player quality.
+All **35** resolved cells have successful, identity-bound game and verification
+receipts, child exits zero, `parity_checked: true`, valid completion CPU receipts
+and no reported replay divergence. Each verification outcome equals its game
+outcome and authenticated final trace record. **17,195 actions** match sequential
+replay, with **17,195 serde restarts**.
 
-### If `usable: false` (whether `complete` is true or false)
+All **227** expected selected boundaries (first, every 100th, last) have true
+transition equality, original-key retry and SQLite round-trip checks, including
+explicit card-order equality through transition, persistence and restoration.
+These are real **direct-handler/SQLite comparisons**, not an uninterrupted API
+game, HTTP/browser parity, or independent Oracle/rules correctness. The CPU-
+limited cell has no replay/parity pass and is not silently included in these 35.
+The earlier trace1 ordering failure remains recorded separately; these receipts
+support the fix on this schedule, not an unlimited correctness guarantee.
 
-`complete: true` can mean every declared cell was accounted for even when games
-hit limits or failed. It is accounting completion, not healthy completion.
-`complete: false` includes missing/invalidated rows or a stopped controller;
-all failures and missing cells remain in scope. A resource-limited or failed
-verification must not retain a game winner as an accepted result.
+## Aggregate outcomes and measurements
 
-Use this bounded statement, with the actual failure causes filled in:
+The 35 verified outcomes are all `life` terminations: **21 seat-1 and 14 seat-2
+wins**, zero completed draws. This is accounting, **not a win-rate or strength
+estimate**; the censored cell receives no score. Final turns range **9–29**
+(median 16); accepted actions range **254–817** (median 476), totaling 17,195.
+Including the censored prefix gives 18,477 written actions, not 36 completed
+outcomes. All traces total **735,620,930 bytes** (735.621 decimal MB), with
+886 full action checkpoint records; databases and other output are additional.
 
-> The pilot is unusable for completed-game forecasting: [TBD status/termination
-> and missing/invalid-cell counts]. Accounted cells are not necessarily completed
-> games. The original plan remains unchanged; no prefix or replacement run has
-> been promoted to acceptance.
+Quantiles use nearest rank `ceil(p × n)` on the named sample; medians here use
+the same rule, with no interpolation. CPU sums are actual waited child CPU,
+not charged slot time. Resolved-only and censored-inclusive rows stay separate.
 
-The controller sets completed-game forecast fields to `null` when unusable.
-Preserve that. Do not drop failed cells, score timeouts as losses/draws, report a
-win rate over the surviving prefix, reuse c2 traces, raise budgets after seeing
-results, or silently substitute seeds/decks/AI. A future attempt needs a new
-pre-registered ID and approval. An unproven controller/child closure blocks later
-registry admission; no reset, lock deletion, HOME change or automatic recovery
-is authorized by this template.
+| Seconds / scope | n | Min | p50 | Mean | p95 | Max |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Game + verification CPU, all cells | 36 | 97.630 | 260.613 | 321.036 | 781.997 | 1,199.922 |
+| Game + verification CPU, resolved only | 35 | 97.630 | 260.613 | 295.925 | 601.610 | 781.997 |
+| Game CPU, resolved only | 35 | 53.333 | 162.902 | 196.113 | 428.806 | 608.106 |
+| Verification child CPU | 35 | 44.074 | 92.630 | 99.593 | 182.238 | 195.919 |
+| Cell wall, all cells | 36 | 99.652 | 264.151 | 324.608 | 787.546 | 1,205.364 |
+| Cell wall, resolved only | 35 | 99.652 | 264.151 | 299.443 | 607.340 | 787.546 |
+| Replay + selected-handler elapsed | 35 | 43.626 | 92.645 | 99.759 | 182.897 | 197.065 |
 
-## Measurements and forecast wording
+Replay time totals **3,491.561 seconds** across 35 cells, includes selected
+handler/SQLite setup/checks, and excludes other controller/worker setup as
+specified by the timer; it is not pure engine transition time. Actual waited
+CPU is available for all 36 cells: **11,557.299 seconds** total, of which
+10,357.377 belongs to resolved cells. Completed phase CPU attribution exists
+for 35 cells, with the timeout's flushed partial attribution retained separately.
+Across all available phase receipts, 176.609 waited CPU seconds are outside
+completed named buckets. Residual is not treated as trace CPU. Maximum observed
+per-child RSS is **138,395,648 bytes**; summing peak RSS would not measure host
+peak memory.
 
-Fill these from final, bound evidence, keeping counts and missingness visible:
+Controller elapsed is **5,868.353 seconds**. Charged current-run worker-slot
+time is **11,736.705 seconds** (two slots through controller lifetime), cumulative
+campaign charge **17,310.238**, and reported remainder **155,489.762 seconds**
+of 172,800. The health reservation remains **108,000 seconds / 30 hours**,
+leaving 47,489.762 seconds outside that reserve before later charges. Prior
+charges are not reset. Actual CPU, summed cell durations and charged slot time
+are different measurements; external operator setup/installation overhead
+still requires accounting. Later admission must recheck the real registry.
 
-| Measurement | Observed value / scope |
-| --- | --- |
-| Statuses and termination causes | TBD over all 36 scheduled cells |
-| Accepted actions, partial accepted actions, final turn/step/life progression | TBD; inspect private traces only after permission; publish aggregates only |
-| Actual waited CPU by cell and phase; cells with CPU data | TBD; missing is unknown, never zero |
-| CPU category attribution and residual/unattributed CPU | TBD; include interrupted-operation/receipt limitations |
-| Cell elapsed mean/p95 and controller elapsed | TBD; limited/censored durations are not completed-game durations |
-| Peak child RSS, address-space controls, failures | TBD; RSS is not the configured address-space limit or total host memory |
-| Trace bytes and observed checkpoint/action counts | TBD; per-trace 64-MiB quota is not a quota on the whole output directory |
-| Replay time/check counts and first divergence if any | TBD; no divergence claim without completed verification |
-| Charged current/cumulative worker-slot seconds and remaining campaign budget | TBD; distinguish from summed child CPU and reserve 30 hours for health |
+## Non-binding arithmetic from resolved cells only
 
-`cpu_attribution_complete` means valid phase receipts exist; it does not mean
-all CPU is assigned to named categories. Include measured residual CPU. For a
-killed worker, only the authenticated flushed progress prefix can support
-partial category/action evidence; the interrupted operation stays unattributed.
-Do not mistake wall timers, profiler-overhead runs or `None` for actual CPU.
+The controller's three forecast fields remain **null**, reason
+`incomplete_or_censored_or_failed_cells`. The following are separately labelled
+**conditional arithmetic scenarios**, not a usable-pilot forecast or approval.
+They use only the 35 resolved cell durations (game + verification), omit the
+censored long cell, and can underestimate workload from the 27 unseen pairs.
+A p95-duration scenario is not a confidence bound on a 72-game total.
 
-Only a usable pilot supplies the adapter's completed-game forecast fields:
-`forecast_72_worker_hours`, `forecast_1440_worker_hours` and
-`forecast_trace_bytes`. Report them as exploratory extrapolations from these
-nine pairs/two seeds, not measurements of the unrun cohorts or confidence bounds.
-The 1,440 trace forecast scales pilot trace bytes by 40; it excludes other output
-and does not certify disk sufficiency. Dividing worker-hours by two estimates
-ideal two-slot elapsed time only, before scheduling/host overhead.
+| Scenario: assume every new cell takes the named resolved duration | Per cell s | 72 worker-s | 72 worker-h | Ideal two-slot elapsed h | Headroom within 108,000 s reserve |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Resolved mean | 299.443 | 21,559.902 | 5.989 | 2.994 | 86,440.098 s |
+| Resolved p95 | 607.340 | 43,728.452 | 12.147 | 6.073 | 64,271.548 s |
 
-Compare remaining charged campaign budget, overhead and the conditional health
-reservation explicitly. Final-report figures are measured before its own
-publication; the registry ledger is authoritative for later admission. A favorable forecast cannot authorize another run or
-silently reduce the original statistical requirement. A separately approved
-72-game, all-pairs, one-seed health run remains **health-only**, with no meaningful
-seed-cluster interval from one independent seed; it does not close the original
-statistical or strength gate. The v3 pilot CLI does not execute that health plan.
+These sums exclude charged setup, idle slots, postprocessing, imbalance and
+external overhead. They do not guarantee the run fits. The hard 72 × 1,500-wall
+cell ceiling already consumes the entire 108,000-second reserve before that
+extra overhead; a cooperative controller must refuse further admission at its
+budget bound, not promise all 72 worst-case cells can finish.
 
-## Publication and next decision
+**1,440 × the resolved-only mean = 119.777 worker-hours**, already above the
+entire 48-hour campaign, before overhead and prior charges. Roughly **129.843
+hours** comes from 1,440 × the report's all-36 mean (324.608 seconds), which
+includes the censored timeout and is **not** a completed-game forecast. Neither
+figure supports fitting the original statistical gate within this campaign.
+No hard impossibility for every conceivable future game duration is inferred;
+the observed planning basis cannot meet that gate inside the approved budget.
+A 72-game health-only run cannot be relabelled as completing it.
 
-Keep plan files, complete snapshots/traces, hands, reasons, worker logs,
-databases and runtime/registry records private. Publish only reviewed aggregate
-facts and hashes without private paths or payloads. Hashes are bindings, not
-proof that an unexamined artifact passed.
+## Conclusion and next decision
 
-Result conclusion: **TBD — unverified until terminal review.**
+The complete pilot remains **`usable: false`** because one scheduled game did
+not finish under its frozen limits. No resource-limited game, failed predecessor
+or partial prefix is promoted to a resolved result. Rules/AI and pilot budgets
+remain unchanged; no rerun or resume is proposed here.
 
-- What passed, on which exact revision/runtime: TBD.
-- What failed, timed out, remained missing or could not be verified: TBD.
-- Is a separate health-plan review justified within the remaining ceiling: TBD;
-  operator/maintainer approval required, not granted here.
-- What remains open: final-source CI, clean-checkout/user-dispatched workflows,
-  native browser/operator gates, rules/data scope, statistical/strength evaluation
-  and RC sign-off retain their own requirements. This pilot alone closes none.
+The evidence supports reviewing a separately predeclared **72-game, all-36-pair,
+one-new-seed, both-seat health-only** entry point, with the explicit unusable-pilot
+exception and budget decisions in the [design note](archetype-health-entry-design-20261116.md).
+It does not authorize implementation or execution. Final-source CI, clean-
+checkout/advisory workflow evidence, browser/operator checks, data/rules scope,
+statistical evaluation, strength and RC sign-off remain separate open gates.
 
-Reference: [v3 adapter/runbook](archetype-v3-adapter-20261116.md) and
-[AI scope/status](../../AI-STATUS.md). This is a reporting template, not a new
-plan, output audit, execution authorization or result claim.
+Private plans, traces, hands, actions, reasons, logs, databases and registry
+payloads remain private. Only aggregates and identity hashes are published.
+References: [adapter/runbook](archetype-v3-adapter-20261116.md),
+[trace1 diagnosis](archetype-v3-trace1-diagnosis-20261116.md),
+[c2 diagnosis](archetype-pilot-c2-diagnosis-20261116.md) and
+[AI status](../../AI-STATUS.md).
