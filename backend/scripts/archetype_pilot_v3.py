@@ -269,7 +269,7 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop):
                         or result.get('handler_checks_performed')is not True or type(checks)is not list
                         or len(checks)!=len(selected) or any(type(x)is not dict or type(x.get('step'))is not int for x in checks)
                         or {x['step']for x in checks}!=selected):
-                    error='replay_divergence';break
+                    error='replay_divergence';stop.set();break
             count=outcome['accepted_actions']
             expected_sequence=count+(2 if outcome['termination']=='rejected_action'else 1)
             if stage['progress']['accepted_actions']!=count or stage['progress']['last_sequence']!=expected_sequence:
