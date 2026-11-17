@@ -5,13 +5,12 @@ The v3 modules add the approved raised-budget pilot and compact trace format.
 rules, built-in decks, existing v2 adapters and source-pin files are unchanged.
 The previous c2 pilot is not reused or reclassified as healthy.
 
-The only executable cohort here is a newly registered **36-game pilot**:
-nine adjacent deck pairs, two fresh seeds, both seats. A **72-game health plan**
-can be generated separately for all 36 pairs, one new seed and both seats, but
-neither this worker nor the pilot command executes that health plan. Its
-eventual launch needs separate approval and a health-run entry point. It is
-not the original 1,440-game/20-seed statistical matrix and cannot close that
-acceptance gate or provide a meaningful seed-cluster interval with one seed.
+The pilot entry remains restricted to a newly registered **36-game pilot**:
+nine adjacent deck pairs, two seeds and both seats. A separate approved
+**72-game health entry** now covers all 36 pairs, one new seed and both seats;
+it is described below. No health plan is issued or run as part of this code
+change. It is not the original 1,440-game/20-seed statistical matrix and cannot
+close that gate or provide a meaningful seed-cluster interval with one seed.
 AI strength remains unaccepted.
 
 ## What is implemented
@@ -57,8 +56,9 @@ network fetch, source-default app DB, developer media cache, or fallback AI.
 The declared campaign is **48 worker-hours**: 15 for a worst-case 36-cell pilot,
 30 reserved for a conditional 72-cell health run, and three for overhead.
 Both planned slots are charged throughout the controller lifetime, including
-idle/setup/postprocessing time. New launches must reserve the remaining
-declared schedule, not just the next cell. No 1,440-game execution command is
+idle/setup/postprocessing time. Pilot launches reserve their remaining declared
+schedule. The separately admitted health role reserves the next/in-flight
+wall horizon under its own total charged cap, as described below. No 1,440-game execution command is
 provided; its 1,500-second/cell ceiling alone is 600 worker-hours.
 
 The current-user, same-host registry is
@@ -128,6 +128,8 @@ python -B -m pytest -q \
   tests/test_archetype_trace_v3.py tests/test_archetype_game_v3.py \
   tests/test_archetype_plan_v3.py tests/test_archetype_worker_v3.py \
   tests/test_archetype_pilot_v3.py tests/test_archetype_registry_v3.py \
+  tests/test_archetype_health_v3.py tests/test_archetype_health_registry_v3.py \
+  tests/test_archetype_parent_stop_v3.py \
   tests/test_archetype_matrix_plan.py tests/test_archetype_matrix_execution.py \
   tests/test_archetype_matrix_game.py tests/test_archetype_matrix_api_check.py \
   tests/test_archetype_matrix_pilot.py tests/test_archetype_matrix_worker.py \
@@ -192,3 +194,108 @@ contains 396 distinct cases. All 13 v3 module/test hashes matched before/after
 and the branch bytes; engine/rules/AI/v2/pin files are unchanged. The runtime was
 the existing local application environment, not a fresh hash-locked install.
 Host/CI checks, a new issued plan and any new pilot remain separate.
+
+
+## Separate all-pair health entry — implementation 2026-11-17
+
+The maintainer approved code/tests for this separate health scope despite
+trace2 being accounting-complete but **unusable** (35 resolved, one CPU timeout).
+That result remains unchanged. **A failing health result is plausible and
+acceptable to report** given the observed 1/36 timeout; it is not permission
+to relax criteria or call a failure a pass. No plan issuance or launch is part
+of this implementation, and private pilot outputs are neither reused nor read.
+
+`archetype_health_v3` is a run-only CLI. It validates the exact existing health
+plan: 72 cells, all 36 pairs of nine admitted original lists, seed 2026112101,
+both seats, no sideboarding, no Burn/Mono Red substitution. It shares the
+pilot scheduler and cell execution, while calling the separate
+`archetype_health_worker_v3` role. The ordinary pilot CLI/worker still refuse
+health cells; role/ID substitution, edited limits/seeds/roster, an unbound
+runtime or stale source bindings refuse before execution. The health worker
+binds both its own file and the common worker. No rules, AI, deck, v2 adapter
+or source pin is changed.
+
+Every-action exact replay/serde, selected first/every-100th/last direct-handler/
+SQLite/card-order checks and limits stay unchanged: **1,200 shared CPU / 1,500
+shared wall seconds per cell**, 2 GiB per worker, two one-core slots, 10,000
+actions, 100 turns, 128 MiB trace, 64-action/decision checkpoints. No HTTP or
+browser parity is inferred from the selected direct-handler comparisons. A
+parent-detected outcome mismatch now sets the same stop event as a worker-
+reported divergence; the added regression fails without that fail-fast line.
+
+Health admission uses the **same** current-user host registry and permanent
+run-ID records, with a new `archetype-health-20261116-v3-*` namespace. An exact
+unused ID and fresh plan for the final clean commit/runtime still need operator
+review. Previous pilot records remain readable; prior campaign charges carry
+forward, and subsequent health IDs also carry prior **health-role** charges.
+Neither a new output nor a new ID starts another 30-hour allocation. An unknown
+child closure keeps the registry unproven and blocks both roles. Never reset
+HOME, move the registry or remove a lock to bypass it.
+
+The health role is bounded by **30 charged worker-hours total across its
+attempts** and the remaining **48-hour campaign**; both slots are charged
+through setup/idle/postprocessing as in v3. Before a cell launch, admission
+reserves two slots through the maximum next/in-flight wall horizon, plus **60
+worker-slot seconds of shutdown/postprocessing headroom**. It does not reserve
+all 72 worst cases at once, which would consume 30 hours before any overhead.
+If the remaining role/campaign budget cannot cover that next horizon, it stops
+admission and reports an incomplete budget refusal, without retry or truncating
+the declaration. The reserve is not an added per-cell allowance. Cooperative
+clock checks stop/drain near the cap; actual charges are always retained,
+including an overrun. If final report publication crosses either ceiling, the
+closed ledger flags the overrun and the entry raises/nonzero rather than
+returning success. No arbitrary-duration OS/I/O bound or cgroup guarantee is
+claimed. External setup still consumes operator-accounted overhead.
+
+After a separate plan/launch review only, the new run command is:
+
+```bash
+cd /absolute/clean-checkout/backend
+/absolute/fresh-venv/bin/python -B -m scripts.archetype_health_v3 run \
+  /absolute/private/reviewed-health-plan.json /absolute/private/new-health-output \
+  --execute-health
+```
+
+This command is documented, **not executed here**. The health CLI does not
+issue plans. It requires the fresh locked runtime, clean exact source, private
+absent output, support admission and host headroom described above. An existing
+pilot trace/receipt is not an input to the health role.
+
+`HEALTH-COMPLETE.json` means ordered schedule accounting is complete, not that
+health passed. `health_passed: true` additionally requires all 72 outcomes to
+be resolved/draw with complete bound replay/parity/CPU evidence and **zero
+resource-limited cells**. One limited cell is 1.389% of 72, not rounded to zero;
+`max_resource_limit_cells: 0` remains decisive. An accounted timeout can produce
+COMPLETE with `health_passed: false` and exit 1. Limits receive no winner/score;
+engine deck-out/draw policy stays unchanged. Crash/sleep/protocol/divergence
+failures stop admission and drain/reap; interrupted peers remain censored.
+
+Accept a result only after checking the **actual terminal exit, final report
+bindings and closed registry charges/overrun flags together**. The report is
+published before registry closure, so it alone cannot certify final accounting.
+Unknown child usage never becomes fabricated zero CPU. No resume or retries.
+All forecast fields remain null even on health success;
+`statistical_gate_complete` and `accepts_matrix_or_strength` remain false.
+One seed supplies no seed-cluster confidence interval or strength percentage.
+The unrun original statistical gate and overall RC acceptance remain open.
+
+### Health-entry local verification
+
+One explicit 20-module invocation of the command above passed **433 tests,
+0 failures/errors/skips in 94.93 seconds**, with five existing Pydantic
+`datetime.utcnow()` deprecation warnings. This is **165 v3 checks** (including
+health and the standalone parent-stop regression), **75 unchanged v2 checks**
+and **193 interface-scope pin checks**, not a sum of overlapping invocations.
+All 433 JUnit identities are distinct; all 18 v3 source/test file hashes match
+before/after and the branch bytes. The run used a disposable source archive
+and existing local Python 3.12.3 environment, not a fresh hash-locked install.
+
+The parent-stop regression separately failed on the base archive at the missing
+stop assertion and passed with only the one-line fix. Health admission tests
+were RED before its entry/registry existed; cooperative-cap and final-publication
+failure cases are exercised with authored clocks/receipts. The 72-cell scheduler
+tests use authored worker boundaries, not 72 real games. Bounded real engine,
+serde/handler and owned child checks come from the scoped adapter tests.
+No full backend suite, CI, new plan, health launch, real registry operation,
+statistical acceptance or strength result is claimed. Host/CI verification is
+still required before plan review and any separate launch approval.

@@ -173,7 +173,7 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
     return {'replay':replay,'handler_boundaries':checks,'handler_checks_performed':boundary is not None}
 
 
-def validate_request(request):
+def validate_request(request,*,kind='pilot'):
     from scripts.archetype_matrix_pilot import file_sha
     fields={'schema','mode','plan','cell','cpu','cpu_seconds','wall_seconds','memory_bytes',
             'runtime_sha256','source','trace_sha256','accepted_actions'}
@@ -182,10 +182,11 @@ def validate_request(request):
             or type(request['mode']) is not str or request['mode'] not in ('game','verify')):
         raise ValueError('Invalid v3 worker request')
     plan=request['plan'];validate_plan(plan)
-    if (plan['kind']!='pilot' or not is_sha(plan['runtime_sha256'])
+    if (type(kind)is not str or kind not in ('pilot','health') or plan['kind']!=kind
+            or not is_sha(plan['runtime_sha256'])
             or request['runtime_sha256']!=plan['runtime_sha256']
             or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
-        raise ValueError('Only an exact newly registered pilot cell may execute')
+        raise ValueError('Only an exact newly registered role-bound cell may execute')
     validate_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
     seconds=request['wall_seconds']
     if type(seconds) not in (int,float) or not 0<seconds<=MAX_WALL_SECONDS:
@@ -198,6 +199,10 @@ def validate_request(request):
             or source['files'].get(relative)!=file_sha(__file__)
             or not is_sha(request['runtime_sha256'])):
         raise ValueError('V3 worker source/runtime binding differs')
+    if kind=='health':
+        health_file=root/'backend/scripts/archetype_health_worker_v3.py'
+        if source['files'].get(str(health_file.relative_to(root)))!=file_sha(health_file):
+            raise ValueError('Health worker source binding differs')
     if request['mode']=='game':
         if request['trace_sha256'] is not None or request['accepted_actions'] is not None:
             raise ValueError('Game request cannot assert a previous outcome')
@@ -212,7 +217,7 @@ def request_identity(request):
             'trace_schema':TRACE_SCHEMA}
 
 
-def main(argv=None):
+def main(argv=None,*,kind='pilot'):
     if sys.flags.optimize or not sys.flags.dont_write_bytecode:
         raise SystemExit('Run v3 worker without optimization and with -B')
     args=sys.argv[1:] if argv is None else argv
@@ -223,7 +228,7 @@ def main(argv=None):
         data=stream.read(4*1024*1024+1)
     if len(data)>4*1024*1024:
         raise ValueError('Worker request exceeds its bound')
-    request=load_json(data);validate_request(request)
+    request=load_json(data);validate_request(request,kind=kind)
     controls=apply_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
     signal.signal(signal.SIGALRM,signal.SIG_DFL)
     signal.setitimer(signal.ITIMER_REAL,request['wall_seconds'])
