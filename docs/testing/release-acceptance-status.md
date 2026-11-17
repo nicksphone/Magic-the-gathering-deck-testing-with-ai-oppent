@@ -1,5 +1,93 @@
 # Release Acceptance Status
 
+## 2026-11-17 reconciliation through PR #99 (not RC acceptance)
+
+Reviewed main: `7af7734e6ec1eb21248498533461795dfcb04b19`. Merge identities are
+checked against local Git history. CI status below is manager-reported; this
+docs-only edit launches no tests, workflow, game or browser and deploys nothing.
+
+| PR | Merge SHA | Merged scope |
+| --- | --- | --- |
+| [#93](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/93) | `addea514` | Status-document reconciliation through PR #92. |
+| [#94](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/94) | `ce61e70b` | Trace2 pilot result and separately scoped health-run design. |
+| [#95](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/95) | `1a54be1f` | 72-game health entry and parent-detected mismatch stop fix. |
+| [#96](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/96) | `1e8b4f32` | Operator guidance for interpreting health results. |
+| [#97](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/97) | `e964503e` | 72-game health result: FAILED zero tolerance, 71/72 resolved. |
+| [#98](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/98) | `d0082cf8` | Measured Python/native performance analysis; no optimization implemented. |
+| [#99](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/99) | `7af7734e` | CI test-tiering plan and module lists; proposal only, no CI changes. |
+
+Main CI is **green at `1e8b4f32`**, [run 44019341176](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/44019341176),
+and **green at `e964503e`**, [run 44046659274](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/44046659274),
+as reported by the project manager. **The head `7af7734e` run result is not yet
+known in this reconciliation.** Earlier green runs do not certify that newer
+head; no new counts are inferred from the merges or summed across runs.
+
+### Trace2 and health results: complete accounting is not acceptance
+
+The trace2 pilot `archetype-pilot-20261116-v3-trace2` at `495d8203` finished
+**36/36 accounted: 35 resolved and one CPU-limit timeout**, `usable: false`.
+All 35 resolved replays and selected handler/SQLite checks passed without a
+reported divergence. This supersedes the earlier launch-only status; it does not
+turn the timeout into a completed game. See the
+[trace2 result](archetype-v3-pilot-evidence-template-20261116.md).
+
+The separate health run `archetype-health-20261116-v3-trace1` at `1a54be1f`
+finished **72/72 accounted, 71 resolved and one CPU-limit timeout**.
+**Health FAILED by predeclared zero tolerance**: `complete: true`,
+`health_passed: false`, `usable: false`. The 71 resolved replays and selected
+handler/SQLite checks passed with **no replay divergence**; the timeout has no
+completed replay, winner or score. This is health-only evidence, not statistical
+matrix or AI-strength acceptance. See the
+[health result](archetype-v3-pilot-evidence-template-20261116.md#72-game-health-result--2026-11-17)
+and [timeout options](archetype-health-timeout-options-20261117.md).
+
+The resolved-only trace2 mean implies **1,440 games ≈119.8 worker-hours**, above
+the **48-worker-hour** campaign ceiling even before censored/extra work. This is
+non-binding arithmetic, not a completed-matrix forecast. The original statistical
+matrix is infeasible within that budget; the 72-game health run does not replace it.
+
+PR #98 recommends measured Python representation/copying work before considering
+a native kernel; it implements neither an optimization nor a Rust rewrite and
+accepts no game/strength gate. It explicitly discards method-wrapper profiling
+figures that could force a planner fallback; retained timings preserve method
+identity. PR #99 remains an unadopted tiering proposal: current CI coverage and
+required checks have not changed. See the
+[performance report](python-native-performance-spike-20261117.md) and
+[tiering plan](ci-test-tiering-plan-20261117.md).
+
+### Current open decisions and evidence
+
+- **Clean Checkout Acceptance — user dispatch needed:** Claude's token returned
+  **403**. Run the existing workflow on the intended final main SHA and retain
+  its actual revision, stage results and artifacts; publishing the script or
+  workflow is not acceptance. See the [user actions](release-acceptance-status.md#2026-11-16-user-actions-for-final-acceptance-evidence).
+- **Dependency Advisory Review — user dispatch needed:** the same token **403**
+  leaves the composed scan/dispositions open. OpenTelemetry **1.45.2 is already
+  applied**; this is not another bump request. Confirm current lock scans and
+  the documented dev-only minimatch exception, not an invented zero-advisory
+  result. See the [advisory status](dependency-advisory-review-20261115.md#applied-patch-status--2026-11-16).
+- **Health-run accept/rerun decision:** the manager must decide how to handle the
+  failed zero-tolerance result. It is still FAILED; no acceptance, new limit,
+  resumed run or rerun is authorized by this status update. Any changed policy
+  or run needs a new explicit pre-registration and approval.
+- **Firefox/Brave native acceptance:** final-source native browser evidence
+  remains open. Hosted/browser-program results do not automatically transfer
+  to native Firefox or Brave. This edit certifies no new browser run.
+- **Original 1,440-game matrix:** infeasible within the 48-worker-hour budget
+  at the resolved-only **119.8-worker-hour** arithmetic. A smaller health-only
+  run is not its statistical acceptance; scope/budget disposition remains open.
+- **CI tiering-plan adoption:** PR #99 is proposal only. Membership, gate
+  inventory, full-union pre-merge safety, CI/self-test layers and protection
+  drills need separate review/implementation. No tests have been demoted.
+- **AI strength:** not accepted, with no supported win-rate or before/after
+  strength claim from the pilots, health run, profiling or CI results.
+
+The 2026-11-17 reconciliation above supersedes pending-result wording in the dated
+historical entries. Standing limitations remain: separate-device LAN/manual CA
+trust is **user-deferred for RC, not passed**; the legacy source-movement seam
+retains two strict xfails under the manager's keep-for-RC decision. No broader
+release/deployment or arbitrary-card-support acceptance is implied.
+
 ## 2026-11-16 integration through PR #92 (not RC acceptance)
 
 Reviewed main: `495d820325179a625b5a63b2d62847718d5d5706`. The following
@@ -56,17 +144,16 @@ checkpoints and the 1,200-CPU/1,500-wall-second cell limits. It is not a guarant
 against another quota failure. The [quota arithmetic](archetype-trace2-quota-proposal-20261116.md)
 retains prior campaign charges; no stopped run is resumed or reclassified.
 
-### Trace2 launch: result pending
+### Trace2 launch record (historical; result superseded above)
 
 Claude reports issuing and launching **`archetype-pilot-20261116-v3-trace2`**
 on a clean clone of **`495d8203`**, with the same hash-locked environment and
 plan file SHA-256
 `79beba36d65d6745a363f2e9a4063ee8c5fb25f553b1e6bea77746cdcc26389d`.
-This records operator-supplied launch metadata only. Its private outputs have
-**not been read for this update**; completion, statuses, timing, replay health
-and usability are unknown. No new result, forecast or acceptance is claimed.
-The separately approved future 72-game health-only scope is not the original
-statistical gate and has no run result here.
+This was the operator-supplied launch-only record at the PR #92 checkpoint.
+It is preserved as history; the completed trace2 and 72-game health results are
+now reconciled in the 2026-11-17 section above. Neither result accepts the
+original statistical matrix or AI strength.
 
 ### Open acceptance work
 
