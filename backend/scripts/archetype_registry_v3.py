@@ -58,6 +58,7 @@ class Claim:
         self.root,self.path,self.record=root,path,record
         self.finished=False
         self.prior_charged_seconds=record['charged_before_worker_seconds']
+        self.prior_health_charged_seconds=record['charged_health_before_worker_seconds']
 
     def finish(self,*,charged_worker_seconds,report_sha256):
         if (self.finished or type(charged_worker_seconds)not in(int,float)
@@ -65,11 +66,14 @@ class Claim:
                 or report_sha256 is not None and not is_sha(report_sha256)):
             raise ValueError('Invalid or repeated controller closure')
         cumulative=self.prior_charged_seconds+charged_worker_seconds
+        health=self.prior_health_charged_seconds+(charged_worker_seconds if self.record['kind']=='health' else 0.)
         row={**self.record,'state':'closed','child_handles_reaped':True,
              'charged_worker_seconds':charged_worker_seconds,
              'charged_campaign_worker_seconds':cumulative,
              'remaining_campaign_worker_seconds':max(0.,48*3600-cumulative),
-             'report_sha256':report_sha256,'pilot_budget_exceeded':cumulative>18*3600}
+             'charged_health_worker_seconds':health,'remaining_health_worker_seconds':max(0.,30*3600-health),
+             'health_budget_exceeded':health>30*3600,
+             'report_sha256':report_sha256,'pilot_budget_exceeded':cumulative-health>18*3600}
         _write(self.path,row,replace=True)
         _write(self.root/'active.json',row,replace=True)
         self.finished=True
@@ -77,8 +81,9 @@ class Claim:
 
 
 @contextmanager
-def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output):
-    if (type(run_id)is not str or re.fullmatch(r'archetype-pilot-20261116-v3-[A-Za-z0-9-]{1,48}',run_id)is None
+def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pilot'):
+    if (type(kind)is not str or kind not in ('pilot','health')
+            or type(run_id)is not str or re.fullmatch(f'archetype-{kind}-20261116-v3-[A-Za-z0-9-]{{1,48}}',run_id)is None
             or not is_sha(plan_sha256)or not is_sha(runtime_sha256)
             or type(revision)is not str or re.fullmatch('[0-9a-f]{40}',revision)is None
             or type(output)is not str or not Path(output).is_absolute()):
@@ -97,11 +102,19 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output):
         if (type(prior)not in(int,float)or not math.isfinite(prior)or prior<0
                 or active is not None and active.get('remaining_campaign_worker_seconds')!=max(0.,48*3600-prior)):
             raise ValueError('Prior campaign charges are missing or inconsistent')
-        row={'schema':3,'state':'running','child_handles_reaped':False,'run_id':run_id,
+        health=active.get('charged_health_worker_seconds',0.)if active is not None else 0.
+        if (type(health)not in(int,float)or not math.isfinite(health)or not 0<=health<=prior
+                or active is not None and active.get('kind')=='health'and 'charged_health_worker_seconds'not in active
+                or active is not None and 'remaining_health_worker_seconds'in active
+                   and active['remaining_health_worker_seconds']!=max(0.,30*3600-health)):
+            raise ValueError('Prior health charges are missing or inconsistent')
+        row={'schema':3,'kind':kind,'state':'running','child_handles_reaped':False,'run_id':run_id,
              'plan_sha256':plan_sha256,'revision':revision,'runtime_sha256':runtime_sha256,
              'output':output,'campaign_worker_seconds':48*3600,'reserved_health_worker_seconds':30*3600,
              'charged_worker_seconds':None,'remaining_campaign_worker_seconds':None,
              'charged_before_worker_seconds':prior,'charged_campaign_worker_seconds':None,
+             'charged_health_before_worker_seconds':health,'charged_health_worker_seconds':None,
+             'remaining_health_worker_seconds':None,'health_budget_exceeded':False,
              'report_sha256':None,'pilot_budget_exceeded':False}
         path=root/'runs'/f'{run_id}.json'
         _write(path,row)  # permanent consumption, even if startup later fails

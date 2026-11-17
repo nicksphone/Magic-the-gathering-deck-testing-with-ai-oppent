@@ -102,6 +102,9 @@ class SlotBudget:
     def remaining_campaign_seconds(self,now):
         return max(0.,self.campaign_seconds-self.prior_charged_seconds-self.charged_seconds(now))
 
+    def exceeded(self,now):
+        return self.prior_charged_seconds+self.charged_seconds(now)>self.pilot_with_overhead_seconds
+
     def can_launch(self,*,now,unstarted,pending_deadlines):
         remaining=self.pilot_with_overhead_seconds-self.prior_charged_seconds-self.charged_seconds(now)
         reserved=unstarted*MAX_WALL_SECONDS+sum(max(0.,deadline-now)for deadline in pending_deadlines)
@@ -184,7 +187,7 @@ def _row(cell,directory,started,stages,outcome,error,invalid):
         'replay_seconds':(stages[-1].get('result')or{}).get('replay_seconds')if len(stages)==2 else None}
 
 
-def run_cell(plan,cell,directory,*,cpu,source,runtime,stop):
+def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
     started,offset=boot_time(),host_offset()
     directory=Path(directory);directory.mkdir(mode=0o700)
     stages=[];outcome=None;error=None
@@ -204,12 +207,13 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop):
                 'memory_bytes':plan['policy']['max_memory_bytes_per_worker'],'source':source,
                 'runtime_sha256':digest(runtime),'trace_sha256':file_sha(directory/'trace.jsonl')if mode=='verify'else None,
                 'accepted_actions':outcome['accepted_actions']if outcome else None}
-            validate_request(request)
+            validate_request(request,kind=kind)
             path=directory/f'{mode}-request.json';publish(path,request)
             stage={'mode':mode,'attempted':True,'started':None,'waited':False,
                    'cpu_seconds':None,'peak_rss_bytes':0}
             stages.append(stage)
-            process=run_process([sys.executable,'-B','-m','scripts.archetype_worker_v3',str(path)],
+            worker='scripts.archetype_worker_v3' if kind=='pilot' else 'scripts.archetype_health_worker_v3'
+            process=run_process([sys.executable,'-B','-m',worker,str(path)],
                 directory=directory,name=mode,environment=worker_environment(BACKEND),seconds=seconds,stop=stop)
             stage.update(process)
             if not _number(process.get('cpu_seconds')):
@@ -316,10 +320,15 @@ def pilot_report(rows,plan):
 
 
 def run_pilot(plan,directory):
-    started=boot_time();budget=SlotBudget(started=started);offset=host_offset()
+    return _admit_run(plan,directory,kind='pilot',budget_factory=SlotBudget,
+                      reporter=pilot_report,prefix='PILOT')
+
+
+def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
+    started=boot_time();offset=host_offset()
     validate_plan(plan)
-    if plan['kind']!='pilot' or not is_sha(plan['runtime_sha256']):
-        raise ValueError('Only a runtime-bound v3 pilot may execute here')
+    if plan['kind']!=kind or not is_sha(plan['runtime_sha256']):
+        raise ValueError(f'Only a runtime-bound v3 {kind} may execute here')
     source=source_identity(plan['revision']);runtime=runtime_identity()
     if digest(runtime)!=plan['runtime_sha256']:
         raise ValueError('Runtime differs from pre-registration')
@@ -335,9 +344,11 @@ def run_pilot(plan,directory):
     from persistence.job_retention import local_path
     directory=local_path(directory,existing=False)
     with claim_run(STATE_ROOT,run_id=plan['run_id'],plan_sha256=digest(plan),revision=plan['revision'],
-                   runtime_sha256=plan['runtime_sha256'],output=str(directory))as claim:
-        budget=SlotBudget(started=started,prior_charged_seconds=claim.prior_charged_seconds)
-        return _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim)
+                   runtime_sha256=plan['runtime_sha256'],output=str(directory),kind=kind)as claim:
+        extra={'prior_health_charged_seconds':claim.prior_health_charged_seconds} if kind=='health' else {}
+        budget=budget_factory(started=started,prior_charged_seconds=claim.prior_charged_seconds,**extra)
+        return _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,
+                                 reporter=reporter,prefix=prefix,kind=kind)
 
 
 @contextmanager
@@ -350,7 +361,8 @@ def _pool(stop):
             raise
 
 
-def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim):
+def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,*,
+                      reporter=pilot_report,prefix='PILOT',kind='pilot'):
     stop=threading.Event();rows={};pending={};next_index=0;available=cpus[:2]
     previous_handlers={}
     def cancel(_signal,_frame):
@@ -365,7 +377,7 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             while True:
                 if abs(host_offset()-offset)>.25:
                     stop.set()
-                if budget.prior_charged_seconds+budget.charged_seconds(boot_time())>budget.pilot_with_overhead_seconds:
+                if budget.exceeded(boot_time()):
                     stop.set();budget_refused=True
                 while available and next_index<len(plan['cells']) and not stop.is_set():
                     now=boot_time()
@@ -373,8 +385,9 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
                                              pending_deadlines=[value[2]for value in pending.values()]):
                         stop.set();budget_refused=True;break
                     index=next_index;next_index+=1;cpu=available.pop()
+                    extra={'kind':kind} if kind=='health' else {}
                     future=pool.submit(run_cell,plan,plan['cells'][index],directory/f'{index:03d}',
-                                       cpu=cpu,source=source,runtime=runtime,stop=stop)
+                                       cpu=cpu,source=source,runtime=runtime,stop=stop,**extra)
                     pending[future]=(index,cpu,now+MAX_WALL_SECONDS)
                 if not pending:
                     break
@@ -389,9 +402,9 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
         verify_sources(source)
         if digest(runtime_identity())!=plan['runtime_sha256']:
             stop.set()
-        if budget.prior_charged_seconds+budget.charged_seconds(boot_time())>budget.pilot_with_overhead_seconds:
+        if budget.exceeded(boot_time()):
             stop.set();budget_refused=True
-        report=pilot_report(ordered,plan)
+        report=reporter(ordered,plan)
         report.update(run_id=plan['run_id'],plan_sha256=digest(plan),source_sha256=digest(source),
             runtime_sha256=digest(runtime),elapsed_seconds=boot_time()-started,
             charged_worker_seconds=budget.charged_seconds(boot_time()),
@@ -404,11 +417,18 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             report['forecast_reason']='incomplete_or_censored_or_failed_cells'
             for key in ('forecast_1440_worker_hours','forecast_72_worker_hours','forecast_trace_bytes'):
                 report[key]=None
-        report_path=directory/('PILOT-COMPLETE.json'if report['complete']else'PILOT-INCOMPLETE.json')
+        if kind=='health':
+            report.update(health_passed=bool(report['usable'] and report['complete']),
+                charged_health_worker_seconds=claim.prior_health_charged_seconds+budget.charged_seconds(boot_time()),
+                remaining_health_worker_seconds=budget.remaining_health_seconds(boot_time()))
+        report_path=directory/(f'{prefix}-COMPLETE.json'if report['complete']else f'{prefix}-INCOMPLETE.json')
         publish(report_path,report)
         # A returned row must contain actual wait usage, not an unproven child.
         if next_index==len(rows)and all(row.get('child_handles_reaped')is True and _number(row.get('cpu_seconds'))for row in rows.values()):
-            claim.finish(charged_worker_seconds=budget.charged_seconds(boot_time()),report_sha256=file_sha(report_path))
+            closed=claim.finish(charged_worker_seconds=budget.charged_seconds(boot_time()),report_sha256=file_sha(report_path))
+            if kind=='health' and report['usable'] and (closed['health_budget_exceeded']
+                    or closed['charged_campaign_worker_seconds']>budget.campaign_seconds):
+                raise ValueError('Health budget exceeded during final publication; report alone is not acceptance')
         return report
     finally:
         stop.set()
