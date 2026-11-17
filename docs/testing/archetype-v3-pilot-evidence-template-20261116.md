@@ -272,3 +272,167 @@ turn old pilot failures into passes or establish RC readiness. Forecast fields
 remain null even for a health pass; do not fill them from a surviving subset.
 Current-source CI, browser/operator, rules/data, statistical/strength and release
 sign-off retain their separate requirements.
+
+## 72-game health result — 2026-11-17
+
+**Health FAILED by predeclared zero tolerance: 71/72 resolved, one CPU-limit
+timeout, no replay divergence among the 71 verified games.** The operator
+confirmed termination and authorized read-only review. This is the terminal
+record for `archetype-health-20261116-v3-trace1`, not a new run or reclassification of prior pilots.
+`HEALTH-COMPLETE.json` means schedule accounting completed; it records
+`complete: true`, `health_passed: false`, `usable: false`, `health_only: true`
+and `budget_refused: false`. No error, divergence, draw or cancellation is
+reported beyond the single CPU-limited game. Forecast fields remain null.
+
+### Launch, identity and terminal evidence
+
+| Item | Reviewed identity / operator-supplied terminal fact |
+| --- | --- |
+| Run ID | `archetype-health-20261116-v3-trace1` |
+| Full measured source commit | `1a54be1f7fc71884336d790c55bb935a7037fbb0` |
+| Issued plan **file-byte** SHA-256 | `601a8d68cf04c02ac4734bef034f9a58390dad1eafdd9da933c346e509859dc4` |
+| Plan **canonical-object** SHA-256 | `c921d07f6e731c187ca5c0aa7992f2ad934ad4d238587766200b01327da11a35` |
+| Source canonical-object SHA-256 | `a75446e9111ae55c3c9e19f8f032a9f800f79e84ffad6a43ada128728e4432f4` |
+| Runtime canonical-object SHA-256 | `d852ff25e25a0dc238a71f7ff9595f76f50dc0da184d2cddc1bb1181b3e0b72a` |
+| Source manifest file-byte SHA-256 | `fac18bee1b0e6b4cbf93b196e971b201b6828c54ec955d7eebfa5dfeb5dcf26f` |
+| Runtime manifest file-byte SHA-256 | `8c3aebc8be6a4832e85361b0ad29c1fe974b77900637e6b4113ac893f88a27a0` |
+| Final report file-byte SHA-256 | `e213787c3e81779eb288afa92536a5d2ed64a9b531e554c68b3ee5488598c22c` |
+| Launch time, operator-reported | 2026-11-17 03:39:15 UTC; directory created 03:39:16 UTC |
+| Completion time, operator-reported | 2026-11-17 06:46:40 UTC, final-report mtime |
+| Numeric controller exit | **Not captured**; detached launch, not inferred from the code |
+| Registry closure, operator-reported | `state: closed`, `child_handles_reaped: true`, `health_budget_exceeded: false`, `pilot_budget_exceeded: false`, report hash matching above |
+
+The run-ID grammar hard-codes `20261116`; launch actually occurred on
+**2026-11-17**, not on the identifier's date. Completion mtime is not an actual
+shell-exit timestamp. The operator supplied terminal summary fields:
+`complete: true`, `health_passed: false`, statuses `resolved: 71` /
+`timeout: 1`, and `accepts_matrix_or_strength: false`. Missing numeric exit is
+retained as missing, not converted to zero or one. The health failure is
+already explicit in the bound report and predeclared criterion.
+
+The plan/source/runtime objects match the report's canonical digests; the
+operator-supplied plan-file hash matches the actual reviewed file. All 72
+ordered cell IDs match the frozen plan, without missing, duplicate or undeclared
+rows. All trace sizes and whole-file hashes match their receipts. Every retained
+JSONL record's complete line, sequence, previous hash and schema-4 digest were
+checked, with initial identity bound to its cell/source/runtime/plan. All 143
+attempted children have started-and-waited receipts and every cell reports
+handles reaped and `run_invalid: false`. This audits **recorded evidence**;
+it is not fresh replay execution or an independent OS/registry-closure audit.
+The registry facts above are supplied by the operator; it was not read here.
+
+The exact schedule is **all 36 unordered pairs of the nine admitted lists ×
+seed 2026112101 × both seats = 72 single games**, with unchanged master AI,
+no sideboarding and both whole-deck exclusions retained. Mirrored seats use
+engine seeds, not deck-fixed shuffles. Limits remain 1,200 shared game-plus-
+verification CPU seconds, 1,500 wall seconds, 2 GiB per worker, two one-core
+slots, 10,000 actions, 100 turns and 128 MiB per trace. No result is imported
+from c2, either pilot or the original statistical declaration.
+
+### Single timeout: different matchup and progression, same CPU-limit class
+
+Ordinal **032** is **Drain Deck in seat 1 vs Ramp in seat 2**. Its game child
+returned **-24/SIGXCPU**, was waited, and terminated `cpu_limit` at
+**1,199.940 CPU seconds** and **1,202.771 cell wall seconds**. The trace ends at
+**turn 26 / postcombat main**, with **761 accepted action records** (zero-based
+0–760), **25,597,276 bytes**, and no final outcome or verification attempt.
+It is below wall, trace, action and turn ceilings; it is not a trace quota,
+memory-limit report, resolved loss or draw. Winner and replay time are null.
+
+The authenticated flushed CPU-progress boundary covers **752 actions** and
+25,586,537 bytes at **1,050.373 process-CPU seconds**. The nine later intact
+trace actions do not supply further CPU-category attribution. Completed
+prefix categories include **947.867 AI-inclusive seconds** and **73.253 snapshot
+seconds**; the whole-cell waited CPU outside completed named buckets is
+**151.040 seconds**. That includes residual and post-receipt/interrupted work;
+it cannot be assigned wholly to AI, a specific action or a loop. Final visible
+priority passes are not proof of a stuck loop: the last 20 written actions
+span nine steps of turn 26. The unrecorded interrupted operation remains unknown.
+
+Pilot trace2 cell 001 was **Blue Control seat 2 vs Dimir Control seat 1**, seed
+2026112001, ending turn 44 upkeep at 1,282 actions and 78,417,648 bytes under
+the same CPU ceiling. Thus the common observation is **CPU exhaustion before
+verification**, not the same matchup, seat, seed, action count or turn-44
+mechanism. Some resolved health games reach turn 44, so turn count alone does
+not determine resource failure. See the [short options note](archetype-health-timeout-options-20261117.md).
+
+### Verified outcomes, replay and selected parity
+
+All **71** resolved cells have zero game/verification child exits, bound valid
+receipts, `parity_checked: true` and complete phase CPU attribution. Each replay
+outcome equals its game outcome and authenticated final trace outcome.
+**36,404 actions and 36,404 serde restarts** match sequential replay.
+All **470** expected selected first/every-100th/last boundaries have true
+transition, original-key retry and SQLite round-trip comparisons, including
+explicit card-order transition, persistence and restoration checks. There is
+**no reported replay divergence** among these completed verifications. The
+limited cell has no replay or parity pass and is not counted as one.
+
+All 71 verified games terminate by `life`, with **41 seat-1 and 30 seat-2 wins**,
+zero completed draws. These are accounting counts, not an AI win-rate estimate.
+Final turns range **9–44** (nearest-rank median 17), accepted actions **246–1,242**
+(median 488), totaling 36,404. Adding the incomplete trace gives **37,165 written
+actions**, not 72 completed outcomes. All traces total **1,426,639,380 bytes**
+(1.427 decimal GB) and 1,794 full action checkpoint records; DBs/logs/caches
+are additional storage. Maximum observed per-child RSS is 142,098,432 bytes,
+not aggregate host peak memory or the configured address-space limit.
+
+Quantiles use nearest rank `ceil(p × n)`, with no interpolation. Censored-
+inclusive and resolved-only samples remain separate. Actual waited child CPU
+is available for all 72 cells; replay time for 71. The replay timer includes
+selected handler/SQLite work and setup inside that timer, not engine replay
+alone. These are descriptive measurements, **not forecasts**.
+
+| Seconds / sample | n | Min | p50 | Mean | p95 | Max |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Game + verification CPU, all cells | 72 | 82.898 | 236.296 | 307.065 | 833.555 | 1,199.940 |
+| Game + verification CPU, resolved only | 71 | 82.898 | 236.296 | 294.489 | 781.552 | 1,017.297 |
+| Cell wall, all cells | 72 | 84.781 | 239.622 | 310.676 | 841.720 | 1,202.771 |
+| Cell wall, resolved only | 71 | 84.781 | 239.622 | 298.112 | 788.003 | 1,023.615 |
+| Replay + selected-handler elapsed | 71 | 40.661 | 90.838 | 102.150 | 221.287 | 306.327 |
+
+Actual waited CPU totals **22,108.686 seconds**, of which **20,908.746** belongs
+to resolved cells. Replay/selected-handler elapsed totals **7,252.680 seconds**.
+Across available complete and partial receipts, **460.026 waited CPU seconds**
+are outside completed named buckets; missing attribution is not zero.
+Controller elapsed is **11,244.556 seconds**, distinct from summed cell wall,
+actual CPU and charged two-slot lifetime.
+
+### Budget record and scope of closure
+
+| Charge / remainder | Final report, seconds | Operator-supplied closed registry, rounded seconds |
+| --- | ---: | ---: |
+| Current health-role total | 22,489.112 | 22,489.12 |
+| Campaign total | 39,799.358 | 39,799.37 |
+| Remaining 30-hour health allocation | 85,510.888 | 85,510.88 |
+| Remaining 48-hour campaign | 133,000.642 | 133,000.63 |
+
+The report records current-run charged slots **22,489.112 seconds**. The
+operator supplies **17,310.25 seconds** of prior campaign charge. Small
+publication/closure differences and rounding are retained, not normalized
+away; the final closed registry governs future admission. The operator reports
+closed state, all handles reaped, no health/pilot budget overrun and the exact
+report hash above. These are operator facts joined to reviewed report bytes,
+not an independent read of the live registry. No charges, locks, HOME or registry
+location were reset or modified by this review. Remaining budget is not
+permission for another experiment; external setup remains operator-accounted.
+
+### Conclusion and non-claims
+
+**Health FAILED by its predeclared zero resource-limit tolerance.** Schedule
+accounting is complete, but the one CPU-limited game prevents health success:
+71/72 resolved with verified replay/parity, one unscored incomplete game.
+The result is plausible and acceptable to report honestly; it does not change
+the criterion. No further game, replay, rerun, resume, new plan, seed substitution,
+AI/rules change or limit increase was performed for this analysis.
+
+`forecast_72_worker_hours`, `forecast_1440_worker_hours` and `forecast_trace_bytes`
+remain null, reason `incomplete_or_censored_or_failed_cells`.
+`statistical_gate_complete` and `accepts_matrix_or_strength` remain false.
+The selected comparisons are direct-handler/SQLite checks, **not HTTP/browser
+parity or independent Oracle correctness**. One seed supplies no independent
+seed-cluster interval; mirrored seats do not add independent seeds. No strength
+percentage, excluded-deck qualification, original 1,440-game gate completion
+or overall RC sign-off follows. All raw game artifacts remain private; only
+reviewed aggregates and identity hashes are published. The [options note](archetype-health-timeout-options-20261117.md)
+records possible next decisions without changing anything.
