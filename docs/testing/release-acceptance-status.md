@@ -1,5 +1,18 @@
 # Release Acceptance Status
 
+## 2026-11-17 advisory follow-up (host validated; pinned CI pending)
+
+Advisory lock follow-up: **`04088d21`** (base `ba847621`) refreshes only the
+lint-tool dependency closure, with package.json unchanged and Vite still 6.4.6.
+The manager reports Node **26.8.1** / npm **11.19** engine-strict install, lint,
+build and tests all exit 0. Full audit falls **13 → 10 high / 0 moderate**,
+all from picomatch; production audit remains **0**. **Minimatch's exception is
+retired for this lock**. Picomatch's manager-owned exception remains, review by
+**2026-12-01** or an earlier release/GHSA trigger. **Node 24.22.0 CI validation
+is still pending**, not inferred from Node 26 host results. See the
+[verified advisory results](dependency-advisory-review-20261115.md#verified-lock-refresh-and-host-results--04088d21).
+This follow-up ran no install or tests locally and claims no new CI/browser pass.
+
 ## 2026-11-17 reconciliation through PR #99 (not RC acceptance)
 
 Reviewed main: `7af7734e6ec1eb21248498533461795dfcb04b19`. Merge identities are
@@ -58,7 +71,7 @@ required checks have not changed. See the
 ### Current open decisions and evidence
 
 - **Clean Checkout Acceptance — Gate 1 #7 PASSED (2026-11-17):** run **44190103918**, `head_sha` `ba847621bce6ad787c7f5c05cc0b9116ec840975` (main), workflow_dispatch, 22:26:39–23:03:56 UTC. All 16 stages exited 0 (platform, node-version, create-venv, backend-install, backend-pip-check, backend-runtime, frontend-install, cold-offline, api-contracts, runtime-dist, runtime-inventory, runtime-source, frontend-tests, frontend-lint, frontend-build, browser). Hosted Chrome with the workflow's explicit no-sandbox setting; this is not native-protected Chrome/Brave/Firefox acceptance. Earlier dispatches exposed two script bugs fixed in PR #101 (frontend-tests python path, run 44183536248 on `6a440e39`) and PR #102 (`TMPDIR=/tmp` for the frontend-tests stage, run 44189216630 on `9471e461`); both failed runs are history, not acceptance. See the [acceptance runbook](clean-checkout-acceptance-20261115.md).
-- **Dependency Advisory Review — Gate 3 #4 OPEN (2026-11-17):** run **44183595243** on `6a440e399308877cb498c8f7e083f2354e5f6d70` (a rerun on `9471e461`, run 44189247614, repeated it) completed with the wrapper nonzero because the full-lock npm audit has findings. Production npm: **0**. pip-audit: **0** findings over 28 packages. Full-lock npm: **13** (8 moderate, 5 high, 0 critical), all developer tooling, from two advisories: picomatch ReDoS GHSA-fc5q-39xc-vjpf (versions <=4.0.7; new, not the documented exception) propagating through fdir/tinyglobby to **vite 6.4.6** (high, direct) and typescript-eslint estree, and minimatch GHSA-g3hv-75wg-m249 (the documented dev-only exception) through eslint/typescript-eslint. The audit's suggested fix (vite 6.2.7) is a downgrade and is not accepted. Remediation or an owner/revisit-dated exception for the picomatch finding is required; developer tooling is not dismissed because production is clear. See the [advisory status](dependency-advisory-review-20261115.md#applied-patch-status--2026-11-16).
+- **Dependency Advisory Review — Gate 3 #4: lock remediated, picomatch exception pending maintainer disposition (2026-11-18):** the pre-refresh review (run **44183595243** on `6a440e39`, repeated by run 44189247614 on `9471e461`) found 13 full-lock dev-tooling findings with production npm **0** and pip **0** over 28 packages. Lock **`04088d21`** removes the minimatch finding (its exception is **retired**): PR #104 CI (hosted, pinned Node 24.22.0: frontend, browser, backend-reference and all four backend shards) passed, and the manager-reported Node 26.8.1 host install/lint/build/tests also pass. Full audit after the refresh: **10 high / 0 moderate**, all via picomatch GHSA-fc5q-39xc-vjpf (no patched release; registry latest 4.0.7); production npm **0**. The manager-owned dev-only picomatch exception remains, review by **2026-12-01** or any release above 4.0.7 / GHSA update. A fresh Dependency Advisory Review dispatch on the merged main is still needed to record the post-refresh scan. See the [verified advisory results](dependency-advisory-review-20261115.md#verified-lock-refresh-and-host-results--04088d21).
 - **Health-run accept/rerun decision:** the manager must decide how to handle the
   failed zero-tolerance result. It is still FAILED; no acceptance, new limit,
   resumed run or rerun is authorized by this status update. Any changed policy
