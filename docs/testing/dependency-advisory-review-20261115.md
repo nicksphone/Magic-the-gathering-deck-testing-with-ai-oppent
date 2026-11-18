@@ -397,3 +397,7 @@ Advisory Review** on the intended main revision and retain its run ID/reports.
 A changed lock is not by itself a successful scan or fresh-install/CI result.
 Gate 3 #4 stays OPEN until that run and the maintainer dispositions are confirmed.
 This follow-up changes only this document; no dependency pin is changed again.
+
+## Post-refresh review run — 2026-11-18
+
+Run **44270263913** (workflow_dispatch) on `9adf8dc8cc31657e7c04e2fadc130038a6a445ae`: production npm **0**; pip-audit **0** over 28 packages; full-lock npm **10 high / 0 moderate / 0 critical**, all via picomatch GHSA-fc5q-39xc-vjpf (no patched release). The wrapper's nonzero exit reflects complete findings, not a failed query. The dev-only picomatch exception is approved by the manager under the user's delegation; revisit by 2026-12-01 or on any picomatch release above 4.0.7 / GHSA update. No override, force or vite downgrade was applied.
