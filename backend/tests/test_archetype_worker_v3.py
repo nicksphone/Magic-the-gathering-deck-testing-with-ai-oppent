@@ -20,8 +20,9 @@ def subject():
 def test_raised_limits_validate_exact_types_before_any_process_changes():
     module=subject();cpus=sorted(os.sched_getaffinity(0));cpu=cpus[0]
     module.validate_limits(cpu,1200,2147483648)
+    module.validate_limits(cpu,2400,2147483648)
     for c,s,m in ((True,1200,2147483648),(max(cpus)+1,1200,2147483648),
-                  (cpu,True,2147483648),(cpu,1201,2147483648),(cpu,0,2147483648),
+                  (cpu,True,2147483648),(cpu,2401,2147483648),(cpu,0,2147483648),
                   (cpu,1200,True)):
         with pytest.raises(ValueError):module.validate_limits(c,s,m)
     assert sorted(os.sched_getaffinity(0))==cpus

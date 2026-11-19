@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 from scripts import archetype_pilot_v3 as pilot
-from scripts.archetype_plan_v3 import MAX_WALL_SECONDS
+from scripts.archetype_plan_v3 import STANDARD_WALL_SECONDS
 from scripts.archetype_trace_v3 import load_json
 
 
@@ -12,12 +12,14 @@ class HealthBudget(pilot.SlotBudget):
     """Same two-slot charging, cumulative30h health and48h campaign ceilings."""
     shutdown_reserve_seconds=60.  # worker-slot seconds; not a per-cell extension
 
-    def __init__(self,*,started,prior_charged_seconds=0.,prior_health_charged_seconds=0.):
+    def __init__(self,*,started,prior_charged_seconds=0.,prior_health_charged_seconds=0.,
+                 wall_seconds=STANDARD_WALL_SECONDS):
         if (not pilot._number(prior_charged_seconds) or not pilot._number(prior_health_charged_seconds)
                 or prior_health_charged_seconds>prior_charged_seconds):
             raise ValueError('Invalid carried health/campaign charges')
         super().__init__(started=started,prior_charged_seconds=prior_charged_seconds)
         self.prior_health_charged_seconds=prior_health_charged_seconds
+        self.wall_seconds=wall_seconds
 
     def remaining_health_seconds(self,now):
         return max(0.,self.reserved_health_seconds-self.prior_health_charged_seconds-self.charged_seconds(now))
@@ -31,7 +33,7 @@ class HealthBudget(pilot.SlotBudget):
     def can_launch(self,*,now,unstarted,pending_deadlines):
         # Both slots stay charged even with one worker idle. Cover the longest
         # next/in-flight wall horizon, not all72 worst cases plus zero overhead.
-        horizon=max([MAX_WALL_SECONDS,*[max(0.,d-now)for d in pending_deadlines]])
+        horizon=max([self.wall_seconds,*[max(0.,d-now)for d in pending_deadlines]])
         return self.remaining_seconds(now)>=2*horizon+self.shutdown_reserve_seconds
 
 

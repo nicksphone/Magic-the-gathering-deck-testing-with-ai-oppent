@@ -7,8 +7,11 @@ import re
 from scripts.archetype_matrix_plan import build_plan as build_source_matrix
 from scripts.archetype_trace_v3 import CHECKPOINT_INTERVAL, MAX_TRACE_BYTES, TRACE_SCHEMA, digest, is_sha
 
-MAX_CPU_SECONDS = 1200
-MAX_WALL_SECONDS = 1500
+STANDARD_CPU_SECONDS = 1200
+STANDARD_WALL_SECONDS = 1500
+MAX_CPU_SECONDS = 2400
+MAX_WALL_SECONDS = 3000
+HEALTH_RERUN_ID = 'archetype-health-20261116-v3-rerun1'
 MEMORY_BYTES = 2147483648
 PILOT_SEEDS = (2026112001, 2026112002)
 HEALTH_SEEDS = (2026112101,)
@@ -38,7 +41,9 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
                 fields = {'deck_a':a,'deck_b':b,'seed':seed,'deck_a_seat':seat}
                 cells.append({'cell_id':digest({'run_id':run_id,'kind':kind,**fields}),**fields})
     policy = deepcopy(matrix['policy'])
-    policy.update(max_seconds=MAX_WALL_SECONDS, max_cpu_seconds_per_game=MAX_CPU_SECONDS)
+    rerun = kind == 'health' and run_id == HEALTH_RERUN_ID
+    policy.update(max_seconds=MAX_WALL_SECONDS if rerun else STANDARD_WALL_SECONDS,
+                  max_cpu_seconds_per_game=MAX_CPU_SECONDS if rerun else STANDARD_CPU_SECONDS)
     policy['health_gate']['max_resource_limit_cells'] = 0
     trace = {'schema':TRACE_SCHEMA,'checkpoint_interval':CHECKPOINT_INTERVAL,'max_bytes':MAX_TRACE_BYTES,
              'progress_interval':16,'state_hash':'sha256_canonical_complete_snapshot',

@@ -191,6 +191,10 @@ def replay_trace(records, *, boundary=None, accounting=None):
     if first['kind'] != 'initial' or type(first['schema']) is not int or first['schema'] != TRACE_SCHEMA:
         raise TraceDivergence(0, ['initial'])
     _policy(first['policy'])
+    from scripts.archetype_plan_v3 import MAX_WALL_SECONDS, STANDARD_WALL_SECONDS
+    wall_limit = first['policy'].get('max_seconds', STANDARD_WALL_SECONDS)
+    if type(wall_limit) is not int or wall_limit not in (STANDARD_WALL_SECONDS, MAX_WALL_SECONDS):
+        raise TraceDivergence(0, ['timing_policy'])
     state = initial_state(first['deck_a'], first['deck_b'], first['seed'], first['game_id'])
     initial = capture(state, accounting)
     _check(first, {'snapshot':initial.value,'snapshot_sha256':initial.sha256,
@@ -212,7 +216,7 @@ def replay_trace(records, *, boundary=None, accounting=None):
             required.add('exception_class')
         # Checkpoint presence/content is decided from the genuine transition below.
         _keys(row, required | ({'checkpoint','checkpoint_reasons'} if 'checkpoint' in row else set()), steps)
-        if any(type(row[key]) not in (int, float) or not 0 <= row[key] <= 1500
+        if any(type(row[key]) not in (int, float) or not 0 <= row[key] <= wall_limit
                for key in ('decision_seconds','transition_seconds')):
             raise TraceDivergence(steps, ['timing'])
         try:
