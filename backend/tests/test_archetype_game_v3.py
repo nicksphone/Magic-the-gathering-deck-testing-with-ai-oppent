@@ -394,3 +394,16 @@ def test_order_only_handler_mutations_fail_without_weakening_v2_snapshot_checks(
         expected = {'transition':'handler_transition_cards_order',
                     'sqlite':'handler_sqlite_cards_order','restore':'handler_restored_cards_order'}
         assert altered and error.value.fields == [expected[loss]]
+
+
+
+def test_replay_timing_bound_uses_the_admitted_wall_policy():
+    rows, _, _ = make_trace()
+    rows[1]['decision_seconds'] = 1600
+    with pytest.raises(subject().TraceDivergence, match='timing'):
+        subject().replay_trace(rechained(rows))
+    rows[0]['policy']['max_seconds'] = 3000
+    assert subject().replay_trace(rechained(rows))['matched'] is True
+    rows[1]['decision_seconds'] = 3000.01
+    with pytest.raises(subject().TraceDivergence, match='timing'):
+        subject().replay_trace(rechained(rows))

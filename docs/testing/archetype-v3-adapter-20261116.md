@@ -198,6 +198,11 @@ Host/CI checks, a new issued plan and any new pilot remain separate.
 
 ## Separate all-pair health entry — implementation 2026-11-17
 
+The limits below describe the original health run. The
+[one pre-registered rerun](archetype-health-rerun-prereg-20261119.md) uses
+2,400 shared CPU and 3,000 shared wall seconds for its exact run ID. Pilot
+and other health plans retain the original values.
+
 The maintainer approved code/tests for this separate health scope despite
 trace2 being accounting-complete but **unusable** (35 resolved, one CPU timeout).
 That result remains unchanged. **A failing health result is plausible and

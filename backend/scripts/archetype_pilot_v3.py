@@ -15,7 +15,7 @@ from scripts.archetype_matrix_pilot import (
     BACKEND, available_memory, boot_time, file_sha, publish, runtime_identity,
     source_identity, verify_sources, worker_environment,
 )
-from scripts.archetype_plan_v3 import MAX_CPU_SECONDS, MAX_WALL_SECONDS, build_plan, validate_plan
+from scripts.archetype_plan_v3 import STANDARD_WALL_SECONDS, build_plan, validate_plan
 from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, digest, is_sha, load_json, verify_progress_prefix
 from scripts.archetype_worker_v3 import read_progress, request_identity, validate_cpu_usage, validate_request
 from scripts.archetype_registry_v3 import claim_run
@@ -107,7 +107,7 @@ class SlotBudget:
 
     def can_launch(self,*,now,unstarted,pending_deadlines):
         remaining=self.pilot_with_overhead_seconds-self.prior_charged_seconds-self.charged_seconds(now)
-        reserved=unstarted*MAX_WALL_SECONDS+sum(max(0.,deadline-now)for deadline in pending_deadlines)
+        reserved=unstarted*STANDARD_WALL_SECONDS+sum(max(0.,deadline-now)for deadline in pending_deadlines)
         return remaining>=reserved
 
 
@@ -191,6 +191,8 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
     started,offset=boot_time(),host_offset()
     directory=Path(directory);directory.mkdir(mode=0o700)
     stages=[];outcome=None;error=None
+    cpu_limit=plan['policy']['max_cpu_seconds_per_game']
+    wall_limit=plan['policy']['max_seconds']
     try:
         verify_sources(source)
         if digest(runtime_identity())!=digest(runtime):
@@ -198,8 +200,8 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
         for mode in ('game','verify'):
             if stop.is_set():
                 error='cancelled';break
-            seconds=MAX_WALL_SECONDS-(boot_time()-started)
-            remaining=MAX_CPU_SECONDS-sum(s['cpu_seconds']for s in stages)
+            seconds=wall_limit-(boot_time()-started)
+            remaining=cpu_limit-sum(s['cpu_seconds']for s in stages)
             if seconds<=0 or remaining<1:
                 error='wall_limit'if seconds<=0 else 'cpu_limit';break
             request={'schema':3,'mode':mode,'plan':plan,'cell':cell,'cpu':cpu,
@@ -278,7 +280,7 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
             expected_sequence=count+(2 if outcome['termination']=='rejected_action'else 1)
             if stage['progress']['accepted_actions']!=count or stage['progress']['last_sequence']!=expected_sequence:
                 error='worker_protocol';stop.set();break
-            if sum(s['cpu_seconds']for s in stages)>MAX_CPU_SECONDS:
+            if sum(s['cpu_seconds']for s in stages)>cpu_limit:
                 error='cpu_limit';break
         verify_sources(source)
         if digest(runtime_identity())!=digest(runtime):
@@ -287,7 +289,7 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
         error='source_runtime_or_controller_error';stop.set()
     if abs(host_offset()-offset)>.25:
         error='host_sleep';stop.set()
-    if not error and boot_time()-started>MAX_WALL_SECONDS:
+    if not error and boot_time()-started>wall_limit:
         error='wall_limit'
     row=_row(cell,directory,started,stages,outcome,error,stop.is_set())
     publish(directory/'cell-result.json',row)
@@ -345,7 +347,10 @@ def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
     directory=local_path(directory,existing=False)
     with claim_run(STATE_ROOT,run_id=plan['run_id'],plan_sha256=digest(plan),revision=plan['revision'],
                    runtime_sha256=plan['runtime_sha256'],output=str(directory),kind=kind)as claim:
-        extra={'prior_health_charged_seconds':claim.prior_health_charged_seconds} if kind=='health' else {}
+        extra={}
+        if kind=='health':
+            extra.update(prior_health_charged_seconds=claim.prior_health_charged_seconds,
+                         wall_seconds=plan['policy']['max_seconds'])
         budget=budget_factory(started=started,prior_charged_seconds=claim.prior_charged_seconds,**extra)
         return _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,
                                  reporter=reporter,prefix=prefix,kind=kind)
@@ -388,7 +393,7 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
                     extra={'kind':kind} if kind=='health' else {}
                     future=pool.submit(run_cell,plan,plan['cells'][index],directory/f'{index:03d}',
                                        cpu=cpu,source=source,runtime=runtime,stop=stop,**extra)
-                    pending[future]=(index,cpu,now+MAX_WALL_SECONDS)
+                    pending[future]=(index,cpu,now+plan['policy']['max_seconds'])
                 if not pending:
                     break
                 finished,_=wait(pending,timeout=.25,return_when=FIRST_COMPLETED)

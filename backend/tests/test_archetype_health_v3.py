@@ -21,8 +21,8 @@ def subject():
     return importlib.import_module(name)
 
 
-def plan():
-    return build_plan('a'*40,'archetype-health-20261116-v3-unit-health',kind='health',
+def plan(suffix='unit-health'):
+    return build_plan('a'*40,f'archetype-health-20261116-v3-{suffix}',kind='health',
                       runtime_sha256=digest({'unit_runtime':True}))
 
 
@@ -146,7 +146,8 @@ def test_health_failures_are_incomplete_or_unhealthy_and_never_accept(tmp_path,m
     assert (tmp_path/'health/HEALTH-INCOMPLETE.json').exists()
 
 
-def test_health_real_parent_shares_phase_budgets_and_binds_the_health_worker(tmp_path,monkeypatch):
+@pytest.mark.parametrize(('suffix','cpu','wall'),[('unit-health',1200,1500),('rerun1',2400,3000)])
+def test_health_real_parent_shares_phase_budgets_and_binds_the_health_worker(tmp_path,monkeypatch,suffix,cpu,wall):
     from test_archetype_pilot_v3 import authored_phase_controller
     subject();core,requests,source=authored_phase_controller(monkeypatch)
     original=core.run_process;commands=[]
@@ -155,27 +156,33 @@ def test_health_real_parent_shares_phase_budgets_and_binds_the_health_worker(tmp
     monkeypatch.setattr(core,'run_process',observed)
     from scripts.archetype_matrix_pilot import file_sha
     source['files']['backend/scripts/archetype_health_worker_v3.py']=file_sha(core.BACKEND/'scripts/archetype_health_worker_v3.py')
-    row=core.run_cell(plan(),plan()['cells'][0],tmp_path/'cell',cpu=min(os.sched_getaffinity(0)),
+    p=plan(suffix)
+    row=core.run_cell(p,p['cells'][0],tmp_path/'cell',cpu=min(os.sched_getaffinity(0)),
                       source=source,runtime={'unit_runtime':True},stop=threading.Event(),kind='health')
     assert [q['mode']for q in requests]==['game','verify']
-    assert [q['cpu_seconds']for q in requests]==[1200,1189]
-    assert [q['wall_seconds']for q in requests]==[1500,1485]
+    assert [q['cpu_seconds']for q in requests]==[cpu,cpu-11]
+    assert [q['wall_seconds']for q in requests]==[wall,wall-15]
     assert row['status']=='resolved' and row['parity_checked'] is True
     assert all(c[3]=='scripts.archetype_health_worker_v3' for c in commands)
 
 
-def test_health_worker_admission_is_distinct_from_default_pilot_and_checks_both_source_files(tmp_path,monkeypatch):
+@pytest.mark.parametrize(('suffix','cpu','wall'),[('unit-health',1200,1500),('rerun1',2400,3000)])
+def test_health_worker_admission_is_distinct_from_default_pilot_and_checks_both_source_files(tmp_path,monkeypatch,suffix,cpu,wall):
     subject()
     from scripts import archetype_worker_v3 as worker
     from scripts import archetype_health_worker_v3 as health_worker
     from scripts.archetype_matrix_pilot import file_sha
-    root=Path(worker.__file__).resolve().parents[2];p=plan()
+    root=Path(worker.__file__).resolve().parents[2];p=plan(suffix)
     req={'schema':3,'mode':'game','plan':p,'cell':p['cells'][0],'cpu':min(os.sched_getaffinity(0)),
-         'cpu_seconds':1200,'wall_seconds':1500,'memory_bytes':2147483648,'runtime_sha256':p['runtime_sha256'],
+         'cpu_seconds':cpu,'wall_seconds':wall,'memory_bytes':2147483648,'runtime_sha256':p['runtime_sha256'],
          'source':{'root':str(root),'revision':p['revision'],'files':{str(Path(m.__file__).resolve().relative_to(root)):file_sha(m.__file__)for m in (worker,health_worker)}},
          'trace_sha256':None,'accepted_actions':None}
     with pytest.raises(ValueError):worker.validate_request(req)
     worker.validate_request(req,kind='health')
+    for limit in ('cpu_seconds', 'wall_seconds'):
+        wrong = {**req, limit: req[limit] + 1}
+        with pytest.raises(ValueError):
+            worker.validate_request(wrong,kind='health')
     class LimitBoundary(BaseException):pass
     def limits(*args):raise LimitBoundary
     monkeypatch.setattr(worker,'apply_limits',limits)
@@ -262,3 +269,13 @@ def test_health_worker_runtime_guard_precedes_request_read(tmp_path,flags):
         cwd=Path(__file__).parents[1],capture_output=True,text=True,timeout=5)
     assert result.returncode!=0 and 'Run v3 health worker' in result.stderr
     assert 'FileNotFoundError' not in result.stderr and not list(tmp_path.iterdir())
+
+
+def test_rerun_budget_checks_both_slots_at_the_increased_horizon():
+    b = subject().HealthBudget(started=0., prior_charged_seconds=39799.,
+                               prior_health_charged_seconds=22489., wall_seconds=3000)
+    assert b.remaining_seconds(0.) == 85511.
+    assert b.can_launch(now=0., unstarted=72, pending_deadlines=[])
+    edge = (85511.-6060.)/2
+    assert b.can_launch(now=edge, unstarted=1, pending_deadlines=[])
+    assert not b.can_launch(now=edge+.5, unstarted=1, pending_deadlines=[])

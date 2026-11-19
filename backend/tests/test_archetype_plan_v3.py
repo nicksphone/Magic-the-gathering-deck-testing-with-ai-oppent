@@ -112,3 +112,24 @@ def test_trace2_quota_proposal_is_128MiB_without_relaxing_checkpoints_or_time_bu
     p['trace_policy']['max_bytes'] = 64*1024**2
     with pytest.raises(ValueError): subject().validate_plan(p)
     with pytest.raises(ValueError): TraceWriter(io.BytesIO(), max_bytes=MAX_TRACE_BYTES+1)
+
+
+def test_rerun1_changes_only_limits_and_run_identity():
+    module = subject()
+    original = plan('health')
+    rerun = module.build_plan('a'*40, 'archetype-health-20261116-v3-rerun1', kind='health')
+    module.validate_plan(rerun)
+    assert rerun['policy']['max_seconds'] == 3000
+    assert rerun['policy']['max_cpu_seconds_per_game'] == 2400
+    assert {c['cell_id'] for c in rerun['cells']}.isdisjoint(c['cell_id'] for c in original['cells'])
+    for field in ('max_seconds', 'max_cpu_seconds_per_game'):
+        incorrect = deepcopy(rerun)
+        incorrect['policy'][field] = original['policy'][field]
+        with pytest.raises(ValueError):
+            module.validate_plan(incorrect)
+    rerun['policy'] = original['policy']
+    for p in (original, rerun):
+        del p['run_id']
+        for cell in p['cells']:
+            del cell['cell_id']
+    assert rerun == original

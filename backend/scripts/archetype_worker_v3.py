@@ -7,7 +7,7 @@ import signal
 import sys
 import time
 
-from scripts.archetype_plan_v3 import MAX_CPU_SECONDS, MAX_WALL_SECONDS, MEMORY_BYTES, validate_plan
+from scripts.archetype_plan_v3 import MAX_CPU_SECONDS, MEMORY_BYTES, validate_plan
 from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TRACE_SCHEMA, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
 
 
@@ -188,8 +188,10 @@ def validate_request(request,*,kind='pilot'):
             or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
         raise ValueError('Only an exact newly registered role-bound cell may execute')
     validate_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
+    if request['cpu_seconds'] > plan['policy']['max_cpu_seconds_per_game']:
+        raise ValueError('Invalid remaining v3 CPU budget')
     seconds=request['wall_seconds']
-    if type(seconds) not in (int,float) or not 0<seconds<=MAX_WALL_SECONDS:
+    if type(seconds) not in (int,float) or not 0<seconds<=plan['policy']['max_seconds']:
         raise ValueError('Invalid remaining v3 wall budget')
     source=request['source'];root=Path(__file__).resolve().parents[2]
     relative=str(Path(__file__).resolve().relative_to(root))
