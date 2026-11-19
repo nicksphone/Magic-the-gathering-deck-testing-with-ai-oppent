@@ -73,6 +73,16 @@ def _ending(state, steps, policy):
             or state.turn > policy['max_turns'])
 
 
+def _checkpoints(policy, before, after, step, *, final):
+    interval = policy.get('snapshot_checkpoint_interval')
+    if interval is None:
+        return checkpoint_reasons(before, after, step, final=final)
+    from scripts.archetype_plan_v3 import STRENGTH_CHECKPOINT_INTERVAL
+    if type(interval) is not int or interval != STRENGTH_CHECKPOINT_INTERVAL:
+        raise ValueError('Invalid strength checkpoint interval')
+    return checkpoint_reasons(before, after, step, final=final, interval=interval, dense=False)
+
+
 def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
               accounting=None, choose=None):
     _policy(policy)
@@ -129,7 +139,7 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
                'decision_seconds':decision_seconds, 'transition_seconds':transition_seconds}
         if error:
             row['exception_class'] = exception
-        reasons = checkpoint_reasons(before.value, after.value, steps,
+        reasons = _checkpoints(policy, before.value, after.value, steps,
                                       final=bool(error) or _ending(candidate, steps+1, policy))
         if reasons:
             row.update(checkpoint_reasons=reasons,
@@ -246,7 +256,7 @@ def replay_trace(records, *, boundary=None, accounting=None):
         _check(row, {'after_sha256':after.sha256,'rng_sha256':digest(after.value['rng_state']),
                      'after_cards_order_sha256':after.cards_order_sha256,
                      'progress':progress(after.value),'log_delta':log_delta(before.value,after.value)}, steps)
-        reasons = checkpoint_reasons(before.value, after.value, steps,
+        reasons = _checkpoints(first['policy'], before.value, after.value, steps,
                                      final=bool(error) or _ending(candidate, steps+1, first['policy']))
         if bool(reasons) != ('checkpoint' in row):
             raise TraceDivergence(steps, ['checkpoint'])
