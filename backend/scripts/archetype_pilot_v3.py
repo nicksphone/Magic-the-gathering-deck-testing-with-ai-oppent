@@ -15,8 +15,8 @@ from scripts.archetype_matrix_pilot import (
     BACKEND, available_memory, boot_time, file_sha, publish, runtime_identity,
     source_identity, verify_sources, worker_environment,
 )
-from scripts.archetype_plan_v3 import STANDARD_WALL_SECONDS, build_plan, validate_plan
-from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, digest, is_sha, load_json, verify_progress_prefix
+from scripts.archetype_plan_v3 import LEGACY_CAMPAIGN_HOURS, STANDARD_WALL_SECONDS, build_plan, validate_plan
+from scripts.archetype_trace_v3 import digest, is_sha, load_json, verify_progress_prefix
 from scripts.archetype_worker_v3 import read_progress, request_identity, validate_cpu_usage, validate_request
 from scripts.archetype_registry_v3 import claim_run
 
@@ -89,7 +89,7 @@ def run_process(command,*,directory,name,environment,seconds,stop):
 class SlotBudget:
     """Charge both planned slots throughout controller lifetime, including idle."""
     reserved_health_seconds=30*3600
-    campaign_seconds=48*3600
+    campaign_seconds=LEGACY_CAMPAIGN_HOURS*3600
     pilot_with_overhead_seconds=18*3600
 
     def __init__(self,*,started,prior_charged_seconds=0.):
@@ -214,7 +214,7 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
             stage={'mode':mode,'attempted':True,'started':None,'waited':False,
                    'cpu_seconds':None,'peak_rss_bytes':0}
             stages.append(stage)
-            worker='scripts.archetype_worker_v3' if kind=='pilot' else 'scripts.archetype_health_worker_v3'
+            worker='scripts.archetype_worker_v3' if kind=='pilot' else f'scripts.archetype_{kind}_worker_v3'
             process=run_process([sys.executable,'-B','-m',worker,str(path)],
                 directory=directory,name=mode,environment=worker_environment(BACKEND),seconds=seconds,stop=stop)
             stage.update(process)
@@ -233,7 +233,7 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
                 try:
                     stage['progress']=read_progress(progress_path,request_identity(request),mode)
                     trace=directory/'trace.jsonl'
-                    if trace.stat().st_size>MAX_TRACE_BYTES:
+                    if trace.stat().st_size>plan['trace_policy']['max_bytes']:
                         raise ValueError('Trace exceeds its registered bound')
                     with trace.open('rb')as stream:
                         stage['progress_boundary']=verify_progress_prefix(stream,stage['progress'])
@@ -351,6 +351,8 @@ def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
         if kind=='health':
             extra.update(prior_health_charged_seconds=claim.prior_health_charged_seconds,
                          wall_seconds=plan['policy']['max_seconds'])
+        if kind=='strength':
+            extra['wall_seconds']=plan['policy']['max_seconds']
         budget=budget_factory(started=started,prior_charged_seconds=claim.prior_charged_seconds,**extra)
         return _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,
                                  reporter=reporter,prefix=prefix,kind=kind)
@@ -390,7 +392,7 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
                                              pending_deadlines=[value[2]for value in pending.values()]):
                         stop.set();budget_refused=True;break
                     index=next_index;next_index+=1;cpu=available.pop()
-                    extra={'kind':kind} if kind=='health' else {}
+                    extra={'kind':kind} if kind!='pilot' else {}
                     future=pool.submit(run_cell,plan,plan['cells'][index],directory/f'{index:03d}',
                                        cpu=cpu,source=source,runtime=runtime,stop=stop,**extra)
                     pending[future]=(index,cpu,now+plan['policy']['max_seconds'])
@@ -418,10 +420,12 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             reserved_health_worker_seconds=budget.reserved_health_seconds,budget_refused=budget_refused)
         report['complete']=bool(report['complete']and not stop.is_set()and abs(host_offset()-offset)<=.25)
         report['usable']=bool(report['usable']and report['complete'])
-        if not report['usable']:
+        if not report['usable'] and kind!='strength':
             report['forecast_reason']='incomplete_or_censored_or_failed_cells'
             for key in ('forecast_1440_worker_hours','forecast_72_worker_hours','forecast_trace_bytes'):
                 report[key]=None
+        if kind=='strength':
+            report['strength_passed']=report['usable']
         if kind=='health':
             report.update(health_passed=bool(report['usable'] and report['complete']),
                 charged_health_worker_seconds=claim.prior_health_charged_seconds+budget.charged_seconds(boot_time()),
@@ -434,6 +438,9 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             if kind=='health' and report['usable'] and (closed['health_budget_exceeded']
                     or closed['charged_campaign_worker_seconds']>budget.campaign_seconds):
                 raise ValueError('Health budget exceeded during final publication; report alone is not acceptance')
+            if (kind=='strength' and report['strength_passed']
+                    and closed['charged_campaign_worker_seconds']>budget.campaign_seconds):
+                raise ValueError('Strength budget exceeded during final publication')
         return report
     finally:
         stop.set()

@@ -349,3 +349,12 @@ read-only review. Forecasts remain null; health-only evidence does not close
 the original statistical gate, establish strength or accept RC. See the
 [timeout evidence and options](archetype-health-timeout-options-20261117.md)
 before considering any separately approved experiment.
+
+## Same-deck playing-strength entry — separate campaign
+
+The [strength pre-registration](archetype-strength-prereg-20261122.md) defines
+648 games, a separate scoped acceptance rule and a 120-worker-hour cumulative
+ceiling with prior charges retained. It uses the shared v3 controller with a
+separate strength CLI and worker, and lighter stored checkpoints with the same
+every-action verification. The pilot and health run roles retain their existing
+plans, caps and historical evidence.

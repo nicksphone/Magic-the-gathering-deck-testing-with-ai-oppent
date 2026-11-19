@@ -60,18 +60,18 @@ class CpuAccounting:
                 'unattributed_cpu_seconds': max(0.0, total-sum(self.seconds.values()))}
 
 
-def checkpoint_reasons(before, after, step, *, final=False):
+def checkpoint_reasons(before, after, step, *, final=False, interval=CHECKPOINT_INTERVAL, dense=True):
     if type(step) is not int or step < 0 or type(final) is not bool:
         raise ValueError('Invalid checkpoint boundary')
     reasons = []
-    if (step+1) % CHECKPOINT_INTERVAL == 0:
+    if (step+1) % interval == 0:
         reasons.append('periodic')
-    if step % 100 == 0:
+    if dense and step % 100 == 0:
         reasons.append('handler')
-    if any(before.get(key) != after.get(key) for key in (
+    if dense and any(before.get(key) != after.get(key) for key in (
             'pending_mechanic_choice', 'pending_trigger_order', 'pending_replacement_choice')):
         reasons.append('choice')
-    if before.get('pregame_pending') != after.get('pregame_pending'):
+    if dense and before.get('pregame_pending') != after.get('pregame_pending'):
         reasons.append('pregame')
     if final:
         reasons.append('final')

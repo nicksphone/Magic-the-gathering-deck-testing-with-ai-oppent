@@ -133,7 +133,7 @@ def game_phase(decks,cell,policy,identity,directory,accounting,*,choose=None,
 
 
 def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_actions,
-                 trace_sha256,boundary=None):
+                 trace_sha256,boundary=None,trace_max_bytes=MAX_TRACE_BYTES):
     from scripts.archetype_game_v3 import replay_trace
     from scripts.archetype_matrix_pilot import file_sha
     from scripts.archetype_matrix_worker import selected_steps
@@ -143,7 +143,7 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
             or not is_sha(trace_sha256) or file_sha(trace)!=trace_sha256):
         raise ValueError('Verification trace/counter binding differs')
     with trace.open('rb') as stream:
-        first=next(read_records(stream))
+        first=next(read_records(stream,max_bytes=trace_max_bytes))
     expected={'identity':identity,'schema':TRACE_SCHEMA,'deck_a':decks[0],'deck_b':decks[1],
               'seed':cell['seed'],'game_id':cell['cell_id'],'policy':policy}
     if any(digest(first.get(k))!=digest(v)for k,v in expected.items()):
@@ -152,7 +152,7 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
     selected=selected_steps(accepted_actions);checks=[];last={}
     with trace.open('rb') as stream:
         def records():
-            for row in read_records(stream):
+            for row in read_records(stream,max_bytes=trace_max_bytes):
                 last.update(row=row,bytes=stream.tell())
                 yield row
         def observe(first,row):
@@ -182,7 +182,7 @@ def validate_request(request,*,kind='pilot'):
             or type(request['mode']) is not str or request['mode'] not in ('game','verify')):
         raise ValueError('Invalid v3 worker request')
     plan=request['plan'];validate_plan(plan)
-    if (type(kind)is not str or kind not in ('pilot','health') or plan['kind']!=kind
+    if (type(kind)is not str or kind not in ('pilot','health','strength') or plan['kind']!=kind
             or not is_sha(plan['runtime_sha256'])
             or request['runtime_sha256']!=plan['runtime_sha256']
             or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
@@ -201,10 +201,10 @@ def validate_request(request,*,kind='pilot'):
             or source['files'].get(relative)!=file_sha(__file__)
             or not is_sha(request['runtime_sha256'])):
         raise ValueError('V3 worker source/runtime binding differs')
-    if kind=='health':
-        health_file=root/'backend/scripts/archetype_health_worker_v3.py'
-        if source['files'].get(str(health_file.relative_to(root)))!=file_sha(health_file):
-            raise ValueError('Health worker source binding differs')
+    if kind != 'pilot':
+        role_file=root/f'backend/scripts/archetype_{kind}_worker_v3.py'
+        if source['files'].get(str(role_file.relative_to(root)))!=file_sha(role_file):
+            raise ValueError(f'{kind.capitalize()} worker source binding differs')
     if request['mode']=='game':
         if request['trace_sha256'] is not None or request['accepted_actions'] is not None:
             raise ValueError('Game request cannot assert a previous outcome')
@@ -257,16 +257,23 @@ def main(argv=None,*,kind='pilot'):
         decks=cell_decks(admit_decks(execution_matrix(request['plan'])),request['cell'])
         # Absolute process CPU includes interpreter/bootstrap and all admission.
         accounting.seconds['setup']=time.process_time();accounting.calls['setup']=1
+        trace_options = {}
+        if kind == 'strength':
+            trace_options['trace_max_bytes'] = request['plan']['trace_policy']['max_bytes']
         if mode=='game':
+            chooser = {}
+            if kind == 'strength':
+                from scripts.archetype_strength_worker_v3 import choose_for_cell
+                chooser['choose'] = choose_for_cell(decks, request['cell'])
             result.update(game_phase(decks,request['cell'],request['plan']['policy'],identity,
-                                     directory,accounting))
+                                     directory,accounting,**trace_options,**chooser))
         else:
             from scripts.archetype_handler_v3 import HandlerChecks
             verify_started=time.monotonic()
             with HandlerChecks(database) as handler:
                 result.update(verify_phase(decks,request['cell'],request['plan']['policy'],identity,
                     directory,accounting,accepted_actions=request['accepted_actions'],
-                    trace_sha256=request['trace_sha256'],boundary=handler))
+                    trace_sha256=request['trace_sha256'],boundary=handler,**trace_options))
             result['replay_seconds']=time.monotonic()-verify_started
         with accounting.measure('source_runtime_recheck'):
             verify_sources(request['source'])

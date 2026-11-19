@@ -7,7 +7,15 @@ from pathlib import Path
 import re
 import stat
 
+from scripts.archetype_plan_v3 import (
+    HEALTH_RERUN_ID, LEGACY_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_HOURS,
+    STRENGTH_CAMPAIGN_ID, valid_run_id,
+)
 from scripts.archetype_trace_v3 import canonical, is_sha, load_json
+
+
+def _campaign_seconds(kind):
+    return (STRENGTH_CAMPAIGN_HOURS if kind == 'strength' else LEGACY_CAMPAIGN_HOURS) * 3600
 
 
 def _directory(path):
@@ -67,13 +75,18 @@ class Claim:
             raise ValueError('Invalid or repeated controller closure')
         cumulative=self.prior_charged_seconds+charged_worker_seconds
         health=self.prior_health_charged_seconds+(charged_worker_seconds if self.record['kind']=='health' else 0.)
+        strength=self.record.get('charged_strength_before_worker_seconds',0.)
+        if self.record['kind']=='strength':
+            strength+=charged_worker_seconds
         row={**self.record,'state':'closed','child_handles_reaped':True,
              'charged_worker_seconds':charged_worker_seconds,
              'charged_campaign_worker_seconds':cumulative,
-             'remaining_campaign_worker_seconds':max(0.,48*3600-cumulative),
+             'remaining_campaign_worker_seconds':max(0.,self.record['campaign_worker_seconds']-cumulative),
              'charged_health_worker_seconds':health,'remaining_health_worker_seconds':max(0.,30*3600-health),
              'health_budget_exceeded':health>30*3600,
-             'report_sha256':report_sha256,'pilot_budget_exceeded':cumulative-health>18*3600}
+             'report_sha256':report_sha256,'pilot_budget_exceeded':cumulative-health-strength>18*3600}
+        if 'charged_strength_before_worker_seconds' in self.record:
+            row['charged_strength_worker_seconds']=strength
         _write(self.path,row,replace=True)
         _write(self.root/'active.json',row,replace=True)
         self.finished=True
@@ -82,8 +95,7 @@ class Claim:
 
 @contextmanager
 def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pilot'):
-    if (type(kind)is not str or kind not in ('pilot','health')
-            or type(run_id)is not str or re.fullmatch(f'archetype-{kind}-20261116-v3-[A-Za-z0-9-]{{1,48}}',run_id)is None
+    if (not valid_run_id(kind, run_id)
             or not is_sha(plan_sha256)or not is_sha(runtime_sha256)
             or type(revision)is not str or re.fullmatch('[0-9a-f]{40}',revision)is None
             or type(output)is not str or not Path(output).is_absolute()):
@@ -98,9 +110,16 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
         if active is not None and (type(active)is not dict or active.get('state')!='closed'
                                    or active.get('child_handles_reaped')is not True):
             raise ValueError('Previous v3 controller closure is unproven; do not reset state automatically')
+        if active is not None:
+            active_kind=active.get('kind','pilot')
+            if (type(active_kind) is not str or active_kind not in ('pilot','health','strength')
+                    or active.get('campaign_worker_seconds',_campaign_seconds(active_kind))!=_campaign_seconds(active_kind)
+                    or (active_kind=='strength' and active.get('campaign_id')!=STRENGTH_CAMPAIGN_ID)
+                    or (active_kind!='strength' and 'campaign_id' in active)):
+                raise ValueError('Prior campaign identity or ceiling is invalid')
         prior=active.get('charged_campaign_worker_seconds')if active is not None else 0.
         if (type(prior)not in(int,float)or not math.isfinite(prior)or prior<0
-                or active is not None and active.get('remaining_campaign_worker_seconds')!=max(0.,48*3600-prior)):
+                or active is not None and active.get('remaining_campaign_worker_seconds')!=max(0.,_campaign_seconds(active_kind)-prior)):
             raise ValueError('Prior campaign charges are missing or inconsistent')
         health=active.get('charged_health_worker_seconds',0.)if active is not None else 0.
         if (type(health)not in(int,float)or not math.isfinite(health)or not 0<=health<=prior
@@ -108,14 +127,35 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
                 or active is not None and 'remaining_health_worker_seconds'in active
                    and active['remaining_health_worker_seconds']!=max(0.,30*3600-health)):
             raise ValueError('Prior health charges are missing or inconsistent')
+        if kind=='strength':
+            rerun=_read(root/'runs'/f'{HEALTH_RERUN_ID}.json')
+            if (type(rerun)is not dict or rerun.get('run_id')!=HEALTH_RERUN_ID
+                    or rerun.get('kind')!='health' or rerun.get('state')!='closed'
+                    or rerun.get('child_handles_reaped')is not True
+                    or not is_sha(rerun.get('report_sha256'))
+                    or type(rerun.get('charged_campaign_worker_seconds')) not in (int,float)
+                    or not 0 < rerun['charged_campaign_worker_seconds'] <= prior
+                    or type(rerun.get('charged_health_worker_seconds')) not in (int,float)
+                    or not 0 < rerun['charged_health_worker_seconds'] <= health):
+                raise ValueError('Strength requires the existing closed health rerun charge history')
+        strength=active.get('charged_strength_worker_seconds',0.) if active is not None else 0.
+        if (type(strength) not in (int,float) or not math.isfinite(strength)
+                or strength<0 or strength+health>prior+.000001
+                or (active is not None and active_kind=='strength' and 'charged_strength_worker_seconds' not in active)):
+            raise ValueError('Prior strength charges are missing or inconsistent')
         row={'schema':3,'kind':kind,'state':'running','child_handles_reaped':False,'run_id':run_id,
              'plan_sha256':plan_sha256,'revision':revision,'runtime_sha256':runtime_sha256,
-             'output':output,'campaign_worker_seconds':48*3600,'reserved_health_worker_seconds':30*3600,
+             'output':output,'campaign_worker_seconds':_campaign_seconds(kind),'reserved_health_worker_seconds':30*3600,
              'charged_worker_seconds':None,'remaining_campaign_worker_seconds':None,
              'charged_before_worker_seconds':prior,'charged_campaign_worker_seconds':None,
              'charged_health_before_worker_seconds':health,'charged_health_worker_seconds':None,
              'remaining_health_worker_seconds':None,'health_budget_exceeded':False,
              'report_sha256':None,'pilot_budget_exceeded':False}
+        if kind=='strength':
+            row['campaign_id']=STRENGTH_CAMPAIGN_ID
+        if kind=='strength' or strength:
+            row['charged_strength_before_worker_seconds']=strength
+            row['charged_strength_worker_seconds']=None
         path=root/'runs'/f'{run_id}.json'
         _write(path,row)  # permanent consumption, even if startup later fails
         _write(root/'active.json',row,replace=True)
