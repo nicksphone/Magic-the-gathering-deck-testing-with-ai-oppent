@@ -33,3 +33,30 @@ def test_live_subtype_effect_is_not_cached_with_printed_text(seat):
     card.type_effects.clear()
     assert layer_four_view(state) == empty
     assert state.rng.getstate() == before.rng.getstate()
+
+
+def test_empty_type_effects_skip_the_live_effect_scan(monkeypatch):
+    from rules_engine import type_effects
+
+    state = position(1)
+    card = add(state, 'Dryad Arbor', 1)
+    original = type_effects.active_type_effects
+    scanned = []
+
+    def observe(current):
+        scanned.append(current.id)
+        return original(current)
+
+    monkeypatch.setattr(type_effects, 'active_type_effects', observe)
+    empty = layer_four_view(state)
+    assert not empty[0]
+    assert scanned == []
+
+    card.type_effects.append({'types': [], 'creature_subtypes': ['Human'],
+                              'incarnation': object_incarnation(card), 'timestamp': 1})
+    assert layer_four_view(state)[0][card.id].endswith('Human')
+    assert card.id in scanned
+    scanned.clear()
+    card.type_effects.clear()
+    assert layer_four_view(state) == empty
+    assert scanned == []
