@@ -7,19 +7,22 @@ import signal
 import sys
 import time
 
-from scripts.archetype_plan_v3 import MAX_CPU_SECONDS, MEMORY_BYTES, validate_plan
+from scripts.archetype_plan_v3 import (
+    MAX_CPU_SECONDS, MEMORY_BYTES, STRENGTH_RERUN2_CPU_SECONDS, STRENGTH_RERUN2_ID, validate_plan,
+)
 from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TRACE_SCHEMA, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
 
 
-def validate_limits(cpu, cpu_seconds, memory_bytes):
+def validate_limits(cpu, cpu_seconds, memory_bytes, *, run_id=None):
+    ceiling = STRENGTH_RERUN2_CPU_SECONDS if run_id == STRENGTH_RERUN2_ID else MAX_CPU_SECONDS
     if (type(cpu) is not int or cpu not in os.sched_getaffinity(0)
-            or type(cpu_seconds) is not int or not 1 <= cpu_seconds <= MAX_CPU_SECONDS
+            or type(cpu_seconds) is not int or not 1 <= cpu_seconds <= ceiling
             or type(memory_bytes) is not int or memory_bytes != MEMORY_BYTES):
         raise ValueError('Invalid v3 worker limits')
 
 
-def apply_limits(cpu, cpu_seconds, memory_bytes):
-    validate_limits(cpu,cpu_seconds,memory_bytes)
+def apply_limits(cpu, cpu_seconds, memory_bytes, *, run_id=None):
+    validate_limits(cpu,cpu_seconds,memory_bytes,run_id=run_id)
     os.sched_setaffinity(0,{cpu})
     resource.setrlimit(resource.RLIMIT_AS,(memory_bytes,memory_bytes))
     resource.setrlimit(resource.RLIMIT_CPU,(cpu_seconds,cpu_seconds+1))
@@ -187,7 +190,7 @@ def validate_request(request,*,kind='pilot'):
             or request['runtime_sha256']!=plan['runtime_sha256']
             or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
         raise ValueError('Only an exact newly registered role-bound cell may execute')
-    validate_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
+    validate_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'],run_id=plan['run_id'])
     if request['cpu_seconds'] > plan['policy']['max_cpu_seconds_per_game']:
         raise ValueError('Invalid remaining v3 CPU budget')
     seconds=request['wall_seconds']
@@ -231,7 +234,9 @@ def main(argv=None,*,kind='pilot'):
     if len(data)>4*1024*1024:
         raise ValueError('Worker request exceeds its bound')
     request=load_json(data);validate_request(request,kind=kind)
-    controls=apply_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'])
+    run_id=request['plan']['run_id']
+    rerun_limits = {'run_id': run_id} if run_id == STRENGTH_RERUN2_ID else {}
+    controls=apply_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'],**rerun_limits)
     signal.signal(signal.SIGALRM,signal.SIG_DFL)
     signal.setitimer(signal.ITIMER_REAL,request['wall_seconds'])
     os.umask(0o077)

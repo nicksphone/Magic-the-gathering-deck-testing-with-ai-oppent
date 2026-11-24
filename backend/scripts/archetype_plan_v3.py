@@ -19,6 +19,12 @@ LEGACY_CAMPAIGN_HOURS = 48
 STRENGTH_CAMPAIGN_HOURS = 120
 STRENGTH_CAMPAIGN_ID = 'mtg-archetype-strength-20261122'
 STRENGTH_RUN_ID = 'archetype-strength-20261122-v3-main1'
+STRENGTH_RERUN2_ID = 'archetype-strength-20261124-v3-rerun2'
+STRENGTH_RERUN2_CAMPAIGN_HOURS = 200
+STRENGTH_RERUN2_CPU_SECONDS = 4800
+STRENGTH_RERUN2_WALL_SECONDS = 6000
+STRENGTH_RERUN2_CHECKPOINT_INTERVAL = 512
+STRENGTH_RERUN2_SEEDS = tuple(range(2026112401, 2026112410))
 STRENGTH_SEEDS = tuple(range(2026112201, 2026112210))
 STRENGTH_OPPONENTS = ('random', 'casual', 'strong', 'master')
 STRENGTH_CHECKPOINT_INTERVAL = 256
@@ -31,9 +37,15 @@ def valid_run_id(kind, run_id):
     if type(kind) is not str or type(run_id) is not str:
         return False
     if kind == 'strength':
-        return run_id == STRENGTH_RUN_ID
+        return run_id in (STRENGTH_RUN_ID, STRENGTH_RERUN2_ID)
     return kind in ('pilot', 'health') and re.fullmatch(
         f'archetype-{kind}-20261116-v3-[A-Za-z0-9-]{{1,48}}', run_id) is not None
+
+
+def strength_campaign_hours(run_id):
+    if not valid_run_id('strength', run_id):
+        raise ValueError('Unknown v3 strength campaign run')
+    return STRENGTH_RERUN2_CAMPAIGN_HOURS if run_id == STRENGTH_RERUN2_ID else STRENGTH_CAMPAIGN_HOURS
 
 
 def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_sha256=None):
@@ -51,10 +63,11 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
              if kind=='pilot' else list(combinations(names,2)))
     seeds = PILOT_SEEDS if kind=='pilot' else HEALTH_SEEDS
     strength = kind == 'strength'
+    strength_rerun2 = strength and run_id == STRENGTH_RERUN2_ID
     opponents = STRENGTH_OPPONENTS if strength else (None,)
     if strength:
         pairs = [(name, name) for name in names]
-        seeds = STRENGTH_SEEDS
+        seeds = STRENGTH_RERUN2_SEEDS if strength_rerun2 else STRENGTH_SEEDS
     cells = []
     # Interleave baselines within each mirrored seed pair to avoid censoring
     # every observation for a baseline when budget or a host failure stops a run.
@@ -70,6 +83,10 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
     rerun = strength or (kind == 'health' and run_id == HEALTH_RERUN_ID)
     policy.update(max_seconds=MAX_WALL_SECONDS if rerun else STANDARD_WALL_SECONDS,
                   max_cpu_seconds_per_game=MAX_CPU_SECONDS if rerun else STANDARD_CPU_SECONDS)
+    if strength_rerun2:
+        policy.update(max_seconds=STRENGTH_RERUN2_WALL_SECONDS,
+                      max_cpu_seconds_per_game=STRENGTH_RERUN2_CPU_SECONDS,
+                      strength_run_id=run_id)
     policy['health_gate']['max_resource_limit_cells'] = 0
     trace = {'schema':TRACE_SCHEMA,'checkpoint_interval':CHECKPOINT_INTERVAL,'max_bytes':MAX_TRACE_BYTES,
              'progress_interval':16,'state_hash':'sha256_canonical_complete_snapshot',
@@ -81,10 +98,11 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
     if strength:
         del policy['health_gate']
         policy['random_baseline'] = 'uniform_unique_checked_offer_completions_v1'
-        policy['snapshot_checkpoint_interval'] = STRENGTH_CHECKPOINT_INTERVAL
+        interval = STRENGTH_RERUN2_CHECKPOINT_INTERVAL if strength_rerun2 else STRENGTH_CHECKPOINT_INTERVAL
+        policy['snapshot_checkpoint_interval'] = interval
         policy['bootstrap_replicates'] = STRENGTH_BOOTSTRAP_REPLICATES
         policy['bootstrap_seed'] = STRENGTH_BOOTSTRAP_SEED
-        trace.update(checkpoint_interval=STRENGTH_CHECKPOINT_INTERVAL,
+        trace.update(checkpoint_interval=interval,
                      max_bytes=STRENGTH_TRACE_BYTES, extra_checkpoints=['final'])
     plan = {'schema':3,'kind':kind,'run_id':run_id,'revision':revision,'runtime_sha256':runtime_sha256,
             'source_matrix_sha256':digest(matrix),'source_matrix':matrix,
@@ -102,7 +120,7 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
                                    'casual':{'score_lower':0.80,'ci_lower_strict':0.65},
                                    'strong':{'ci_lower_strict':0.50},
                                    'master':{'ci_contains':0.50,'complete_symmetric_mirrors':True}})
-        plan['worker_hour_budget']['campaign'] = STRENGTH_CAMPAIGN_HOURS
+        plan['worker_hour_budget']['campaign'] = strength_campaign_hours(run_id)
     return plan
 
 

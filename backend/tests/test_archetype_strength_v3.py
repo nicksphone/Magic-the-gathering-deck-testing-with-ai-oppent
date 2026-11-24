@@ -4,10 +4,13 @@ from copy import deepcopy
 import pytest
 
 
-def plan():
+RERUN2_ID = 'archetype-strength-20261124-v3-rerun2'
+
+
+def plan(run_id='archetype-strength-20261122-v3-main1'):
     from scripts.archetype_plan_v3 import build_plan
     from scripts.archetype_trace_v3 import digest
-    return build_plan('a'*40, 'archetype-strength-20261122-v3-main1', kind='strength',
+    return build_plan('a'*40, run_id, kind='strength',
                       runtime_sha256=digest({'unit_runtime': True}))
 
 
@@ -125,7 +128,11 @@ def test_strength_budget_admission_uses_120_hour_cap_with_prior_charges():
     assert not b.can_launch(now=0., unstarted=1, pending_deadlines=[185000.])
 
 
-def test_strength_parent_and_worker_use_explicit_role_and_shared_limits(tmp_path, monkeypatch):
+@pytest.mark.parametrize(('run_id', 'cpu_limit', 'wall_limit'), [
+    ('archetype-strength-20261122-v3-main1', 2400, 3000),
+    (RERUN2_ID, 4800, 6000),
+])
+def test_strength_parent_and_worker_use_explicit_role_and_shared_limits(tmp_path, monkeypatch, run_id, cpu_limit, wall_limit):
     import os
     import threading
     from test_archetype_pilot_v3 import authored_phase_controller
@@ -143,16 +150,20 @@ def test_strength_parent_and_worker_use_explicit_role_and_shared_limits(tmp_path
         return original(command, **kwargs)
 
     monkeypatch.setattr(core, 'run_process', child)
-    p = plan()
+    p = plan(run_id)
     row = core.run_cell(p, p['cells'][0], tmp_path/'cell', cpu=min(os.sched_getaffinity(0)),
                         source=source, runtime={'unit_runtime': True}, stop=threading.Event(),
                         kind='strength')
     assert row['status'] == 'resolved' and row['parity_checked']
-    assert [r['cpu_seconds'] for r in requests] == [2400, 2389]
-    assert [r['wall_seconds'] for r in requests] == [3000, 2985]
+    assert [r['cpu_seconds'] for r in requests] == [cpu_limit, cpu_limit - 11]
+    assert [r['wall_seconds'] for r in requests] == [wall_limit, wall_limit - 15]
     for kind in ('pilot', 'health'):
         with pytest.raises(ValueError):
             validate_request(requests[0], kind=kind)
+    validate_request(requests[0], kind='strength')
+    for field in ('cpu_seconds', 'wall_seconds'):
+        with pytest.raises(ValueError):
+            validate_request({**requests[0], field: requests[0][field] + 1}, kind='strength')
     bad = deepcopy(requests[0])
     del bad['source']['files'][role_path]
     with pytest.raises(ValueError):
@@ -188,18 +199,28 @@ def test_strength_report_never_passes_weak_or_unaccounted_results():
     assert not strength_report(rows, p)['strength_passed']
 
 
-def test_controller_closes_full_authored_strength_schedule(tmp_path, monkeypatch):
+@pytest.mark.parametrize(('run_id', 'campaign_hours', 'prior_worker_seconds'), [
+    ('archetype-strength-20261122-v3-main1', 120, 62796.9),
+    (RERUN2_ID, 200, 363883.66),
+])
+def test_controller_closes_full_authored_strength_schedule(tmp_path, monkeypatch, run_id, campaign_hours,
+                                                            prior_worker_seconds):
     import json
     from test_archetype_pilot_v3 import controller_boundary
     from scripts.archetype_registry_v3 import claim_run
     from scripts.archetype_strength_v3 import run_strength
 
     core = controller_boundary(monkeypatch, tmp_path)
-    p = plan()
+    p = plan(run_id)
     with claim_run(core.STATE_ROOT, run_id='archetype-health-20261116-v3-rerun1',
                    plan_sha256='a'*64, revision=p['revision'], runtime_sha256=p['runtime_sha256'],
                    output=str(tmp_path/'old'), kind='health') as prior:
         prior.finish(charged_worker_seconds=62796.9, report_sha256='d'*64)
+    if run_id == RERUN2_ID:
+        with claim_run(core.STATE_ROOT, run_id=plan()['run_id'], plan_sha256='a'*64,
+                       revision=p['revision'], runtime_sha256=p['runtime_sha256'],
+                       output=str(tmp_path/'original'), kind='strength') as prior:
+            prior.finish(charged_worker_seconds=301086.76, report_sha256='e'*64)
     authored = {row['cell_id']: row for row in authored_rows(p)}
 
     def cell(plan, cell, directory, *, kind, **kwargs):
@@ -212,10 +233,12 @@ def test_controller_closes_full_authored_strength_schedule(tmp_path, monkeypatch
     assert report['strength_passed'] and report['accounted'] == 648
     current = json.loads((core.STATE_ROOT/'active.json').read_bytes())
     assert current['state'] == 'closed'
-    assert current['charged_before_worker_seconds'] == 62796.9
-    assert current['charged_campaign_worker_seconds'] > 62796.9
+    assert current['charged_before_worker_seconds'] == pytest.approx(prior_worker_seconds)
+    assert current['charged_campaign_worker_seconds'] > prior_worker_seconds
+    assert current['campaign_worker_seconds'] == campaign_hours * 3600
     assert current['report_sha256'] == core.file_sha(output/'STRENGTH-COMPLETE.json')
-    assert current['remaining_campaign_worker_seconds'] < 369203.1
+    assert current['remaining_campaign_worker_seconds'] < campaign_hours * 3600 - prior_worker_seconds
+    assert report['remaining_campaign_worker_seconds'] > campaign_hours * 3600 - prior_worker_seconds - 3600
 
 
 @pytest.mark.parametrize('candidate', [1, 2])
@@ -242,3 +265,103 @@ def test_chooser_preserves_candidate_seat_and_baseline_roles(monkeypatch, candid
         choose = worker.choose_for_cell(([], []), cell)
         assert choose(SimpleNamespace(), [], candidate) == ('master', candidate)
         assert choose(SimpleNamespace(), [], 3-candidate) == (opponent, 3-candidate)
+
+
+def test_rerun2_frozen_schedule_limits_and_acceptance():
+    from scripts.archetype_plan_v3 import validate_plan
+    from scripts.archetype_strength_v3 import StrengthBudget, strength_report
+
+    old = plan()
+    p = plan(RERUN2_ID)
+    validate_plan(p)
+    assert p['strength_gate'] == old['strength_gate']
+    assert p['campaign_id'] == old['campaign_id']
+    assert p['seeds'] == list(range(2026112401, 2026112410))
+    assert len(p['cells']) == 648
+    assert {r['cell_id'] for r in old['cells']}.isdisjoint(r['cell_id'] for r in p['cells'])
+    assert [(r['deck_a'], r['deck_b'], r['opponent'], r['deck_a_seat']) for r in p['cells']] == [
+        (r['deck_a'], r['deck_b'], r['opponent'], r['deck_a_seat']) for r in old['cells']]
+    assert p['worker_hour_budget']['campaign'] == 200
+    assert p['policy']['max_cpu_seconds_per_game'] == 4800
+    assert p['policy']['max_seconds'] == 6000
+    assert p['trace_policy'] == {**old['trace_policy'], 'checkpoint_interval': 512}
+    for section, field, value in (
+        ('policy', 'max_cpu_seconds_per_game', 2400),
+        ('policy', 'max_seconds', 3000),
+        ('policy', 'snapshot_checkpoint_interval', 256),
+        ('trace_policy', 'serde_every_action', False),
+        ('worker_hour_budget', 'campaign', 201),
+    ):
+        bad = deepcopy(p)
+        bad[section][field] = value
+        with pytest.raises(ValueError):
+            validate_plan(bad)
+    rows = authored_rows(p)
+    assert strength_report(rows, p)['strength_passed'] is True
+    mirror = next(r for r, c in zip(rows, p['cells']) if c['opponent'] == 'master')
+    mirror.update(status='timeout', winner=None, parity_checked=False)
+    assert strength_report(rows, p)['strength_passed'] is False
+
+    budget = StrengthBudget(started=0., prior_charged_seconds=363883.66,
+                            wall_seconds=6000, run_id=RERUN2_ID)
+    assert budget.remaining_campaign_seconds(0.) == pytest.approx(356116.34)
+    assert budget.can_launch(now=0., unstarted=648, pending_deadlines=[])
+    assert budget.can_launch(now=172028.16, unstarted=1, pending_deadlines=[])
+    assert not budget.can_launch(now=172028.18, unstarted=1, pending_deadlines=[])
+
+
+def test_rerun2_registry_retains_both_closed_predecessors(tmp_path):
+    from scripts.archetype_registry_v3 import _write, claim_run
+
+    root = tmp_path/'registry'
+    key = dict(plan_sha256='a'*64, revision='b'*40, runtime_sha256='c'*64, output=str(tmp_path/'out'))
+    health = 'archetype-health-20261116-v3-rerun1'
+    original = plan()['run_id']
+    with claim_run(root, run_id=health, kind='health', **key) as claim:
+        claim.finish(charged_worker_seconds=62796.9, report_sha256='d'*64)
+    with pytest.raises(ValueError, match='closed original strength'):
+        with claim_run(root, run_id=RERUN2_ID, kind='strength', **key):
+            pytest.fail('original history is missing')
+    with claim_run(root, run_id=original, kind='strength', **key) as claim:
+        closed = claim.finish(charged_worker_seconds=301086.76, report_sha256='e'*64)
+    paths = [root/'runs'/f'{run_id}.json' for run_id in (health, original)]
+    before = [path.read_bytes() for path in paths]
+    active = root/'active.json'
+    reduced = {**closed, 'charged_campaign_worker_seconds': closed['charged_campaign_worker_seconds'] - 1,
+               'remaining_campaign_worker_seconds': closed['remaining_campaign_worker_seconds'] + 1,
+               'charged_strength_worker_seconds': closed['charged_strength_worker_seconds'] - 1}
+    _write(active, reduced, replace=True)
+    with pytest.raises(ValueError, match='closed original strength'):
+        with claim_run(root, run_id=RERUN2_ID, kind='strength', **key):
+            pytest.fail('rerun2 accepted a lowered cumulative charge')
+    _write(active, closed, replace=True)
+    with claim_run(root, run_id=RERUN2_ID, kind='strength', **key) as claim:
+        assert claim.prior_charged_seconds == pytest.approx(363883.66)
+        assert claim.record['campaign_worker_seconds'] == 200 * 3600
+        assert claim.record['charged_strength_before_worker_seconds'] == 301086.76
+        row = claim.finish(charged_worker_seconds=100., report_sha256='f'*64)
+    assert row['remaining_campaign_worker_seconds'] == pytest.approx(356016.34)
+    assert row['charged_strength_worker_seconds'] == 301186.76
+    assert [path.read_bytes() for path in paths] == before
+    with pytest.raises(FileExistsError):
+        with claim_run(root, run_id=RERUN2_ID, kind='strength', **key):
+            pytest.fail('consumed run ID was reused')
+
+
+def test_rerun2_plan_cli_selects_exact_id_without_writing(monkeypatch, tmp_path):
+    import sys
+    from types import SimpleNamespace
+    from scripts import archetype_strength_v3 as strength
+
+    monkeypatch.setattr(sys, 'flags', SimpleNamespace(optimize=0, dont_write_bytecode=1))
+    monkeypatch.setattr(strength.subprocess, 'check_output', lambda *args, **kwargs: 'a'*40)
+    monkeypatch.setattr(strength.pilot, 'source_identity', lambda revision: None)
+    monkeypatch.setattr(strength.pilot, 'runtime_identity', lambda: {'unit_runtime': True})
+    published = []
+    monkeypatch.setattr(strength.pilot, 'publish', lambda path, value: published.append((path, value)))
+    output = tmp_path/'plan.json'
+    assert strength.main(['plan', str(output), '--run-id', RERUN2_ID]) == 0
+    assert published == [(output, plan(RERUN2_ID))]
+    with pytest.raises(SystemExit):
+        strength.main(['plan', str(output), '--run-id', 'unknown-run'])
+    assert not output.exists()

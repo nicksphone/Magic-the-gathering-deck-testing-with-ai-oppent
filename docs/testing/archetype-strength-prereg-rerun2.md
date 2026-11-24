@@ -1,10 +1,9 @@
-# AI strength rerun 2 pre-registration draft
+# AI strength rerun 2 pre-registration
 
-Date 2026-11-24. Proposed one-shot run ID
+Date 2026-11-24. One-shot run ID
 `archetype-strength-20261124-v3-rerun2`. The first run's result remains a
-failure. This draft does not issue a plan or increase the registry cap. The
-bound source revision and runtime digest will come from a reviewed, clean
-checkout before plan issuance.
+failure. Issue the plan only from the reviewed revision in a clean checkout
+with the hash-locked runtime.
 
 ## Design and acceptance
 
@@ -16,7 +15,7 @@ within each pair. Use nine fresh seed labels `2026112401` through
 `2026112409` across all decks and opponents. This gives exactly
 9 × 9 × 2 × 4 = **648 cells**. A tenth Casual-only seed would add 18 cells,
 cost about 2.2 worker-hours at the point forecast, and change the fixed
-design. This draft keeps the common nine seeds and retains the budget
+design. This run uses the common nine seeds and retains the budget
 headroom for long games and verification.
 
 Verified wins score 1, draws 0.5, and losses 0. Unresolved outcomes contribute
@@ -33,8 +32,11 @@ sampled label. Report outcome counts, scores and bounds by opponent and deck.
 
 All requirements apply jointly, with complete schedule accounting, reaped
 children, valid replay and selected handler/SQLite parity evidence, and a
-closed, in-budget registry. Keep the 2,400 CPU-second and 3,000 wall-second
-per-cell limits and existing game-end rules. Record the result either way,
+closed, in-budget registry. This run ID admits **4,800 CPU seconds and 6,000
+wall seconds per cell**, shared across gameplay and verification. The first
+strength run and health rerun keep 2,400 CPU and 3,000 wall seconds. All
+game-end rules are unchanged. The higher limits address the 17 CPU stops
+observed under the original limit. Record the result either way,
 including censored cells. A pass would apply to these deck mirrors and
 policies. It would leave human strength and the 1,440-game cross-deck matrix
 unevaluated.
@@ -132,49 +134,79 @@ stop. This falls short of a 30% tail reduction. The projection gives no
 credit for a speedup in the AI and does not predict completion for censored
 cells.
 
-As a separate proposed trace-policy change, use 512-action periodic full
-checkpoints for this run ID, retaining initial and final snapshots,
-per-action digests and restarts, and the same selected handler checks.
+This run stores periodic full checkpoints every **512 actions**, plus
+the initial and final snapshots and a checkpoint at the terminal action.
+It authenticates, replays and restores every action. Handler and SQLite
+parity still run at zero-based steps 0, 100, 200 and so on, plus the last
+accepted action, even when the full snapshot was reconstructed during replay.
 Dropping alternate periodic checkpoints from the bytes already recorded
 in the two quota-stopped traces would reduce their observed prefixes from
 20.49–22.31 MiB to 10.88–13.24 MiB. Future suffix sizes are unknown.
-The 23 MiB limit would remain explicit and fail closed. This proposal
-addresses disk quota, with limited CPU impact.
+The 23 MiB limit stays in force. This change addresses disk quota, with
+limited CPU impact. The original run keeps its 256-action checkpoints.
 
-Skipping per-action restore in favor of checkpoint-only restore could
-reduce CPU further. It would change the evidence, leaving restore coverage
-between checkpoints untested. Any such policy needs separate approval
-and versioned tests. This draft retains per-action restore.
-
-## Worker budget and rollout
+## Worker budget and admission
 
 The first run charged 301,086.76 worker-seconds (83.64 worker-hours),
-including controller overhead and the incomplete cells. The registry
-reports 363,883.66 seconds already charged and 68,116.34 seconds
-(18.92 hours) left at the 120-hour cap.
+including controller overhead and incomplete cells. Its closed record
+reported 363,883.66 seconds already charged and 68,116.34 seconds
+(18.92 hours) left at the 120-hour ceiling.
 
-- A timing extrapolation of 442 CPU s/cell plus the first run's mean
-  3.2 seconds of charged slot overhead gives about **80.1 worker-hours**
-  for 648 cells. Use **83.64 hours** as the conservative historic
-  comparator. Host contention, changed seed lengths and censored tails
-  can make the new run more expensive.
-- The minimum combined cap implied by the point forecast plus the
-  two-slot admission reserve is about **182.9 hours**. Using the historic
-  comparator puts that floor at **186.4 hours**. Propose
-  `STRENGTH_RERUN2_CAMPAIGN_HOURS = 200`, giving **356,116.34 worker-seconds**
-  (about 98.9 hours) with the current charged history. The operator
-  should verify live ledger values before issuance. At 3,000 wall seconds,
-  each refill still requires 2 × 3,000 + 60 = **6,060 worker-seconds**.
-- Bind the new ceiling and checkpoint interval to this exact run ID in
-  plan construction, validation, run admission, the controller and
-  registry. Use the same cumulative registry and charge all earlier
-  runs. Preserve the original run ID's 120-hour validation and the
-  pilot/health rules. Test historical plans, rejection at the new cap,
-  closed-history requirements and the new trace format before issuing
-  the plan.
+| Budget quantity | Value |
+| --- | ---: |
+| Cumulative rerun2 ceiling | 720,000 worker-s (200 h) |
+| Remaining at the first run's close | 356,116.34 worker-s (98.92 h) |
+| Two-slot admission reserve | 2 × 6,000 + 60 = 12,060 worker-s (3.35 h) |
+| Point forecast for 648 cells | 288,489.6 worker-s (80.14 h) |
+| Stress scenario at 1.5× the forecast | 432,734.4 worker-s (120.20 h) |
 
-The current CLI admits only the original strength run ID. The named cap and
-new plan route are proposals. Before issuing a runnable plan, qualify the
-separate quota change and produce a measured improvement or explicitly
-accept the risk of another resource-limit failure. The current patch alone
-does not establish viability under the existing per-cell limits.
+The point forecast combines about 442 CPU seconds per cell with 3.2
+seconds of mean charged slot overhead from the first run. It is a projection
+from censored evidence. The 1.5× scenario assumes costly tails and is a
+planning stress case and exceeds the 98.92-hour balance by about 21.28
+hours even before the refill reserve. Longer runs remain possible. A
+forecast overrun can trigger a budget stop. Record the resulting
+incomplete run as a failure.
+
+`STRENGTH_RERUN2_CAMPAIGN_HOURS = 200` applies only to the exact rerun2 ID.
+The plan, controller and registry use the same limit. They carry forward
+the existing cumulative charges in the same host registry and require the
+closed original strength and health-rerun charge histories. The controller
+requires enough remaining budget at each refill to cover two slots for the
+per-cell wall horizon plus a 60-worker-second shutdown reserve. At the point
+forecast, the cumulative charges plus that reserve total about 184.56 hours.
+Confirm the live charge before issuing the plan.
+
+## Host commands
+
+Use the same account and existing registry at
+`~/.local/state/mtg/archetype-v3`. From an idle host, use a clean checkout
+of the reviewed revision and a fresh Linux CPython 3.12.3 venv with the
+complete application hash lock installed from
+`backend/requirements-py312-linux.lock`. The controller requires at least
+three available cores and 5 GiB of memory headroom. Use fresh plan and
+output paths under an owned private parent outside the checkout. Allow
+14.55 GiB for trace quotas plus space for SQLite, receipts and caches.
+
+```sh
+cd /absolute/clean-checkout/backend
+/absolute/fresh-venv/bin/python -B -m scripts.archetype_strength_v3 plan \
+  /absolute/private/strength-rerun2-plan.json \
+  --run-id archetype-strength-20261124-v3-rerun2
+sha256sum /absolute/private/strength-rerun2-plan.json
+```
+
+Review and record the bound source revision, runtime digest, plan hash and
+prior closed charges. Execute the issued plan once on the same host and
+runtime.
+
+```sh
+/absolute/fresh-venv/bin/python -B -m scripts.archetype_strength_v3 run \
+  /absolute/private/strength-rerun2-plan.json /absolute/private/strength-rerun2-out \
+  --execute-strength
+```
+
+Record the terminal exit code, report hash, closed registry charges and
+comparison aggregates. Keep the raw evidence private. Acceptance requires
+an exit of 0, `strength_passed: true`, and the matching closed, in-budget
+registry record.

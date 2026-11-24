@@ -443,3 +443,26 @@ def test_roundtrip_redecodes_the_exact_payload_for_an_independent_restore(monkey
 
     monkeypatch.setattr(module, 'deepcopy', copy_small)
     assert module.replay_trace(iter(rows), boundary=mutate_observation)['restart_roundtrips'] == 4
+
+
+def test_rerun2_replay_only_admits_the_larger_wall_limit_with_its_exact_policy():
+    from scripts.archetype_plan_v3 import STRENGTH_RERUN2_ID, build_plan
+
+    module = subject()
+    rows, _, _ = make_trace(1)
+    rows[1]['decision_seconds'] = 6000
+    rows[0]['policy']['max_seconds'] = 6000
+    with pytest.raises(module.TraceDivergence, match='timing_policy'):
+        module.replay_trace(rechained(rows))
+
+    policy = build_plan('a'*40, STRENGTH_RERUN2_ID, kind='strength')['policy']
+    rows[0]['policy'] = {**policy, 'max_ticks': 1}
+    # At this terminal action the old dense handler checkpoint is unnecessary.
+    rows[1]['checkpoint_reasons'] = ['final']
+    assert module.replay_trace(rechained(rows))['matched']
+    rows[1]['decision_seconds'] = 6000.01
+    with pytest.raises(module.TraceDivergence, match='timing'):
+        module.replay_trace(rechained(rows))
+    rows[0]['policy']['snapshot_checkpoint_interval'] = 256
+    with pytest.raises(ValueError, match='rerun2 trace policy'):
+        module.replay_trace(rechained(rows))

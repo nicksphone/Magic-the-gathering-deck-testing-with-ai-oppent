@@ -28,19 +28,23 @@ def test_raised_limits_validate_exact_types_before_any_process_changes():
     assert sorted(os.sched_getaffinity(0))==cpus
 
 
-def test_real_raised_limit_in_fresh_process_without_launching_a_game():
+@pytest.mark.parametrize(('seconds', 'run_id'), [
+    (1200, ''),
+    (4800, 'archetype-strength-20261124-v3-rerun2'),
+])
+def test_real_raised_limit_in_fresh_process_without_launching_a_game(seconds, run_id):
     subject();cpu=min(os.sched_getaffinity(0))
     code='''import json,resource,sys
 from scripts.archetype_worker_v3 import apply_limits
-x=apply_limits(int(sys.argv[1]),1200,2147483648)
+x=apply_limits(int(sys.argv[1]),int(sys.argv[2]),2147483648,run_id=sys.argv[3] or None)
 x['hard']=resource.getrlimit(resource.RLIMIT_CPU)[1]
 print(json.dumps(x))
 '''
-    result=subprocess.run([sys.executable,'-B','-c',code,str(cpu)],
+    result=subprocess.run([sys.executable,'-B','-c',code,str(cpu),str(seconds),run_id],
         cwd=Path(__file__).parents[1],text=True,capture_output=True,timeout=5)
     assert result.returncode==0,result.stderr
     record=json.loads(result.stdout)
-    assert record=={'affinity':[cpu],'memory_bytes':2147483648,'cpu_soft_seconds':1200,'hard':1201}
+    assert record=={'affinity':[cpu],'memory_bytes':2147483648,'cpu_soft_seconds':seconds,'hard':seconds+1}
 
 
 def test_atomic_progress_binds_last_complete_trace_record_and_actual_cpu(tmp_path):
@@ -200,3 +204,54 @@ raise SystemExit(main([sys.argv[1]]))
             cwd=Path(__file__).parents[1],text=True,capture_output=True,timeout=5)
         assert result.returncode!=0 and 'Run v3 worker' in result.stderr
         assert 'FileNotFoundError' not in result.stderr
+
+
+def test_rerun2_sparse_checkpoints_keep_full_restore_and_selected_handler_parity(tmp_path):
+    from scripts.archetype_game_v3 import TraceDivergence
+    from scripts.archetype_handler_v3 import HandlerChecks
+    from scripts.archetype_matrix_worker import selected_steps
+    from scripts.archetype_plan_v3 import STRENGTH_RERUN2_ID, build_plan
+    from scripts.archetype_trace_v3 import CHAIN_KEYS, CpuAccounting, TraceWriter, read_records
+    from scripts.archetype_matrix_pilot import file_sha
+    from tests.test_archetype_game_v3 import choose
+
+    module = subject()
+    decks, cell, _, identity, _ = phase_inputs()
+    plan = build_plan('a'*40, STRENGTH_RERUN2_ID, kind='strength')
+    policy = {**plan['policy'], 'max_ticks': 513}
+    quota = plan['trace_policy']['max_bytes']
+    game = module.game_phase(decks, cell, policy, identity, tmp_path, CpuAccounting(),
+                             choose=choose, trace_max_bytes=quota)
+    trace = tmp_path/'trace.jsonl'
+    with trace.open('rb') as stream:
+        rows = list(read_records(stream, max_bytes=quota))
+    assert game['outcome']['accepted_actions'] == 513
+    assert [(r['step'], r['checkpoint_reasons']) for r in rows if 'checkpoint' in r] == [
+        (511, ['periodic']), (512, ['final'])]
+
+    with HandlerChecks(tmp_path/'handler.sqlite3') as handler:
+        verified = module.verify_phase(
+            decks, cell, policy, identity, tmp_path, CpuAccounting(),
+            accepted_actions=513, trace_sha256=game['trace_sha256'],
+            boundary=handler, trace_max_bytes=quota,
+        )
+    assert verified['replay']['matched'] is True
+    assert verified['replay']['restart_roundtrips'] == 513
+    parity = verified['handler_boundaries']
+    assert {r['step'] for r in parity} == selected_steps(513) == {0, 100, 200, 300, 400, 500, 512}
+    for row in parity:
+        assert row['transition_equal'] and row['sqlite_roundtrip'] and row['original_key_retry']
+        assert row['cards_order_transition_equal'] and row['cards_order_restored']
+
+    # Authenticate a changed digest on a non-checkpoint, non-handler action.
+    # Replay must find the semantic mismatch at that action.
+    rows[2]['after_sha256'] = '0'*64
+    with trace.open('wb') as stream:
+        writer = TraceWriter(stream, max_bytes=quota)
+        for row in rows:
+            writer.emit({k: v for k, v in row.items() if k not in CHAIN_KEYS})
+    with pytest.raises(TraceDivergence) as failure:
+        module.verify_phase(decks, cell, policy, identity, tmp_path, CpuAccounting(),
+                            accepted_actions=513, trace_sha256=file_sha(trace), trace_max_bytes=quota)
+    assert failure.value.step == 1
+    assert 'after_sha256' in failure.value.fields

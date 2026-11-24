@@ -8,14 +8,14 @@ import re
 import stat
 
 from scripts.archetype_plan_v3 import (
-    HEALTH_RERUN_ID, LEGACY_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_HOURS,
-    STRENGTH_CAMPAIGN_ID, valid_run_id,
+    HEALTH_RERUN_ID, LEGACY_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_ID,
+    STRENGTH_RERUN2_ID, STRENGTH_RUN_ID, strength_campaign_hours, valid_run_id,
 )
 from scripts.archetype_trace_v3 import canonical, is_sha, load_json
 
 
-def _campaign_seconds(kind):
-    return (STRENGTH_CAMPAIGN_HOURS if kind == 'strength' else LEGACY_CAMPAIGN_HOURS) * 3600
+def _campaign_seconds(kind, run_id):
+    return (strength_campaign_hours(run_id) if kind == 'strength' else LEGACY_CAMPAIGN_HOURS) * 3600
 
 
 def _directory(path):
@@ -113,13 +113,17 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
         if active is not None:
             active_kind=active.get('kind','pilot')
             if (type(active_kind) is not str or active_kind not in ('pilot','health','strength')
-                    or active.get('campaign_worker_seconds',_campaign_seconds(active_kind))!=_campaign_seconds(active_kind)
-                    or (active_kind=='strength' and active.get('campaign_id')!=STRENGTH_CAMPAIGN_ID)
+                    or (active_kind=='strength' and
+                        (active.get('campaign_id')!=STRENGTH_CAMPAIGN_ID
+                         or not valid_run_id('strength', active.get('run_id'))))
                     or (active_kind!='strength' and 'campaign_id' in active)):
+                raise ValueError('Prior campaign identity or ceiling is invalid')
+            active_ceiling = _campaign_seconds(active_kind, active.get('run_id'))
+            if active.get('campaign_worker_seconds', active_ceiling) != active_ceiling:
                 raise ValueError('Prior campaign identity or ceiling is invalid')
         prior=active.get('charged_campaign_worker_seconds')if active is not None else 0.
         if (type(prior)not in(int,float)or not math.isfinite(prior)or prior<0
-                or active is not None and active.get('remaining_campaign_worker_seconds')!=max(0.,_campaign_seconds(active_kind)-prior)):
+                or active is not None and active.get('remaining_campaign_worker_seconds')!=max(0.,active_ceiling-prior)):
             raise ValueError('Prior campaign charges are missing or inconsistent')
         health=active.get('charged_health_worker_seconds',0.)if active is not None else 0.
         if (type(health)not in(int,float)or not math.isfinite(health)or not 0<=health<=prior
@@ -143,9 +147,22 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
                 or strength<0 or strength+health>prior+.000001
                 or (active is not None and active_kind=='strength' and 'charged_strength_worker_seconds' not in active)):
             raise ValueError('Prior strength charges are missing or inconsistent')
+        if run_id == STRENGTH_RERUN2_ID:
+            original = _read(root/'runs'/f'{STRENGTH_RUN_ID}.json')
+            if (type(original) is not dict or original.get('kind') != 'strength'
+                    or original.get('run_id') != STRENGTH_RUN_ID
+                    or original.get('campaign_id') != STRENGTH_CAMPAIGN_ID
+                    or original.get('campaign_worker_seconds') != _campaign_seconds('strength', STRENGTH_RUN_ID)
+                    or original.get('state') != 'closed' or original.get('child_handles_reaped') is not True
+                    or not is_sha(original.get('report_sha256'))
+                    or type(original.get('charged_campaign_worker_seconds')) not in (int, float)
+                    or not 0 < original['charged_campaign_worker_seconds'] <= prior
+                    or type(original.get('charged_strength_worker_seconds')) not in (int, float)
+                    or not 0 < original['charged_strength_worker_seconds'] <= strength):
+                raise ValueError('Rerun2 requires the existing closed original strength charge history')
         row={'schema':3,'kind':kind,'state':'running','child_handles_reaped':False,'run_id':run_id,
              'plan_sha256':plan_sha256,'revision':revision,'runtime_sha256':runtime_sha256,
-             'output':output,'campaign_worker_seconds':_campaign_seconds(kind),'reserved_health_worker_seconds':30*3600,
+             'output':output,'campaign_worker_seconds':_campaign_seconds(kind, run_id),'reserved_health_worker_seconds':30*3600,
              'charged_worker_seconds':None,'remaining_campaign_worker_seconds':None,
              'charged_before_worker_seconds':prior,'charged_campaign_worker_seconds':None,
              'charged_health_before_worker_seconds':health,'charged_health_worker_seconds':None,
