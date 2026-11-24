@@ -212,3 +212,41 @@ def test_synthetic_unavailable_optional_summary_cannot_erase_known_negative(posi
     result = pending_effects._friendly_destruction_profit(state, 1, action,
         _baseline_supplier=lambda: receipt)
     assert result is (None if positive else False)
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_checked_cast_forecast_uses_its_one_disposable_fork(seat, monkeypatch):
+    from rules_engine import action_validation
+
+    state, action, _, _ = position(seat, 'Recruitment Officer')
+    before = serialize_match_snapshot(state)
+    original_action = deepcopy(action)
+    reference = checked_action(pending_effects._projection_copy(state), RulesEngine(), seat, action)
+    expected = serialize_match_snapshot(reference)
+    original_settle = pending_effects._settle_announced_stack
+    original_copy = pending_effects.copy_match_state
+    copies = []
+    settled = []
+
+    def count(current, **kwargs):
+        clone = original_copy(current, **kwargs)
+        copies.append((current, clone))
+        return clone
+
+    def observe(candidate, **kwargs):
+        assert serialize_match_snapshot(candidate) == expected
+        assert list(candidate.cards) == list(reference.cards)
+        settled.append(candidate)
+        return original_settle(candidate, **kwargs)
+
+    monkeypatch.setattr(pending_effects, 'copy_match_state', count)
+    monkeypatch.setattr(action_validation, 'copy_match_state', count)
+    monkeypatch.setattr(pending_effects, '_settle_announced_stack', observe)
+    result = pending_effects._friendly_destruction_profit(
+        state, seat, action, _baseline_supplier=lambda: ('known', None, 1_000_000),
+    )
+    assert result is False
+    assert len(copies) == 1 and copies[0][0] is state and copies[0][1] is not state
+    assert len(settled) == 1 and settled[0] is copies[0][1]
+    assert action == original_action
+    assert serialize_match_snapshot(state) == before

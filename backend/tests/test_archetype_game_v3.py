@@ -466,3 +466,23 @@ def test_rerun2_replay_only_admits_the_larger_wall_limit_with_its_exact_policy()
     rows[0]['policy']['snapshot_checkpoint_interval'] = 256
     with pytest.raises(ValueError, match='rerun2 trace policy'):
         module.replay_trace(rechained(rows))
+
+
+def test_replay_checks_restored_snapshot_bytes_without_decoding_them(monkeypatch):
+    import json
+
+    module = subject()
+    rows, _, _ = make_trace(ticks=2)
+    decoded = []
+    original = json.loads
+
+    def observe(data):
+        value = original(data)
+        if type(value) is dict and 'cards' in value and 'rng_state' in value:
+            decoded.append(data)
+        return value
+
+    monkeypatch.setattr(module, 'json', SimpleNamespace(loads=observe))
+    result = module.replay_trace(iter(rows))
+    assert result['matched'] and result['restart_roundtrips'] == 2
+    assert len(decoded) == 8  # initial and final, plus before, after and restore payload

@@ -291,9 +291,9 @@ def replay_trace(records, *, boundary=None, accounting=None):
             # tree for the restore while keeping the observer's view independent.
             payload = ordered_snapshot(json.loads(after.encoded), after.cards_order)
             restarted = deserialize_match_snapshot(payload)
-        restored = capture(restarted, accounting)
-        if restored.sha256 != after.sha256 or restored.cards_order != after.cards_order:
-            raise TraceDivergence(steps, ['snapshot_roundtrip'])
+        with accounting.measure('snapshot'):
+            if _snapshot_bytes(restarted) != after.encoded or list(restarted.cards) != after.cards_order:
+                raise TraceDivergence(steps, ['snapshot_roundtrip'])
         if boundary is not None:
             boundary(first, {**row,'before':ordered_snapshot(before.value, before.cards_order),
                              'after':ordered_snapshot(after.value, after.cards_order),'legal_moves':legal})

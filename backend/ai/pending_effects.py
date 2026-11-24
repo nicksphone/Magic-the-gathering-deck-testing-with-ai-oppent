@@ -519,12 +519,20 @@ def _uncompensated_life_material_loss(before, after, player_id, spell_id):
 
 def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None, _baseline_supplier=None):
     from ai.heuristics import evaluate_board
-    from rules_engine.action_validation import ActionRejected, checked_action
+    from rules_engine.action_validation import ActionRejected, _apply_checked_action
     projected = _projection_copy(state)
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opposing_hand = tuple(state.players[3-player_id].hand)
     try:
-        projected = simulation_checked_action(projected, RulesEngine(), player_id, action)
+        rules = RulesEngine()
+        if type(projected) is MatchState and type(action) is dict and action.get('type') == 'cast_spell':
+            # This forecast owns its scratch state and discards it on refusal.
+            # Keep the normal copy route for actions that read the pre-copy
+            # state during validation, such as blockers.
+            _require_simulation_frontier(projected, player_id, action)
+            _apply_checked_action(projected, projected, rules, player_id, deepcopy(action))
+        else:
+            projected = simulation_checked_action(projected, rules, player_id, action)
     except UncertainSimulation:
         return None
     except ActionRejected:
