@@ -407,3 +407,39 @@ def test_replay_timing_bound_uses_the_admitted_wall_policy():
     rows[1]['decision_seconds'] = 3000.01
     with pytest.raises(subject().TraceDivergence, match='timing'):
         subject().replay_trace(rechained(rows))
+
+
+def test_mutation_check_uses_the_same_snapshot_bytes_without_decoding(monkeypatch):
+    import json
+
+    module = subject()
+    decoded = []
+    original = json.loads
+
+    def observe(data):
+        value = original(data)
+        if type(value) is dict and 'cards' in value and 'rng_state' in value:
+            decoded.append(value)
+        return value
+
+    monkeypatch.setattr(module, 'json', SimpleNamespace(loads=observe))
+    rows, outcome, _ = make_trace(ticks=1)
+    assert outcome['accepted_actions'] == 1
+    assert len(decoded) == 4  # initial, before, after, final
+    assert module.replay_trace(iter(rows))['matched']
+
+
+def test_roundtrip_redecodes_the_exact_payload_for_an_independent_restore(monkeypatch):
+    module = subject()
+    rows, _, _ = make_trace()
+
+    def copy_small(value):
+        assert not (type(value) is dict and 'cards' in value and 'rng_state' in value)
+        return deepcopy(value)
+
+    def mutate_observation(_initial, row):
+        row['after']['players']['1']['life'] = -1
+        row['after']['log'].append('observer-only text')
+
+    monkeypatch.setattr(module, 'deepcopy', copy_small)
+    assert module.replay_trace(iter(rows), boundary=mutate_observation)['restart_roundtrips'] == 4

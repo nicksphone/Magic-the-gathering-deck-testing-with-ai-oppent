@@ -139,3 +139,32 @@ def test_scaling_resource_reservation_reaches_each_style_without_hidden_hand(sty
     assert serialize_match_snapshot(state) == before
     add(state, 'Wurmcoil Engine', 2, Zone.HAND)
     assert agent._choose_attackers(state, [source.id], 1) == []
+
+
+def test_payment_planning_shares_the_pure_battlefield_view(monkeypatch):
+    from rules_engine import basic_land_layer
+    from rules_engine.mana import _plan_payment, parse_mana_cost
+    from rules_engine.query_context import query_cache
+
+    state = clean()
+    first = add(state, 'Forest')
+    second = add(state, 'Forest')
+    before = serialize_match_snapshot(state)
+    original = basic_land_layer._printed_layer_four_effect
+    scanned = []
+
+    def observe(text):
+        scanned.append(text)
+        return original(text)
+
+    monkeypatch.setattr(basic_land_layer, '_printed_layer_four_effect', observe)
+    requirements = parse_mana_cost('{G}{G}')
+    expected = ([(first.id, 'G', 1, True), (second.id, 'G', 1, True)], {})
+    assert _plan_payment(state, 1, requirements) == expected
+    assert len(scanned) == 2
+    assert query_cache(state) is None
+    assert serialize_match_snapshot(state) == before
+
+    first.tapped = True
+    assert _plan_payment(state, 1, requirements) is None
+    assert query_cache(state) is None

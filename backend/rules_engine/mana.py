@@ -11,6 +11,7 @@ from game_state.copying import copy_match_state
 from rules_engine.continuous import has_keyword
 from rules_engine.hooks import CostContext, apply_cost_modifiers
 from rules_engine.mana_restrictions import UNFILTERED, _parse_rule, available_pool, consume_pool, eligible, spending_rule
+from rules_engine.query_context import rule_query_scope
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
@@ -392,10 +393,17 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         if escape_fuel_proven_impossible(state, player_id, post_payment_condition):
             return None
     from rules_engine.mana_abilities import proven_missing_fixed_color
-    if proven_missing_fixed_color(state, player_id, req, payment_context):
-        return None
-    held_life = protected_life + req.get('life', 0)
-    plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
+    # Free-plan queries inspect one unchanged battlefield. End reuse before
+    # simulating any payment steps or invoking a post-payment condition.
+    with rule_query_scope(state):
+        if proven_missing_fixed_color(state, player_id, req, payment_context):
+            return None
+        held_life = protected_life + req.get('life', 0)
+        plan = _plan_free_payment(
+            state, player_id, req, payment_context=payment_context,
+            excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids,
+            protected_life=held_life,
+        )
     if plan is not None and post_payment_condition is not None:
         trial = copy_match_state(state)
         if not any(post_payment_condition(outcome) for outcome in _planned_mana_outcomes(

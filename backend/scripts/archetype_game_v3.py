@@ -18,17 +18,22 @@ class Captured:
     value: dict
     sha256: str
     cards_order: list[str]
+    encoded: bytes
 
     @property
     def cards_order_sha256(self):
         return digest(self.cards_order)
 
 
-def capture(state, accounting):
+def _snapshot_bytes(state):
     from game_state.serializers import serialize_match_snapshot
+    return canonical(serialize_match_snapshot(state))
+
+
+def capture(state, accounting):
     with accounting.measure('snapshot'):
-        data = canonical(serialize_match_snapshot(state))
-        return Captured(json.loads(data), hashlib.sha256(data).hexdigest(), list(state.cards))
+        data = _snapshot_bytes(state)
+        return Captured(json.loads(data), hashlib.sha256(data).hexdigest(), list(state.cards), data)
 
 
 def ordered_snapshot(value, cards_order):
@@ -115,10 +120,9 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
             decision = (choose(state, deepcopy(legal), pid) if choose is not None else
                         agents[pid].choose_action(state, deepcopy(legal), pid))
         decision_seconds = time.monotonic()-started
-        after_decision = capture(state, accounting)
-        if (after_decision.sha256 != before.sha256
-                or after_decision.cards_order != before.cards_order):
-            raise TraceDivergence(steps, ['AI_input_mutation'])
+        with accounting.measure('snapshot'):
+            if _snapshot_bytes(state) != before.encoded or list(state.cards) != before.cards_order:
+                raise TraceDivergence(steps, ['AI_input_mutation'])
         action = _plain(complete_action(decision.action))
         started = time.monotonic()
         try:
@@ -268,7 +272,10 @@ def replay_trace(records, *, boundary=None, accounting=None):
         if error:
             continue
         with accounting.measure('serde_restart'):
-            restarted = deserialize_match_snapshot(deepcopy(ordered_snapshot(after.value, after.cards_order)))
+            # The captured JSON has no mutable aliases. Decoding makes a fresh
+            # tree for the restore while keeping the observer's view independent.
+            payload = ordered_snapshot(json.loads(after.encoded), after.cards_order)
+            restarted = deserialize_match_snapshot(payload)
         restored = capture(restarted, accounting)
         if restored.sha256 != after.sha256 or restored.cards_order != after.cards_order:
             raise TraceDivergence(steps, ['snapshot_roundtrip'])
