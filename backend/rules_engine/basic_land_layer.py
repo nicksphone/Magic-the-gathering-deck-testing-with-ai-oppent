@@ -64,7 +64,8 @@ def layer_four_view(state, entering=None, controller=None, *, attached=False):
         cards = [card for card in cards if card.id != entering.id] + [entering]
     if not any(_printed_layer_four_effect(oracle_text := getattr(card, 'oracle_text', '')) or
                battlefield_additional_type(oracle_text, card.name) or
-               any('creature_subtypes' in effect for effect in active_type_effects(card))
+               (getattr(card, 'type_effects', None) and
+                any('creature_subtypes' in effect for effect in active_type_effects(card)))
                for card in cards):
         result = () if attached else (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
         if cache is not None:
