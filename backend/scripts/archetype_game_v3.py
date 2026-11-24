@@ -8,6 +8,11 @@ import time
 from scripts.archetype_matrix_game import (
     TraceDivergence, actor, admit_decks, cell_decks, initial_state, outcome_for,
 )
+from scripts.archetype_plan_v3 import (
+    MAX_WALL_SECONDS, STANDARD_WALL_SECONDS, STRENGTH_CHECKPOINT_INTERVAL,
+    STRENGTH_RERUN2_CHECKPOINT_INTERVAL, STRENGTH_RERUN2_CPU_SECONDS,
+    STRENGTH_RERUN2_ID, STRENGTH_RERUN2_WALL_SECONDS,
+)
 from scripts.archetype_trace_v3 import (
     CHAIN_KEYS, TRACE_SCHEMA, CpuAccounting, canonical, checkpoint_reasons, digest, record_digest,
 )
@@ -18,17 +23,22 @@ class Captured:
     value: dict
     sha256: str
     cards_order: list[str]
+    encoded: bytes
 
     @property
     def cards_order_sha256(self):
         return digest(self.cards_order)
 
 
-def capture(state, accounting):
+def _snapshot_bytes(state):
     from game_state.serializers import serialize_match_snapshot
+    return canonical(serialize_match_snapshot(state))
+
+
+def capture(state, accounting):
     with accounting.measure('snapshot'):
-        data = canonical(serialize_match_snapshot(state))
-        return Captured(json.loads(data), hashlib.sha256(data).hexdigest(), list(state.cards))
+        data = _snapshot_bytes(state)
+        return Captured(json.loads(data), hashlib.sha256(data).hexdigest(), list(state.cards), data)
 
 
 def ordered_snapshot(value, cards_order):
@@ -54,6 +64,14 @@ def _policy(policy):
             or not 0 <= policy['max_ticks'] <= 10000
             or type(policy.get('max_turns')) is not int or not 1 <= policy['max_turns'] <= 100):
         raise ValueError('Invalid bounded game policy')
+    if 'strength_run_id' in policy:
+        limits = {'max_seconds': STRENGTH_RERUN2_WALL_SECONDS,
+                  'max_cpu_seconds_per_game': STRENGTH_RERUN2_CPU_SECONDS,
+                  'snapshot_checkpoint_interval': STRENGTH_RERUN2_CHECKPOINT_INTERVAL}
+        if (type(policy['strength_run_id']) is not str or policy['strength_run_id'] != STRENGTH_RERUN2_ID
+                or any(type(policy.get(key)) is not int or policy[key] != value
+                       for key, value in limits.items())):
+            raise ValueError('Invalid strength rerun2 trace policy')
 
 
 def progress(value):
@@ -77,8 +95,9 @@ def _checkpoints(policy, before, after, step, *, final):
     interval = policy.get('snapshot_checkpoint_interval')
     if interval is None:
         return checkpoint_reasons(before, after, step, final=final)
-    from scripts.archetype_plan_v3 import STRENGTH_CHECKPOINT_INTERVAL
-    if type(interval) is not int or interval != STRENGTH_CHECKPOINT_INTERVAL:
+    expected = (STRENGTH_RERUN2_CHECKPOINT_INTERVAL
+                if policy.get('strength_run_id') == STRENGTH_RERUN2_ID else STRENGTH_CHECKPOINT_INTERVAL)
+    if type(interval) is not int or interval != expected:
         raise ValueError('Invalid strength checkpoint interval')
     return checkpoint_reasons(before, after, step, final=final, interval=interval, dense=False)
 
@@ -115,10 +134,9 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
             decision = (choose(state, deepcopy(legal), pid) if choose is not None else
                         agents[pid].choose_action(state, deepcopy(legal), pid))
         decision_seconds = time.monotonic()-started
-        after_decision = capture(state, accounting)
-        if (after_decision.sha256 != before.sha256
-                or after_decision.cards_order != before.cards_order):
-            raise TraceDivergence(steps, ['AI_input_mutation'])
+        with accounting.measure('snapshot'):
+            if _snapshot_bytes(state) != before.encoded or list(state.cards) != before.cards_order:
+                raise TraceDivergence(steps, ['AI_input_mutation'])
         action = _plain(complete_action(decision.action))
         started = time.monotonic()
         try:
@@ -201,9 +219,10 @@ def replay_trace(records, *, boundary=None, accounting=None):
     if first['kind'] != 'initial' or type(first['schema']) is not int or first['schema'] != TRACE_SCHEMA:
         raise TraceDivergence(0, ['initial'])
     _policy(first['policy'])
-    from scripts.archetype_plan_v3 import MAX_WALL_SECONDS, STANDARD_WALL_SECONDS
     wall_limit = first['policy'].get('max_seconds', STANDARD_WALL_SECONDS)
-    if type(wall_limit) is not int or wall_limit not in (STANDARD_WALL_SECONDS, MAX_WALL_SECONDS):
+    # A rerun2 policy has already bound its larger limit in _policy.
+    if ('strength_run_id' not in first['policy']
+            and (type(wall_limit) is not int or wall_limit not in (STANDARD_WALL_SECONDS, MAX_WALL_SECONDS))):
         raise TraceDivergence(0, ['timing_policy'])
     state = initial_state(first['deck_a'], first['deck_b'], first['seed'], first['game_id'])
     initial = capture(state, accounting)
@@ -268,7 +287,10 @@ def replay_trace(records, *, boundary=None, accounting=None):
         if error:
             continue
         with accounting.measure('serde_restart'):
-            restarted = deserialize_match_snapshot(deepcopy(ordered_snapshot(after.value, after.cards_order)))
+            # The captured JSON has no mutable aliases. Decoding makes a fresh
+            # tree for the restore while keeping the observer's view independent.
+            payload = ordered_snapshot(json.loads(after.encoded), after.cards_order)
+            restarted = deserialize_match_snapshot(payload)
         restored = capture(restarted, accounting)
         if restored.sha256 != after.sha256 or restored.cards_order != after.cards_order:
             raise TraceDivergence(steps, ['snapshot_roundtrip'])

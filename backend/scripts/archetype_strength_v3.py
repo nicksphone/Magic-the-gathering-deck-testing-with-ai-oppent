@@ -1,6 +1,7 @@
-"""Issue and run the single pre-registered same-deck AI strength experiment."""
+"""Issue and run a pre-registered same-deck AI strength experiment."""
 import argparse
 from collections import Counter
+from functools import partial
 import json
 import math
 from pathlib import Path
@@ -10,19 +11,19 @@ import sys
 
 from scripts import archetype_pilot_v3 as pilot
 from scripts.archetype_plan_v3 import (
-    STRENGTH_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_ID, STRENGTH_OPPONENTS,
-    STRENGTH_RUN_ID, build_plan, validate_plan,
+    STRENGTH_CAMPAIGN_ID, STRENGTH_OPPONENTS, STRENGTH_RERUN2_ID,
+    STRENGTH_RUN_ID, build_plan, strength_campaign_hours, validate_plan,
 )
 from scripts.archetype_trace_v3 import digest, load_json
 
 
 class StrengthBudget(pilot.SlotBudget):
-    campaign_seconds = STRENGTH_CAMPAIGN_HOURS * 3600
     shutdown_reserve_seconds = 60
 
-    def __init__(self, *, started, prior_charged_seconds, wall_seconds):
+    def __init__(self, *, started, prior_charged_seconds, wall_seconds, run_id=STRENGTH_RUN_ID):
         super().__init__(started=started, prior_charged_seconds=prior_charged_seconds)
         self.wall_seconds = wall_seconds
+        self.campaign_seconds = strength_campaign_hours(run_id) * 3600
 
     def exceeded(self, now):
         return self.remaining_campaign_seconds(now) <= self.shutdown_reserve_seconds
@@ -116,7 +117,8 @@ def strength_report(rows, plan):
 
 
 def run_strength(plan, directory):
-    return pilot._admit_run(plan, directory, kind='strength', budget_factory=StrengthBudget,
+    budget_factory = partial(StrengthBudget, run_id=plan.get('run_id') if type(plan) is dict else None)
+    return pilot._admit_run(plan, directory, kind='strength', budget_factory=budget_factory,
                             reporter=strength_report, prefix='STRENGTH')
 
 
@@ -127,6 +129,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest='command', required=True)
     make = commands.add_parser('plan')
     make.add_argument('output', type=Path)
+    make.add_argument('--run-id', choices=(STRENGTH_RUN_ID, STRENGTH_RERUN2_ID), default=STRENGTH_RUN_ID)
     run = commands.add_parser('run')
     run.add_argument('plan', type=Path)
     run.add_argument('output', type=Path)
@@ -139,7 +142,7 @@ def main(argv=None):
             raise ValueError('Private plan output outside checkout required')
         revision = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
         pilot.source_identity(revision)
-        plan = build_plan(revision, STRENGTH_RUN_ID, kind='strength',
+        plan = build_plan(revision, args.run_id, kind='strength',
                           runtime_sha256=digest(pilot.runtime_identity()))
         pilot.publish(args.output, plan)
         return 0
