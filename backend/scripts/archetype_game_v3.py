@@ -10,13 +10,21 @@ from scripts.archetype_matrix_game import (
     TraceDivergence, actor, admit_decks, cell_decks, initial_state, outcome_for,
 )
 from scripts.archetype_plan_v3 import (
+    BUDGET_H2H_LIMITS, BUDGET_H2H_PAUSE, BUDGET_H2H_RUN_ID, EXTENDED_TRACE_RUN_IDS,
     MAX_WALL_SECONDS, STANDARD_WALL_SECONDS, STRENGTH_CHECKPOINT_INTERVAL,
     STRENGTH_RERUN2_CHECKPOINT_INTERVAL, STRENGTH_RERUN2_CPU_SECONDS,
-    STRENGTH_EXTENDED_IDS, STRENGTH_RERUN2_WALL_SECONDS,
+    STRENGTH_RERUN2_WALL_SECONDS,
 )
 from scripts.archetype_trace_v3 import (
     CHAIN_KEYS, TRACE_SCHEMA, CpuAccounting, canonical, checkpoint_reasons, digest, record_digest,
 )
+
+
+@dataclass(frozen=True)
+class BudgetDecision:
+    decision: object
+    cutoff: str | None = None
+    retained: bool = False
 
 
 @dataclass
@@ -84,10 +92,35 @@ def _policy(policy):
         limits = {'max_seconds': STRENGTH_RERUN2_WALL_SECONDS,
                   'max_cpu_seconds_per_game': STRENGTH_RERUN2_CPU_SECONDS,
                   'snapshot_checkpoint_interval': STRENGTH_RERUN2_CHECKPOINT_INTERVAL}
-        if (type(policy['strength_run_id']) is not str or policy['strength_run_id'] not in STRENGTH_EXTENDED_IDS
+        if (type(policy['strength_run_id']) is not str or policy['strength_run_id'] not in EXTENDED_TRACE_RUN_IDS
                 or any(type(policy.get(key)) is not int or policy[key] != value
                        for key, value in limits.items())):
             raise ValueError('Invalid strength rerun2 trace policy')
+    budget = policy.get('strength_run_id') == BUDGET_H2H_RUN_ID
+    if ('interactive_budget' in policy) != budget or (
+            budget and digest(policy['interactive_budget']) != digest(BUDGET_H2H_LIMITS)):
+        raise ValueError('Invalid head-to-head budget policy')
+
+
+def _budget_seat(policy, identity):
+    if policy.get('strength_run_id') != BUDGET_H2H_RUN_ID:
+        return None
+    seat = identity.get('budgeted_seat') if type(identity) is dict else None
+    if type(seat) is not int or seat not in (1, 2):
+        raise ValueError('Head-to-head trace requires the assigned budgeted seat')
+    return seat
+
+
+def _check_budget_decision(value, *, actor_id, budgeted_seat, paused, cpu_limit):
+    if (type(value) is not dict or set(value) != {'cpu_seconds', 'cutoff', 'retained'}
+            or type(value['cpu_seconds']) not in (int, float)
+            or not 0 <= value['cpu_seconds'] <= cpu_limit
+            or type(value['retained']) is not bool
+            or (value['cutoff'] is not None and
+                (type(value['cutoff']) is not str or value['cutoff'] not in ('deadline', 'node limit')))
+            or (value['cutoff'] is not None and actor_id != budgeted_seat)
+            or (value['cutoff'] is None and (paused or value['retained']))):
+        raise ValueError('Invalid head-to-head decision observation')
 
 
 def progress(value):
@@ -115,7 +148,7 @@ def _checkpoints(policy, before, after, step, *, final):
     if interval is None:
         return checkpoint_reasons(before, after, step, final=final)
     expected = (STRENGTH_RERUN2_CHECKPOINT_INTERVAL
-                if policy.get('strength_run_id') in STRENGTH_EXTENDED_IDS else STRENGTH_CHECKPOINT_INTERVAL)
+                if policy.get('strength_run_id') in EXTENDED_TRACE_RUN_IDS else STRENGTH_CHECKPOINT_INTERVAL)
     if type(interval) is not int or interval != expected:
         raise ValueError('Invalid strength checkpoint interval')
     return checkpoint_reasons(before, after, step, final=final, interval=interval, dense=False)
@@ -130,6 +163,7 @@ def _captured_checkpoints(policy, before, after, step, *, final):
 def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
               accounting=None, choose=None):
     _policy(policy)
+    budgeted_seat = _budget_seat(policy, identity)
     accounting = accounting or CpuAccounting()
     with accounting.measure('setup'):
         from ai.action_contract import complete_action
@@ -155,13 +189,30 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
             legal = _plain(rules.legal_moves(state, pid))
         before = capture(state, accounting)
         started = time.monotonic()
+        decision_cpu_start = time.process_time() if budgeted_seat is not None else None
         with accounting.measure('ai_decision'):
             decision = (choose(state, deepcopy(legal), pid) if choose is not None else
                         agents[pid].choose_action(state, deepcopy(legal), pid))
         decision_seconds = time.monotonic()-started
+        observation = None
+        if budgeted_seat is not None:
+            if type(decision) is not BudgetDecision:
+                raise ValueError('Head-to-head chooser requires a decision observation')
+            observation = {'cpu_seconds': time.process_time()-decision_cpu_start,
+                           'cutoff': decision.cutoff, 'retained': decision.retained}
+            decision = decision.decision
+            _check_budget_decision(observation, actor_id=pid, budgeted_seat=budgeted_seat,
+                                   paused=decision is None, cpu_limit=policy['max_cpu_seconds_per_game'])
         with accounting.measure('snapshot'):
             if _snapshot_bytes(state) != before.encoded or list(state.cards) != before.cards_order:
                 raise TraceDivergence(steps, ['AI_input_mutation'])
+        if observation is not None and decision is None:
+            error = BUDGET_H2H_PAUSE
+            emit({'kind': 'decision_pause', 'step': steps, 'actor': pid,
+                  'decision_seconds': decision_seconds, 'budget_decision': observation,
+                  'legal_moves_sha256': digest(legal), 'before_sha256': before.sha256,
+                  'before_cards_order_sha256': before.cards_order_sha256})
+            break
         action = _plain(complete_action(decision.action))
         started = time.monotonic()
         try:
@@ -182,6 +233,8 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
                'decision_seconds':decision_seconds, 'transition_seconds':transition_seconds}
         if error:
             row['exception_class'] = exception
+        if observation is not None:
+            row['budget_decision'] = observation
         reasons = _captured_checkpoints(policy, before, after, steps,
                                       final=bool(error) or _ending(candidate, steps+1, policy))
         if reasons:
@@ -244,6 +297,7 @@ def replay_trace(records, *, boundary=None, boundary_steps=None, on_step=None, a
     if first['kind'] != 'initial' or type(first['schema']) is not int or first['schema'] != TRACE_SCHEMA:
         raise TraceDivergence(0, ['initial'])
     _policy(first['policy'])
+    budgeted_seat = _budget_seat(first['policy'], first['identity'])
     wall_limit = first['policy'].get('max_seconds', STANDARD_WALL_SECONDS)
     # A rerun2 policy has already bound its larger limit in _policy.
     if ('strength_run_id' not in first['policy']
@@ -260,7 +314,9 @@ def replay_trace(records, *, boundary=None, boundary_steps=None, on_step=None, a
             if next(records, None) is not None:
                 raise TraceDivergence(steps, ['after_final'])
             break
-        if error or _ending(state, steps, first['policy']) or row.get('kind') not in ('action','rejected'):
+        paused = row.get('kind') == 'decision_pause' and budgeted_seat is not None
+        if error or _ending(state, steps, first['policy']) or (
+                not paused and row.get('kind') not in ('action', 'rejected')):
             raise TraceDivergence(steps, ['record_kind'])
         required = {'kind','step','actor','action','reasoning','knowledge_usage',
                     'legal_moves_sha256','before_sha256','after_sha256','rng_sha256',
@@ -268,17 +324,23 @@ def replay_trace(records, *, boundary=None, boundary_steps=None, on_step=None, a
                     'progress','log_delta','decision_seconds','transition_seconds'}
         if row['kind'] == 'rejected':
             required.add('exception_class')
+        if paused:
+            required = {'kind', 'step', 'actor', 'decision_seconds', 'legal_moves_sha256',
+                        'before_sha256', 'before_cards_order_sha256'}
+        if budgeted_seat is not None:
+            required.add('budget_decision')
         # Checkpoint presence/content is decided from the genuine transition below.
         _keys(row, required | ({'checkpoint','checkpoint_reasons'} if 'checkpoint' in row else set()), steps)
         if any(type(row[key]) not in (int, float) or not 0 <= row[key] <= wall_limit
-               for key in ('decision_seconds','transition_seconds')):
+               for key in (('decision_seconds',) if paused else ('decision_seconds', 'transition_seconds'))):
             raise TraceDivergence(steps, ['timing'])
-        try:
-            normalized_action = complete_action(row['action'])
-        except (ActionRejected, TypeError, ValueError) as exc:
-            raise TraceDivergence(steps, ['action_contract']) from exc
-        if digest(normalized_action) != digest(row['action']):
-            raise TraceDivergence(steps, ['action_contract'])
+        if not paused:
+            try:
+                normalized_action = complete_action(row['action'])
+            except (ActionRejected, TypeError, ValueError) as exc:
+                raise TraceDivergence(steps, ['action_contract']) from exc
+            if digest(normalized_action) != digest(row['action']):
+                raise TraceDivergence(steps, ['action_contract'])
         pid = actor(state)
         with accounting.measure('legal_moves'):
             legal = _plain(rules.legal_moves(state, pid))
@@ -286,6 +348,15 @@ def replay_trace(records, *, boundary=None, boundary_steps=None, on_step=None, a
         _check(row, {'step':steps,'actor':pid,'legal_moves_sha256':digest(legal),
                      'before_sha256':before.sha256,
                      'before_cards_order_sha256':before.cards_order_sha256}, steps)
+        if budgeted_seat is not None:
+            try:
+                _check_budget_decision(row['budget_decision'], actor_id=pid, budgeted_seat=budgeted_seat,
+                                       paused=paused, cpu_limit=first['policy']['max_cpu_seconds_per_game'])
+            except ValueError as exc:
+                raise TraceDivergence(steps, ['budget_decision']) from exc
+        if paused:
+            error = BUDGET_H2H_PAUSE
+            continue
         try:
             with accounting.measure('checked_transition'):
                 candidate = checked_action(state, rules, pid, row['action'])

@@ -8,13 +8,14 @@ import sys
 import time
 
 from scripts.archetype_plan_v3 import (
-    MAX_CPU_SECONDS, MEMORY_BYTES, STRENGTH_EXTENDED_IDS, STRENGTH_RERUN2_CPU_SECONDS, validate_plan,
+    BUDGET_H2H_KIND, BUDGET_H2H_RUN_ID, EXTENDED_TRACE_RUN_IDS, MAX_CPU_SECONDS,
+    MEMORY_BYTES, STRENGTH_RERUN2_CPU_SECONDS, validate_plan,
 )
 from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TRACE_SCHEMA, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
 
 
 def validate_limits(cpu, cpu_seconds, memory_bytes, *, run_id=None):
-    ceiling = STRENGTH_RERUN2_CPU_SECONDS if run_id in STRENGTH_EXTENDED_IDS else MAX_CPU_SECONDS
+    ceiling = STRENGTH_RERUN2_CPU_SECONDS if run_id in EXTENDED_TRACE_RUN_IDS else MAX_CPU_SECONDS
     if (type(cpu) is not int or cpu not in os.sched_getaffinity(0)
             or type(cpu_seconds) is not int or not 1 <= cpu_seconds <= ceiling
             or type(memory_bytes) is not int or memory_bytes != MEMORY_BYTES):
@@ -106,6 +107,25 @@ def validate_cpu_usage(cpu):
         raise ValueError('Partial CPU categories overlap or exceed process CPU')
 
 
+def budget_totals():
+    return {role: {'decisions': 0, 'retained_available': 0, 'cpu_seconds': 0.,
+                   'wall_seconds': 0., 'cutoffs': {'deadline': 0, 'node limit': 0}}
+            for role in ('budgeted', 'unlimited')}
+
+
+def count_budget_decision(totals, row, budgeted_seat):
+    observation = row.get('budget_decision')
+    if observation is None:
+        return
+    target = totals['budgeted' if row['actor'] == budgeted_seat else 'unlimited']
+    target['decisions'] += 1
+    target['retained_available'] += int(observation['retained'])
+    target['cpu_seconds'] += observation['cpu_seconds']
+    target['wall_seconds'] += row['decision_seconds']
+    if observation['cutoff'] is not None:
+        target['cutoffs'][observation['cutoff']] += 1
+
+
 def game_phase(decks,cell,policy,identity,directory,accounting,*,choose=None,
                trace_max_bytes=MAX_TRACE_BYTES):
     from scripts.archetype_game_v3 import play_game
@@ -116,13 +136,16 @@ def game_phase(decks,cell,policy,identity,directory,accounting,*,choose=None,
     trace=directory/'trace.jsonl'
     fd=os.open(trace,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
     accepted=0
+    totals = budget_totals() if policy.get('strength_run_id') == BUDGET_H2H_RUN_ID else None
     with os.fdopen(fd,'wb') as stream:
         writer=TraceWriter(stream,max_bytes=trace_max_bytes,accounting=accounting)
         def emit(row):
             nonlocal accepted
             writer.emit(row)
             accepted+=row['kind']=='action'
-            force=row['kind'] in ('initial','rejected','final') or 'checkpoint' in row
+            if totals is not None:
+                count_budget_decision(totals, row, identity['budgeted_seat'])
+            force=row['kind'] in ('initial','rejected','decision_pause','final') or 'checkpoint' in row
             if force or accepted%16==0:
                 with accounting.measure('trace_sync'):
                     os.fsync(stream.fileno())
@@ -132,7 +155,10 @@ def game_phase(decks,cell,policy,identity,directory,accounting,*,choose=None,
         os.fsync(stream.fileno())
     if outcome['accepted_actions']!=accepted:
         raise ValueError('Game and fully written action accounting differ')
-    return {'outcome':outcome,'trace_sha256':file_sha(trace),'trace_bytes':writer.total_bytes}
+    result = {'outcome':outcome,'trace_sha256':file_sha(trace),'trace_bytes':writer.total_bytes}
+    if totals is not None:
+        result['budget_decisions'] = totals
+    return result
 
 
 def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_actions,
@@ -153,11 +179,14 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
         raise ValueError('Verification header differs from admitted cell')
     recorder=ProgressRecorder(directory,'verify',identity,accounting)
     selected=selected_steps(accepted_actions);checks=[];last={}
+    totals = budget_totals() if policy.get('strength_run_id') == BUDGET_H2H_RUN_ID else None
     with trace.open('rb') as stream:
         def records():
             for row in read_records(stream,max_bytes=trace_max_bytes):
                 last.update(row=row,bytes=stream.tell())
                 yield row
+                if totals is not None:
+                    count_budget_decision(totals, row, identity['budgeted_seat'])
         def check(first,row):
             with accounting.measure('handler_check'):
                 checks.append(boundary(first,row))
@@ -174,7 +203,10 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
         raise ValueError('Verification input changed')
     if boundary is not None and {row.get('step')for row in checks}!=selected:
         raise ValueError('Selected handler checks are incomplete')
-    return {'replay':replay,'handler_boundaries':checks,'handler_checks_performed':boundary is not None}
+    result = {'replay':replay,'handler_boundaries':checks,'handler_checks_performed':boundary is not None}
+    if totals is not None:
+        result['budget_decisions'] = totals
+    return result
 
 
 def validate_request(request,*,kind='pilot'):
@@ -186,7 +218,7 @@ def validate_request(request,*,kind='pilot'):
             or type(request['mode']) is not str or request['mode'] not in ('game','verify')):
         raise ValueError('Invalid v3 worker request')
     plan=request['plan'];validate_plan(plan)
-    if (type(kind)is not str or kind not in ('pilot','health','strength') or plan['kind']!=kind
+    if (type(kind)is not str or kind not in ('pilot','health','strength', BUDGET_H2H_KIND) or plan['kind']!=kind
             or not is_sha(plan['runtime_sha256'])
             or request['runtime_sha256']!=plan['runtime_sha256']
             or not any(digest(request['cell'])==digest(x)for x in plan['cells'])):
@@ -218,9 +250,12 @@ def validate_request(request,*,kind='pilot'):
 
 
 def request_identity(request):
-    return {'cell_id':request['cell']['cell_id'],'plan_sha256':digest(request['plan']),
+    identity = {'cell_id':request['cell']['cell_id'],'plan_sha256':digest(request['plan']),
             'source_sha256':digest(request['source']),'runtime_sha256':request['runtime_sha256'],
             'trace_schema':TRACE_SCHEMA}
+    if request['plan']['kind'] == BUDGET_H2H_KIND:
+        identity['budgeted_seat'] = request['cell']['deck_a_seat']
+    return identity
 
 
 def main(argv=None,*,kind='pilot'):
@@ -236,7 +271,7 @@ def main(argv=None,*,kind='pilot'):
         raise ValueError('Worker request exceeds its bound')
     request=load_json(data);validate_request(request,kind=kind)
     run_id=request['plan']['run_id']
-    rerun_limits = {'run_id': run_id} if run_id in STRENGTH_EXTENDED_IDS else {}
+    rerun_limits = {'run_id': run_id} if run_id in EXTENDED_TRACE_RUN_IDS else {}
     controls=apply_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'],**rerun_limits)
     signal.signal(signal.SIGALRM,signal.SIG_DFL)
     signal.setitimer(signal.ITIMER_REAL,request['wall_seconds'])
@@ -264,12 +299,15 @@ def main(argv=None,*,kind='pilot'):
         # Absolute process CPU includes interpreter/bootstrap and all admission.
         accounting.seconds['setup']=time.process_time();accounting.calls['setup']=1
         trace_options = {}
-        if kind == 'strength':
+        if kind in ('strength', BUDGET_H2H_KIND):
             trace_options['trace_max_bytes'] = request['plan']['trace_policy']['max_bytes']
         if mode=='game':
             chooser = {}
             if kind == 'strength':
                 from scripts.archetype_strength_worker_v3 import choose_for_cell
+                chooser['choose'] = choose_for_cell(decks, request['cell'])
+            elif kind == BUDGET_H2H_KIND:
+                from scripts.archetype_budget_h2h_worker_v3 import choose_for_cell
                 chooser['choose'] = choose_for_cell(decks, request['cell'])
             result.update(game_phase(decks,request['cell'],request['plan']['policy'],identity,
                                      directory,accounting,**trace_options,**chooser))

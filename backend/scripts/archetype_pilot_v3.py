@@ -15,7 +15,10 @@ from scripts.archetype_matrix_pilot import (
     BACKEND, available_memory, boot_time, file_sha, publish, runtime_identity,
     source_identity, verify_sources, worker_environment,
 )
-from scripts.archetype_plan_v3 import LEGACY_CAMPAIGN_HOURS, STANDARD_WALL_SECONDS, build_plan, validate_plan
+from scripts.archetype_plan_v3 import (
+    BUDGET_H2H_KIND, BUDGET_H2H_PAUSE, LEGACY_CAMPAIGN_HOURS, STANDARD_WALL_SECONDS,
+    build_plan, validate_plan,
+)
 from scripts.archetype_trace_v3 import digest, is_sha, load_json, verify_progress_prefix
 from scripts.archetype_worker_v3 import read_progress, request_identity, validate_cpu_usage, validate_request
 from scripts.archetype_registry_v3 import claim_run
@@ -277,8 +280,15 @@ def run_cell(plan,cell,directory,*,cpu,source,runtime,stop,kind='pilot'):
                         or len(checks)!=len(selected) or any(type(x)is not dict or type(x.get('step'))is not int for x in checks)
                         or {x['step']for x in checks}!=selected):
                     error='replay_divergence';stop.set();break
+                if kind == BUDGET_H2H_KIND:
+                    decisions = stages[0]['result'].get('budget_decisions')
+                    if (type(decisions) is not dict or set(decisions) != {'budgeted', 'unlimited'}
+                            or digest(decisions) != digest(result.get('budget_decisions'))):
+                        error='replay_divergence';stop.set();break
             count=outcome['accepted_actions']
-            expected_sequence=count+(2 if outcome['termination']=='rejected_action'else 1)
+            terminal_record = (outcome['termination']=='rejected_action'
+                               or kind == BUDGET_H2H_KIND and outcome['termination']==BUDGET_H2H_PAUSE)
+            expected_sequence=count+(2 if terminal_record else 1)
             if stage['progress']['accepted_actions']!=count or stage['progress']['last_sequence']!=expected_sequence:
                 error='worker_protocol';stop.set();break
             if sum(s['cpu_seconds']for s in stages)>cpu_limit:
@@ -349,13 +359,15 @@ def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
         raise ValueError('Absent canonical private output outside checkout required')
     from persistence.job_retention import local_path
     directory=local_path(directory,existing=False)
+    if kind == BUDGET_H2H_KIND and os.path.lexists(directory):
+        raise ValueError('Head-to-head output must be absent before admission')
     with claim_run(STATE_ROOT,run_id=plan['run_id'],plan_sha256=digest(plan),revision=plan['revision'],
                    runtime_sha256=plan['runtime_sha256'],output=str(directory),kind=kind)as claim:
         extra={}
         if kind=='health':
             extra.update(prior_health_charged_seconds=claim.prior_health_charged_seconds,
                          wall_seconds=plan['policy']['max_seconds'])
-        if kind=='strength':
+        if kind in ('strength', BUDGET_H2H_KIND):
             extra['wall_seconds']=plan['policy']['max_seconds']
             if workers!=2:
                 extra['workers']=workers
@@ -426,12 +438,14 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             reserved_health_worker_seconds=budget.reserved_health_seconds,budget_refused=budget_refused)
         report['complete']=bool(report['complete']and not stop.is_set()and abs(host_offset()-offset)<=.25)
         report['usable']=bool(report['usable']and report['complete'])
-        if not report['usable'] and kind!='strength':
+        if not report['usable'] and kind not in ('strength', BUDGET_H2H_KIND):
             report['forecast_reason']='incomplete_or_censored_or_failed_cells'
             for key in ('forecast_1440_worker_hours','forecast_72_worker_hours','forecast_trace_bytes'):
                 report[key]=None
         if kind=='strength':
             report['strength_passed']=report['usable']
+        if kind == BUDGET_H2H_KIND:
+            report['budget_passed']=report['usable']
         if kind=='health':
             report.update(health_passed=bool(report['usable'] and report['complete']),
                 charged_health_worker_seconds=claim.prior_health_charged_seconds+budget.charged_seconds(boot_time()),
@@ -447,6 +461,9 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
             if (kind=='strength' and report['strength_passed']
                     and closed['charged_campaign_worker_seconds']>budget.campaign_seconds):
                 raise ValueError('Strength budget exceeded during final publication')
+            if (kind == BUDGET_H2H_KIND and report['budget_passed']
+                    and closed['charged_campaign_worker_seconds']>budget.campaign_seconds):
+                raise ValueError('Head-to-head budget exceeded during final publication')
         return report
     finally:
         stop.set()

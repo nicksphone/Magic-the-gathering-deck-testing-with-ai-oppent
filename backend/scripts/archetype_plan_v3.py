@@ -36,6 +36,48 @@ STRENGTH_CHECKPOINT_INTERVAL = 256
 STRENGTH_TRACE_BYTES = 23 * 1024**2
 STRENGTH_BOOTSTRAP_REPLICATES = 2000
 STRENGTH_BOOTSTRAP_SEED = 271828
+BUDGET_H2H_KIND = 'budget_h2h'
+BUDGET_H2H_PAUSE = 'interactive_budget_pause'
+BUDGET_H2H_RUN_ID = 'archetype-budget-h2h-20261126-v3-main1'
+BUDGET_H2H_CAMPAIGN_ID = 'mtg-budget-h2h-20261126'
+BUDGET_H2H_CAMPAIGN_HOURS = 52
+BUDGET_H2H_LIMITS = {'nodes': 128, 'milliseconds': 1000}
+BUDGET_H2H_SEEDS = tuple(range(2026112601, 2026112613))
+BUDGET_H2H_DECKS_SHA = '236bc11807d9aeea3134c2b1ec9d1fa73a29d9dc366bf0e11a79ed605a14c0b3'
+BUDGET_H2H_SCHEDULE_SHA = '205d23c90e200fddbdba77cd10daec2aceb61d2727f72101cc72db7d55e11cf9'
+EXTENDED_TRACE_RUN_IDS = (*STRENGTH_EXTENDED_IDS, BUDGET_H2H_RUN_ID)
+
+
+def budget_schedule_digest(cells):
+    return digest([{'index': index, 'deck_a': cell['deck_a'], 'deck_b': cell['deck_b'],
+                    'seed': cell['seed'], 'budgeted_seat': cell['deck_a_seat']}
+                   for index, cell in enumerate(cells)])
+
+
+def _build_budget_plan(revision, runtime_sha256, builtin_source):
+    plan = build_plan(revision, STRENGTH_RERUN3_ID, kind='strength',
+                      runtime_sha256=runtime_sha256, builtin_source=builtin_source)
+    if plan['source_matrix']['builtin_sha256'] != BUDGET_H2H_DECKS_SHA:
+        raise ValueError('Head-to-head deck source differs from the preregistration')
+    cells = []
+    for seed in BUDGET_H2H_SEEDS:
+        for name in sorted(plan['source_matrix']['decks']):
+            for seat in (1, 2):
+                fields = {'deck_a': name, 'deck_b': name, 'seed': seed, 'deck_a_seat': seat}
+                cells.append({'cell_id': digest({'run_id': BUDGET_H2H_RUN_ID,
+                                                 'kind': BUDGET_H2H_KIND, **fields}), **fields})
+    if budget_schedule_digest(cells) != BUDGET_H2H_SCHEDULE_SHA:
+        raise ValueError('Head-to-head schedule differs from the preregistration')
+    policy = plan['policy']
+    policy.pop('random_baseline')
+    policy.update(strength_run_id=BUDGET_H2H_RUN_ID, interactive_budget=dict(BUDGET_H2H_LIMITS))
+    plan.pop('strength_gate')
+    plan.update(run_id=BUDGET_H2H_RUN_ID, kind=BUDGET_H2H_KIND,
+                campaign_id=BUDGET_H2H_CAMPAIGN_ID, seeds=list(BUDGET_H2H_SEEDS), cells=cells,
+                scope='same_deck_budgeted_master_mirrored_seats',
+                budget_gate={'score_lower': .45, 'ci_lower_strict': .40},
+                worker_hour_budget={'campaign': BUDGET_H2H_CAMPAIGN_HOURS})
+    return plan
 
 
 def valid_run_id(kind, run_id):
@@ -43,6 +85,8 @@ def valid_run_id(kind, run_id):
         return False
     if kind == 'strength':
         return run_id in (STRENGTH_RUN_ID, STRENGTH_RERUN2_ID, STRENGTH_RERUN3_ID)
+    if kind == BUDGET_H2H_KIND:
+        return run_id == BUDGET_H2H_RUN_ID
     return kind in ('pilot', 'health') and re.fullmatch(
         f'archetype-{kind}-20261116-v3-[A-Za-z0-9-]{{1,48}}', run_id) is not None
 
@@ -59,6 +103,8 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
         raise ValueError('A fresh role-specific v3 run ID is required')
     if runtime_sha256 is not None and not is_sha(runtime_sha256):
         raise ValueError('Exact issued runtime digest required')
+    if kind == BUDGET_H2H_KIND:
+        return _build_budget_plan(revision, runtime_sha256, builtin_source)
     source = ((Path(__file__).resolve().parents[1]/'decks/builtin_decks.py').read_text()
               if builtin_source is None else builtin_source)
     if type(revision) is not str or re.fullmatch('[0-9a-f]{40}',revision) is None:

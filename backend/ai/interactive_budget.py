@@ -148,8 +148,12 @@ def _empty_action(action):
 
 
 def choose_for_autoplay(agent, state, offers, player_id):
-    nodes = _limit('MTG_AI_INTERACTIVE_NODES')
-    milliseconds = _limit('MTG_AI_INTERACTIVE_MS')
+    return choose_with_budget(agent, state, offers, player_id,
+                              nodes=_limit('MTG_AI_INTERACTIVE_NODES'),
+                              milliseconds=_limit('MTG_AI_INTERACTIVE_MS'))
+
+
+def choose_with_budget(agent, state, offers, player_id, *, nodes, milliseconds, on_cutoff=None):
     if nodes is None and milliseconds is None:
         return agent.choose_action(state, offers, player_id)
     counts = getattr(agent, '_main_pass_signature_counts', None)
@@ -161,10 +165,14 @@ def choose_for_autoplay(agent, state, offers, player_id):
         limit.check()
         return agent.choose_action(state, offers, player_id)
     except _Exhausted as exc:
+        reason = str(exc)
         if prior_counts is not None:
             counts.clear()
             counts.update(prior_counts)
-        _log.debug('Interactive AI stopped at %s', exc)
+        _log.debug('Interactive AI stopped at %s', reason)
     finally:
         _active.reset(token)
-    return _after_cutoff(limit, offers)
+    decision = _after_cutoff(limit, offers)
+    if on_cutoff is not None:
+        on_cutoff(reason, limit.best_action is not None)
+    return decision

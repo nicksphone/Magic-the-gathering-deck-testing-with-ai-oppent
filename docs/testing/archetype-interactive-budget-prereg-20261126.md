@@ -123,3 +123,32 @@ That leaves headroom above the 36-hour planning scenario. The reserve can
 leave some cells unstarted even below the cap. Budget exhaustion is a
 recorded incomplete result under the same acceptance gate. Publish
 only aggregates after the operator records the terminal outcome.
+
+## Prepared entry point
+
+After the operator approves the held policy revision and the proposed
+campaign allocation, use a clean checkout of the reviewed runner with
+the hash-locked Linux CPython 3.12.3 environment. The reviewed revision
+must include the rebased budget policy and bind both arms to that same
+source. Use one fresh private plan path and one absent private output
+path on a local filesystem outside the checkout. From `backend`:
+
+```bash
+"$APP_PYTHON" -B -m scripts.archetype_budget_h2h_v3 plan "$PRIVATE_PLAN"
+"$APP_PYTHON" -B -m scripts.archetype_budget_h2h_v3 run "$PRIVATE_PLAN" "$PRIVATE_OUTPUT" \
+  --execute-budget-head-to-head
+```
+
+The runner uses the existing host-local v3 controller lock and stores
+this campaign's separate charge receipt in the same registry. It saves
+and restores the previous active record byte for byte after proved
+closure. A crash before closure leaves the shared active guard in place.
+A pause has its own authenticated trace record and retains the exact
+last state. Decision telemetry counts and timing totals are reported
+for cells with completed verification. Interrupted cells can have
+additional private partial trace evidence.
+
+A usable result requires a closed, reaped registry receipt whose report
+hash matches the terminal report. This entry point was prepared with
+in-memory plans, authored controller receipts, and bounded test
+fixtures. The measured plan has yet to be issued.

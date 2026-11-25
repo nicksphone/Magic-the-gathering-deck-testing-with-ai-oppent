@@ -8,6 +8,7 @@ import re
 import stat
 
 from scripts.archetype_plan_v3 import (
+    BUDGET_H2H_CAMPAIGN_HOURS, BUDGET_H2H_CAMPAIGN_ID, BUDGET_H2H_KIND,
     HEALTH_RERUN_ID, LEGACY_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_ID,
     STRENGTH_EXTENDED_IDS, STRENGTH_RUN_ID, strength_campaign_hours, valid_run_id,
 )
@@ -15,6 +16,8 @@ from scripts.archetype_trace_v3 import canonical, is_sha, load_json
 
 
 def _campaign_seconds(kind, run_id):
+    if kind == BUDGET_H2H_KIND:
+        return BUDGET_H2H_CAMPAIGN_HOURS * 3600
     return (strength_campaign_hours(run_id) if kind == 'strength' else LEGACY_CAMPAIGN_HOURS) * 3600
 
 
@@ -38,7 +41,7 @@ def _sync(directory):
     finally:os.close(fd)
 
 
-def _read(path):
+def _read_bytes(path):
     try:_regular(path.lstat())
     except FileNotFoundError:return None
     fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_NOCTTY)
@@ -46,11 +49,19 @@ def _read(path):
         _regular(os.fstat(stream.fileno()));data=stream.read(16385)
     if len(data)>16384:
         raise ValueError('Registry record exceeds its bound')
-    return load_json(data)
+    return data
+
+
+def _read(path):
+    data = _read_bytes(path)
+    return load_json(data) if data is not None else None
 
 
 def _write(path,row,*,replace=False):
-    data=canonical(row)+b'\n'
+    _write_bytes(path, canonical(row)+b'\n', replace=replace)
+
+
+def _write_bytes(path, data, *, replace=False):
     target=path.with_suffix('.new')if replace else path
     if len(data)>16384:
         raise ValueError('Registry record exceeds its bound')
@@ -84,13 +95,48 @@ class Claim:
              'remaining_campaign_worker_seconds':max(0.,self.record['campaign_worker_seconds']-cumulative),
              'charged_health_worker_seconds':health,'remaining_health_worker_seconds':max(0.,30*3600-health),
              'health_budget_exceeded':health>30*3600,
-             'report_sha256':report_sha256,'pilot_budget_exceeded':cumulative-health-strength>18*3600}
+             'report_sha256':report_sha256,'pilot_budget_exceeded':(
+                 self.record['kind'] != BUDGET_H2H_KIND and cumulative-health-strength>18*3600)}
         if 'charged_strength_before_worker_seconds' in self.record:
             row['charged_strength_worker_seconds']=strength
         _write(self.path,row,replace=True)
         _write(self.root/'active.json',row,replace=True)
         self.finished=True
         return row
+
+
+@contextmanager
+def _budget_claim(root, *, run_id, plan_sha256, revision, runtime_sha256, output, previous_active):
+    # Use the shared live pointer so existing v3 checkouts also fail closed
+    # after an unproven stop. The separately charged run has its own receipt.
+    row = {'schema': 3, 'kind': BUDGET_H2H_KIND, 'state': 'running', 'child_handles_reaped': False,
+           'run_id': run_id, 'plan_sha256': plan_sha256, 'revision': revision,
+           'runtime_sha256': runtime_sha256, 'output': output, 'campaign_id': BUDGET_H2H_CAMPAIGN_ID,
+           'campaign_worker_seconds': _campaign_seconds(BUDGET_H2H_KIND, run_id),
+           'reserved_health_worker_seconds': 0, 'charged_worker_seconds': None,
+           'remaining_campaign_worker_seconds': None, 'charged_before_worker_seconds': 0.,
+           'charged_campaign_worker_seconds': None, 'charged_health_before_worker_seconds': 0.,
+           'charged_health_worker_seconds': None, 'remaining_health_worker_seconds': None,
+           'health_budget_exceeded': False, 'report_sha256': None, 'pilot_budget_exceeded': False}
+    path = root/'runs'/f'{run_id}.json'
+    active_path = root/'active.json'
+    backup = path.with_suffix('.prior-active')
+    if os.path.lexists(path):
+        raise FileExistsError(path)
+    if previous_active is not None:
+        _write_bytes(backup, previous_active)
+    _write(path, row)
+    _write(active_path, row, replace=True)
+    claim = Claim(root, path, row)
+    try:
+        yield claim
+    finally:
+        if claim.finished:
+            if previous_active is None:
+                active_path.unlink()
+                _sync(root)
+            else:
+                _write_bytes(active_path, previous_active, replace=True)
 
 
 @contextmanager
@@ -106,7 +152,8 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
         _regular(os.fstat(lock));os.set_inheritable(lock,False)
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError as exc:raise ValueError('Another v3 controller owns the host slots')from exc
-        active=_read(root/'active.json')
+        previous_active=_read_bytes(root/'active.json')
+        active=load_json(previous_active) if previous_active is not None else None
         if active is not None and (type(active)is not dict or active.get('state')!='closed'
                                    or active.get('child_handles_reaped')is not True):
             raise ValueError('Previous v3 controller closure is unproven; do not reset state automatically')
@@ -131,6 +178,12 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
                 or active is not None and 'remaining_health_worker_seconds'in active
                    and active['remaining_health_worker_seconds']!=max(0.,30*3600-health)):
             raise ValueError('Prior health charges are missing or inconsistent')
+        if kind == BUDGET_H2H_KIND:
+            with _budget_claim(root, run_id=run_id, plan_sha256=plan_sha256, revision=revision,
+                               runtime_sha256=runtime_sha256, output=output,
+                               previous_active=previous_active) as claim:
+                yield claim
+            return
         if kind=='strength':
             rerun=_read(root/'runs'/f'{HEALTH_RERUN_ID}.json')
             if (type(rerun)is not dict or rerun.get('run_id')!=HEALTH_RERUN_ID

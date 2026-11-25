@@ -9,7 +9,7 @@ MAX_TRACE_BYTES = 128*1024*1024
 TRACE_SCHEMA = 4
 CHECKPOINT_INTERVAL = 64
 CHAIN_KEYS = frozenset({'sequence', 'previous_record_sha256', 'record_sha256'})
-KINDS = frozenset({'initial', 'action', 'rejected', 'final'})
+KINDS = frozenset({'initial', 'action', 'rejected', 'decision_pause', 'final'})
 
 
 class TraceLimit(ValueError):
@@ -163,7 +163,7 @@ def verify_progress_prefix(stream,receipt):
         row=_checked_line(raw,index,previous);previous=row['record_sha256'];kind=row['kind']
         if index==0 and digest(row.get('identity'))!=digest(receipt.get('identity')):
             raise ValueError('Progress identity differs from trace root')
-        if kind in ('action','rejected'):
+        if kind in ('action','rejected','decision_pause'):
             if rejected or type(row.get('step'))is not int or row['step']!=actions:
                 raise ValueError('Trace prefix action count differs')
             if kind=='action':actions+=1
