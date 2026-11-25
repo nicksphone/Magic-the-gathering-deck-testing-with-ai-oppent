@@ -8,7 +8,7 @@ import unittest
 
 
 SOURCE = Path(__file__).resolve().parents[3]
-MAIN_SHA256 = '97dd7e0c0629c01eaa546048470e292995e268159f38b30a39d81cdfe3ce3c44'
+MAIN_SHA256 = '8b525240fd72254d9c9c9967d97e1a248cd24f86a0341be39316bd0aa39f1641'
 
 
 def load(relative, name):
@@ -26,6 +26,7 @@ class CurrentMainSourceBindingsTests(unittest.TestCase):
                               'current_startup_media_generator')
         self.main = (SOURCE / 'backend/main.py').read_bytes()
         self.assertEqual(hashlib.sha256(self.main).hexdigest(), MAIN_SHA256)
+        self.retention = self.api._restore(self.main.decode(), self.api.INTERACTIVE_BUDGET_MAIN_DELTA)
 
     def test_current_main_retains_exact_production_hash_admission(self):
         historical = self.api.CONTRACT['production']['main.py']['old_sha256']
@@ -38,7 +39,7 @@ class CurrentMainSourceBindingsTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(restored).hexdigest(), historical)
 
     def test_native_forge_inverse_preserves_exact_preintegration_main_admission(self):
-        native = self.api._restore(self.main.decode(), self.api.LIFECYCLE_RETENTION_MAIN_DELTA)
+        native = self.api._restore(self.retention, self.api.LIFECYCLE_RETENTION_MAIN_DELTA)
         recipe = self.api.NATIVE_FORGE_MAIN_DELTA
         self.assertEqual(hashlib.sha256(native.encode()).hexdigest(), recipe['new_sha256'])
         self.assertEqual(self.api.compatible_product_hash(
@@ -52,8 +53,9 @@ class CurrentMainSourceBindingsTests(unittest.TestCase):
             'main.py', restored, self.api.CONTRACT['production']['main.py']['old_sha256']), historical)
 
     def test_every_native_forge_hunk_mutation_still_rejects(self):
-        native = self.api._restore(self.main.decode(), self.api.LIFECYCLE_RETENTION_MAIN_DELTA)
-        for recipe, original in [(self.api.LIFECYCLE_RETENTION_MAIN_DELTA, self.main.decode()),
+        native = self.api._restore(self.retention, self.api.LIFECYCLE_RETENTION_MAIN_DELTA)
+        for recipe, original in [(self.api.INTERACTIVE_BUDGET_MAIN_DELTA, self.main.decode()),
+                                 (self.api.LIFECYCLE_RETENTION_MAIN_DELTA, self.retention),
                                  (self.api.NATIVE_FORGE_MAIN_DELTA, native)]:
             original = original.splitlines(keepends=True)
             for index, hunk in enumerate(recipe['hunks']):

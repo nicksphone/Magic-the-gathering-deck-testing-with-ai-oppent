@@ -1178,7 +1178,7 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
     ticks = max(1, min(100, ticks))
-    for _ in range(ticks):
+    for tick in range(ticks):
         if match.match_complete:
             break
         if match.state.winner is not None:
@@ -1199,7 +1199,12 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             if forced_land is not None:
                 action = forced_land
             else:
-                decision = match.ai[pid].choose_action(match.state, legal, pid)
+                from ai.interactive_budget import choose_for_autoplay
+                decision = choose_for_autoplay(match.ai[pid], match.state, legal, pid)
+                if decision is None:
+                    if tick == 0:
+                        raise HTTPException(503, detail={"code": "ai_decision_budget_exhausted"})
+                    break
                 action = decision.action
                 # Strict backend invariant: on legal own-main land-drop windows,
                 # override any non-land action to ensure deterministic land development.
@@ -2089,7 +2094,11 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
     # Match every chosen parameter, not just the card/face of another offer.
-    picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
+    from ai.interactive_budget import choose_for_autoplay
+    decision = choose_for_autoplay(match.ai[player_id], state, land_moves, player_id)
+    if decision is None:
+        return None
+    picked = decision.action
     if isinstance(picked, dict) and picked.get("type") == "play_land":
         try:
             chosen = complete_action(picked)
