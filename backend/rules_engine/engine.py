@@ -1742,7 +1742,13 @@ class RulesEngine:
 
     def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
         from copy import deepcopy
-        from rules_engine.query_context import rule_query_scope
+        from rules_engine.query_context import query_cache, rule_query_scope
+        cache = query_cache(state)
+        if cache is not None:
+            key = (RulesEngine.legal_moves, legal_moves, player_id)
+            if key not in cache:
+                cache[key] = legal_moves(state, player_id)
+            return deepcopy(cache[key])
         with rule_query_scope(state):
             return deepcopy(legal_moves(state, player_id))
 

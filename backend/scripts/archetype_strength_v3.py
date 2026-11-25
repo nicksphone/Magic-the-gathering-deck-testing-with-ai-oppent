@@ -11,7 +11,7 @@ import sys
 
 from scripts import archetype_pilot_v3 as pilot
 from scripts.archetype_plan_v3 import (
-    STRENGTH_CAMPAIGN_ID, STRENGTH_OPPONENTS, STRENGTH_RERUN2_ID,
+    STRENGTH_CAMPAIGN_ID, STRENGTH_OPPONENTS, STRENGTH_RERUN2_ID, STRENGTH_RERUN3_ID,
     STRENGTH_RUN_ID, build_plan, strength_campaign_hours, validate_plan,
 )
 from scripts.archetype_trace_v3 import digest, load_json
@@ -20,8 +20,8 @@ from scripts.archetype_trace_v3 import digest, load_json
 class StrengthBudget(pilot.SlotBudget):
     shutdown_reserve_seconds = 60
 
-    def __init__(self, *, started, prior_charged_seconds, wall_seconds, run_id=STRENGTH_RUN_ID):
-        super().__init__(started=started, prior_charged_seconds=prior_charged_seconds)
+    def __init__(self, *, started, prior_charged_seconds, wall_seconds, run_id=STRENGTH_RUN_ID, workers=2):
+        super().__init__(started=started, prior_charged_seconds=prior_charged_seconds, workers=workers)
         self.wall_seconds = wall_seconds
         self.campaign_seconds = strength_campaign_hours(run_id) * 3600
 
@@ -30,7 +30,7 @@ class StrengthBudget(pilot.SlotBudget):
 
     def can_launch(self, *, now, unstarted, pending_deadlines):
         horizon = max(self.wall_seconds, *(max(0., t-now) for t in pending_deadlines), 0.)
-        return self.remaining_campaign_seconds(now) >= 2*horizon + self.shutdown_reserve_seconds
+        return self.remaining_campaign_seconds(now) >= self.workers*horizon + self.shutdown_reserve_seconds
 
 
 def _score(cell, row):
@@ -129,7 +129,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest='command', required=True)
     make = commands.add_parser('plan')
     make.add_argument('output', type=Path)
-    make.add_argument('--run-id', choices=(STRENGTH_RUN_ID, STRENGTH_RERUN2_ID), default=STRENGTH_RUN_ID)
+    make.add_argument('--run-id', choices=(STRENGTH_RUN_ID, STRENGTH_RERUN2_ID, STRENGTH_RERUN3_ID), default=STRENGTH_RUN_ID)
     run = commands.add_parser('run')
     run.add_argument('plan', type=Path)
     run.add_argument('output', type=Path)
