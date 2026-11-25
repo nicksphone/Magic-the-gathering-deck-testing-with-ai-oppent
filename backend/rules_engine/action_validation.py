@@ -82,6 +82,11 @@ def checked_action(state, rules, player_id: int, action: dict):
     # Even legality helpers run on the copy: no rejected request changes the
     # authoritative state, RNG, logs, cost payments or pending continuations.
     candidate = copy_match_state(state, include_history=True)
+    return _apply_checked_action(state, candidate, rules, player_id, action)
+
+
+def _apply_checked_action(state, candidate, rules, player_id, action):
+    """Apply all checked-action rules to a caller-owned disposable candidate."""
     validate_action(candidate, rules, player_id, action)
     if action['type'] == 'pass_priority' and not candidate.stack and not candidate.pregame_pending:
         from game_state.state import Step
