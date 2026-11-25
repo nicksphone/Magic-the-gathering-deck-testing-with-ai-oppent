@@ -1,9 +1,8 @@
 # Optional C++ kernel for AI metadata copying
 
-This design scopes a prototype for review. The regular Python copier remains
-the reference. Use CPython 3.12 and pybind11 after Python 3.12 development
-headers are available and a compatible build input has been approved.
-This design supplies no implementation or dependency update.
+This document specifies the optional prototype and records its verification.
+The regular Python copier is the reference. The build uses CPython 3.12
+headers and a separately installed pybind11 wheel.
 
 ## Select the boundary after profiling
 
@@ -98,3 +97,91 @@ paired runs. Keep the Python path if graph fidelity or whole-choice
 performance fails the gate. Consider a later kernel for a profiled,
 pure rules query only after isolating its input and measuring the
 Python/native boundary.
+
+## Prototype build
+
+The extension is optional and outside the normal dependency lock and CI
+build. The tested build used g++ 13.3.0, CPython 3.12.3 headers and the
+PyPI `pybind11-3.0.1-py3-none-any.whl` with SHA-256
+`aa8f0aa6e0a94d3b64adfc38f560f33f15e589be2175e103c0a33c6bce55ee89`.
+From the repo root, keep the wheel, temporary build environment and output
+outside the checkout. Use absolute paths for the interpreter and wheel.
+
+```bash
+test "$(sha256sum "$PYBIND11_WHEEL" | cut -d ' ' -f 1)" = \
+  aa8f0aa6e0a94d3b64adfc38f560f33f15e589be2175e103c0a33c6bce55ee89
+"$APP_PYTHON" -B -m venv --without-pip "$BUILD_ENV"
+"$APP_PYTHON" -B -m pip install --no-index --no-deps \
+  --target "$BUILD_ENV/lib/python3.12/site-packages" "$PYBIND11_WHEEL"
+read -ra pybind_includes <<< "$("$BUILD_ENV/bin/python" -B -m pybind11 --includes)"
+suffix=$("$BUILD_ENV/bin/python" -B -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
+mkdir -p "$EXTENSION_DIR"
+g++ -O3 -std=c++17 -shared -fPIC -fvisibility=hidden -Wall -Wextra \
+  "${pybind_includes[@]}" backend/native/card_fields.cpp \
+  -o "$EXTENSION_DIR/_mtg_native_card_fields$suffix"
+(
+  cd backend
+  PYTHONPATH="$EXTENSION_DIR" MTG_AI_NATIVE_METADATA_COPY=1 \
+    "$APP_PYTHON" -B -m pytest -q tests/test_native_card_fields.py
+)
+```
+
+The flag is read when `game_state.copying` is imported. The default and a
+missing extension use the Python path. Custom memo/field copiers,
+registered GC callbacks and unsupported batches also use Python.
+The native loop holds the GIL and temporarily suspends automatic cyclic
+GC around its private traversal. It restores the prior GC state on every
+exit and discards staged containers on a miss. This can defer automatic
+collection and finalizer timing on the opt-in path.
+
+The prototype accelerates the card-field batch only. A single unsupported
+value falls back for that entire batch. Root fields, source redaction,
+RNG, serializers, and engine transitions still use their existing paths.
+
+## Measured copy CPU
+
+Nine alternating Python/native rounds, 30 calls per round after five
+warm-up calls, on the same canonical 120-card fixture. These medians
+include the guards, batch boundary, memo publication and Python root copy.
+
+| History handling | Python | Native opt-in | CPU reduction |
+| --- | ---: | ---: | ---: |
+| Omitted | 7.57 ms | 4.16 ms | 45.1% |
+| Retained | 7.63 ms | 4.22 ms | 44.8% |
+
+All 630 native batches in this microbenchmark were admitted, including
+warm-ups. Both copies produced the same complete snapshot and card order.
+The fixture is a copy microbenchmark, so whole-choice speedups require
+the paired archived results.
+
+An unsupported tuple added to the first card changed the median from
+7.33 ms to 7.41 ms. The same tuple on the last card changed it from
+7.83 ms to 10.22 ms. Each position used seven alternating rounds of
+25 timed copies and three warm-ups per route. All 392 native attempts
+fell back as expected. Late rejection can spend CPU on the partial
+native batch and a full Python copy.
+
+## Archived decision CPU
+
+Paired comparisons used the `a55c6fbf` engine base and the prototype.
+The sample contained four timeout peaks and eight normal checkpoint
+decisions. The probe restored and verified each position and its ordered
+offers, used a fresh agent per route, and alternated route order. All
+12 selected actions, complete checked transitions, card orders and RNG
+states matched. The input stayed unchanged.
+
+| Positions | Python CPU, total | Native CPU, total | CPU reduction |
+| --- | ---: | ---: | ---: |
+| Four timeout peaks | 276.07 s | 242.12 s | 12.3% |
+| Eight normal checkpoints | 5.56 s | 4.62 s | 16.8% |
+
+Median CPU on the four peaks fell from 65.78 to 55.29 seconds (15.9%).
+There were 3,972 admitted native batches and zero misses across the paired
+decisions and checked transitions. These are bounded decision timings.
+They exclude archive reconstruction and do not estimate whole-game speed.
+
+The native-enabled focused suite passed 379 tests, including replay,
+handler/SQLite parity, health/strength controller tests and interface
+checks. Plain pytest passed 10 native differential tests. The default
+Python copy suite passed 82 tests with one optional-extension module
+skipped. No strength games were launched.
