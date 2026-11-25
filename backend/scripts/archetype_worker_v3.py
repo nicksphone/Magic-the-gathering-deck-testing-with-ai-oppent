@@ -158,13 +158,14 @@ def verify_phase(decks,cell,policy,identity,directory,accounting,*,accepted_acti
             for row in read_records(stream,max_bytes=trace_max_bytes):
                 last.update(row=row,bytes=stream.tell())
                 yield row
-        def observe(first,row):
-            if row['step'] in selected and boundary is not None:
-                with accounting.measure('handler_check'):
-                    checks.append(boundary(first,row))
+        def check(first,row):
+            with accounting.measure('handler_check'):
+                checks.append(boundary(first,row))
+        def observe(row):
             recorder.update(row['sequence'],row['record_sha256'],last['bytes'],row['step']+1,
                             force='checkpoint' in row)
-        replay=replay_trace(records(),boundary=observe,accounting=accounting)
+        replay=replay_trace(records(),boundary=check if boundary is not None else None,
+                            boundary_steps=selected,on_step=observe,accounting=accounting)
         if replay['actions']!=accepted_actions:
             raise ValueError('Verification action count differs')
         recorder.update(last['row']['sequence'],last['row']['record_sha256'],last['bytes'],

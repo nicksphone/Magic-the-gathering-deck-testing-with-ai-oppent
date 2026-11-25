@@ -1,6 +1,7 @@
 """Unchanged real engine/master decisions with compact, exactly replayed traces."""
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import cached_property
 import hashlib
 import json
 import time
@@ -20,10 +21,21 @@ from scripts.archetype_trace_v3 import (
 
 @dataclass
 class Captured:
-    value: dict
+    summary: dict
     sha256: str
     cards_order: list[str]
     encoded: bytes
+    accounting: CpuAccounting
+
+    @cached_property
+    def value(self):
+        with self.accounting.measure('snapshot'):
+            return json.loads(self.encoded)
+
+    @property
+    def log(self):
+        entries = self.summary['log']
+        return entries if all(type(line) is str for line in entries) else self.value['log']
 
     @property
     def cards_order_sha256(self):
@@ -36,9 +48,13 @@ def _snapshot_bytes(state):
 
 
 def capture(state, accounting):
+    from game_state.serializers import serialize_match_snapshot
+
     with accounting.measure('snapshot'):
-        data = _snapshot_bytes(state)
-        return Captured(json.loads(data), hashlib.sha256(data).hexdigest(), list(state.cards), data)
+        snapshot = serialize_match_snapshot(state)
+        data = canonical(snapshot)
+        summary = {**progress(snapshot), 'log': snapshot['log'], 'rng_state': snapshot['rng_state']}
+        return Captured(summary, hashlib.sha256(data).hexdigest(), list(state.cards), data, accounting)
 
 
 def ordered_snapshot(value, cards_order):
@@ -79,7 +95,10 @@ def progress(value):
 
 
 def log_delta(before, after):
-    old, new = before['log'], after['log']
+    return _log_delta(before['log'], after['log'])
+
+
+def _log_delta(old, new):
     keep = 0
     while keep < min(len(old), len(new)) and old[keep] == new[keep]:
         keep += 1
@@ -100,6 +119,12 @@ def _checkpoints(policy, before, after, step, *, final):
     if type(interval) is not int or interval != expected:
         raise ValueError('Invalid strength checkpoint interval')
     return checkpoint_reasons(before, after, step, final=final, interval=interval, dense=False)
+
+
+def _captured_checkpoints(policy, before, after, step, *, final):
+    if policy.get('snapshot_checkpoint_interval') is not None:
+        return _checkpoints(policy, {}, {}, step, final=final)
+    return _checkpoints(policy, before.value, after.value, step, final=final)
 
 
 def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
@@ -150,14 +175,14 @@ def play_game(deck_a, deck_b, *, seed, game_id, policy, identity, emit,
                'action':action, 'reasoning':str(decision.reasoning),
                'knowledge_usage':_plain(getattr(decision, 'knowledge_usage', None)),
                'legal_moves_sha256':digest(legal), 'before_sha256':before.sha256,
-               'after_sha256':after.sha256, 'rng_sha256':digest(after.value['rng_state']),
+               'after_sha256':after.sha256, 'rng_sha256':digest(after.summary['rng_state']),
                'before_cards_order_sha256':before.cards_order_sha256,
                'after_cards_order_sha256':after.cards_order_sha256,
-               'progress':progress(after.value), 'log_delta':log_delta(before.value, after.value),
+               'progress':progress(after.summary), 'log_delta':_log_delta(before.log, after.log),
                'decision_seconds':decision_seconds, 'transition_seconds':transition_seconds}
         if error:
             row['exception_class'] = exception
-        reasons = _checkpoints(policy, before.value, after.value, steps,
+        reasons = _captured_checkpoints(policy, before, after, steps,
                                       final=bool(error) or _ending(candidate, steps+1, policy))
         if reasons:
             row.update(checkpoint_reasons=reasons,
@@ -204,7 +229,7 @@ def _check(row, actual, step):
         raise TraceDivergence(step, fields)
 
 
-def replay_trace(records, *, boundary=None, accounting=None):
+def replay_trace(records, *, boundary=None, boundary_steps=None, on_step=None, accounting=None):
     from ai.action_contract import complete_action
     from game_state.serializers import deserialize_match_snapshot
     from rules_engine.action_validation import ActionRejected, checked_action
@@ -272,10 +297,10 @@ def replay_trace(records, *, boundary=None, accounting=None):
             if row['kind'] != 'action':
                 raise TraceDivergence(steps, ['action'])
         after = capture(candidate, accounting)
-        _check(row, {'after_sha256':after.sha256,'rng_sha256':digest(after.value['rng_state']),
+        _check(row, {'after_sha256':after.sha256,'rng_sha256':digest(after.summary['rng_state']),
                      'after_cards_order_sha256':after.cards_order_sha256,
-                     'progress':progress(after.value),'log_delta':log_delta(before.value,after.value)}, steps)
-        reasons = _checkpoints(first['policy'], before.value, after.value, steps,
+                     'progress':progress(after.summary),'log_delta':_log_delta(before.log,after.log)}, steps)
+        reasons = _captured_checkpoints(first['policy'], before, after, steps,
                                      final=bool(error) or _ending(candidate, steps+1, first['policy']))
         if bool(reasons) != ('checkpoint' in row):
             raise TraceDivergence(steps, ['checkpoint'])
@@ -294,9 +319,11 @@ def replay_trace(records, *, boundary=None, accounting=None):
         with accounting.measure('snapshot'):
             if _snapshot_bytes(restarted) != after.encoded or list(restarted.cards) != after.cards_order:
                 raise TraceDivergence(steps, ['snapshot_roundtrip'])
-        if boundary is not None:
+        if boundary is not None and (boundary_steps is None or steps in boundary_steps):
             boundary(first, {**row,'before':ordered_snapshot(before.value, before.cards_order),
                              'after':ordered_snapshot(after.value, after.cards_order),'legal_moves':legal})
+        if on_step is not None:
+            on_step(row)
         state, steps = restarted, steps+1
     if final is None:
         raise TraceDivergence(steps, ['missing_final'])
