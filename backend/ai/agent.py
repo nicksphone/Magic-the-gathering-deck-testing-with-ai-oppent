@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from ai.endgame_policy import should_force_closure, should_force_inevitability_line
 from ai.heuristics import evaluate_board, recurring_engine_value, repeatable_mana_value
+from ai import interactive_budget
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
@@ -168,7 +169,7 @@ class AIAgent:
             self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
                                                              'fallback_reasons': {}}}
             try:
-                with decision_projection_scope(state, player_id,
+                with interactive_budget.decision_root(authoritative_state, state), decision_projection_scope(state, player_id,
                         {'master': 128, 'master_plus': 256}.get(self.difficulty)):
                     action = None
                     terminal_win = []
@@ -909,7 +910,7 @@ class AIAgent:
         if strategic is not None:
             return AIDecision(action=strategic, reasoning="Complex-board strategic planner selected best line")
 
-        sorted_moves = self._rank_moves(state, legal_moves, player_id)
+        sorted_moves = interactive_budget.rank_root(state, self._rank_moves, legal_moves, player_id)
         if self._should_break_stall(state, legal_moves, player_id):
             proactive = self._best_proactive_non_pass(sorted_moves, state, player_id)
             if proactive is not None:
@@ -1239,7 +1240,7 @@ class AIAgent:
         candidates = []
         search_depth = self._strategic_search_depth(state, player_id)
         beam_limit = 4 if search_depth > 2 else (6 if search_depth > 1 else 8)
-        shortlist = _shortlist_with_priority_pass(self._rank_moves(state, legal_moves, player_id),
+        shortlist = _shortlist_with_priority_pass(interactive_budget.rank_root(state, self._rank_moves, legal_moves, player_id),
                                                  legal_moves, beam_limit)
         for mv in shortlist:
             if not combat_expansion_available():
@@ -1276,6 +1277,8 @@ class AIAgent:
             except (ActionRejected, KeyError, ValueError):
                 continue
             scored.append((score, mv))
+            interactive_budget.remember(state, (1, score, self._move_sort_key(mv)),
+                                        lambda: self._finalize_budget_candidate(state, action))
         if not scored:
             return None
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
@@ -2268,6 +2271,7 @@ class AIAgent:
             return self._rank_moves_query(state, moves, player_id, shallow=shallow)
 
     def _rank_moves_query(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
+        track_budget = interactive_budget.track_rank(state)
         moves = [dict(move) if move.get('type') == 'block' else move for move in moves]
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
@@ -2404,11 +2408,18 @@ class AIAgent:
             return base
 
         # Save mana for another proactive play; keep response-window ordering.
-        ranked = sorted(moves, key=lambda mv: (
-            score(mv), str(mv.get("type") or ""),
-            -mana_value(str(mv.get("mana_cost") or ""))
-            if own_main_sorcery_window and mv.get("type") == "cast_spell" else 0,
-            self._move_sort_key(mv)), reverse=True)
+        def rank_key(move):
+            key = (score(move), str(move.get("type") or ""),
+                   -mana_value(str(move.get("mana_cost") or ""))
+                   if own_main_sorcery_window and move.get("type") == "cast_spell" else 0,
+                   self._move_sort_key(move))
+            if track_budget:
+                interactive_budget.remember(state, (0, *key),
+                    lambda: self._finalize_budget_candidate(
+                        state, self._materialize_action(state, copy.deepcopy(move), player_id)))
+            return key
+
+        ranked = sorted(moves, key=rank_key, reverse=True)
         normalized = []
         for move in ranked:
             if move.get("type") == "attack" and "attackers" not in move:
@@ -2416,6 +2427,13 @@ class AIAgent:
                 move["attackers"] = move.get("options", [])
             normalized.append(move)
         return normalized
+
+    def _finalize_budget_candidate(self, state, action):
+        from ai.declaration_policy import finalize_declaration
+
+        if action.get('_invalid_ai_choice') or self._is_unplayable_x_action(action):
+            return None
+        return finalize_declaration(state, action)
 
     def _simulate_delta(self, state: MatchState, move: dict, player_id: int) -> float:
         # Two-ply lookahead: own action value minus opponent best reply value.

@@ -73,6 +73,80 @@ def test_no_checked_candidate_pauses_instead_of_inventing_an_action(monkeypatch)
     assert serialize_match_snapshot(state) == before
 
 
+@pytest.mark.parametrize('best', ['play', 'wait'])
+def test_cutoff_keeps_highest_completed_strategic_score(monkeypatch, best):
+    from ai.action_contract import complete_action
+    from ai.agent import AIAgent
+    from tests.test_ai_strategic_pass import controlled_planner, position as strategic_position
+
+    state, cast = strategic_position(1)
+    wait = {'type': 'pass_priority'}
+    ai = AIAgent(difficulty='master')
+    offers = [wait, cast]
+    controlled_planner(monkeypatch, ai, offers,
+                       {'pass_priority': 10 if best == 'wait' else -1, 'cast_spell': 1})
+    clock = [0.0]
+    original_score = ai._strategic_line_score
+
+    def score(*args, **kwargs):
+        result = original_score(*args, **kwargs)
+        if args[1]['type'] == 'cast_spell':
+            clock[0] = .1
+        return result
+
+    def choose(current, moves, seat):
+        selected = ai._strategic_plan_action(current, moves, seat)
+        budget.checkpoint()
+        return SimpleNamespace(action=selected)
+
+    monkeypatch.setattr(ai, '_strategic_line_score', score)
+    monkeypatch.setattr(ai, 'choose_action', choose)
+    monkeypatch.setattr(budget, 'monotonic', lambda: clock[0])
+    monkeypatch.setenv('MTG_AI_INTERACTIVE_MS', '50')
+    monkeypatch.delenv('MTG_AI_INTERACTIVE_NODES', raising=False)
+    chosen = budget.choose_for_autoplay(ai, state, offers, 1)
+    assert chosen.action == complete_action(cast if best == 'play' else wait)
+
+
+@pytest.mark.parametrize('finish_play', [False, True])
+def test_root_rank_retains_checked_play_or_pauses_while_its_completion_is_pending(monkeypatch, finish_play):
+    from ai.action_contract import complete_action
+    from ai.agent import AIAgent
+    from game_state.state import Zone
+
+    state, seat, _ = position()
+    player = state.players[seat]
+    cid = player.library.pop()
+    state.cards[cid].move_to_zone(Zone.HAND)
+    player.hand.append(cid)
+    land = {'type': 'play_land', 'card_id': cid}
+    offers = [{'type': 'pass_priority'}, land]
+    ai = AIAgent(difficulty='strong')
+    materialize = ai._materialize_action
+
+    def materialize_candidate(current, move, actor, **kwargs):
+        if move['type'] == 'play_land' and not finish_play:
+            budget.checkpoint()
+            budget.checkpoint()
+        return materialize(current, move, actor, **kwargs)
+
+    def choose(current, moves, actor):
+        ranked = budget.rank_root(current, ai._rank_moves, moves, actor)
+        budget.checkpoint()
+        budget.checkpoint()
+        return SimpleNamespace(action=ranked[0])
+
+    monkeypatch.setattr(ai, '_materialize_action', materialize_candidate)
+    monkeypatch.setattr(ai, 'choose_action', choose)
+    monkeypatch.setenv('MTG_AI_INTERACTIVE_NODES', '1')
+    monkeypatch.delenv('MTG_AI_INTERACTIVE_MS', raising=False)
+    decision = budget.choose_for_autoplay(ai, state, offers, seat)
+    if finish_play:
+        assert decision.action == complete_action(land)
+    else:
+        assert decision is None
+
+
 def test_real_search_copy_boundary_charges_the_node_budget(monkeypatch):
     from ai.pending_effects import planning_copy
 
