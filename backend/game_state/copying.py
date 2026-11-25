@@ -1,5 +1,7 @@
 """Selective simulation copies with one memo and explicit history retention."""
 from copy import deepcopy, _keep_alive, _deepcopy_dispatch, dispatch_table
+from gc import callbacks as _gc_callbacks
+from os import getenv
 from types import GetSetDescriptorType
 
 from game_state.state import CardInstance, MatchState, Zone
@@ -78,6 +80,16 @@ def copy_match_state(state, *, memo=None, include_history=True, _field_copier=No
         memo[id(card)] = object.__new__(CardInstance)
         memo.setdefault(id(card.__dict__), {})
         memo[id(card)].__dict__ = memo[id(card.__dict__)]
+    if active is not None and cards and _copy_card_fields_native is not None and not _gc_callbacks:
+        batch = _copy_card_fields_native([card.__dict__ for card in cards], memo, Zone)
+        if batch is not None:
+            rows, additions, retained = batch
+            memo.update(additions)
+            if retained:
+                memo[id(memo)] = retained
+            for card, fields in zip(cards, rows):
+                memo[id(card)].__dict__.update(fields)
+            cards = ()
     for card in cards:
         fields = {}
         for key, value in card.__dict__.items():
@@ -215,3 +227,11 @@ _native_dispatch_layouts = (tuple(_deepcopy_dispatch.items()), tuple(dispatch_ta
 _native_setup_descriptors = (MatchState.__dict__['__dict__'], CardInstance.__dict__['__dict__'])
 _native_keep_alive_code = _keep_alive.__code__
 _native_setup_setters = (MatchState.__setattr__, CardInstance.__setattr__)
+
+_copy_card_fields_native = None
+if getenv('MTG_AI_NATIVE_METADATA_COPY') == '1':
+    try:
+        from _mtg_native_card_fields import copy_card_fields as _copy_card_fields_native
+    except ModuleNotFoundError as exc:
+        if exc.name != '_mtg_native_card_fields':
+            raise
