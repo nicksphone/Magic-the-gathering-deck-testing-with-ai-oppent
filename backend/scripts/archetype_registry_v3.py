@@ -9,7 +9,7 @@ import stat
 
 from scripts.archetype_plan_v3 import (
     HEALTH_RERUN_ID, LEGACY_CAMPAIGN_HOURS, STRENGTH_CAMPAIGN_ID,
-    STRENGTH_RERUN2_ID, STRENGTH_RUN_ID, strength_campaign_hours, valid_run_id,
+    STRENGTH_EXTENDED_IDS, STRENGTH_RUN_ID, strength_campaign_hours, valid_run_id,
 )
 from scripts.archetype_trace_v3 import canonical, is_sha, load_json
 
@@ -147,7 +147,7 @@ def claim_run(root,*,run_id,plan_sha256,revision,runtime_sha256,output,kind='pil
                 or strength<0 or strength+health>prior+.000001
                 or (active is not None and active_kind=='strength' and 'charged_strength_worker_seconds' not in active)):
             raise ValueError('Prior strength charges are missing or inconsistent')
-        if run_id == STRENGTH_RERUN2_ID:
+        if run_id in STRENGTH_EXTENDED_IDS:
             original = _read(root/'runs'/f'{STRENGTH_RUN_ID}.json')
             if (type(original) is not dict or original.get('kind') != 'strength'
                     or original.get('run_id') != STRENGTH_RUN_ID

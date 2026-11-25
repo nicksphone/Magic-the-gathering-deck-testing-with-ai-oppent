@@ -24,6 +24,11 @@ STRENGTH_RERUN2_CAMPAIGN_HOURS = 200
 STRENGTH_RERUN2_CPU_SECONDS = 4800
 STRENGTH_RERUN2_WALL_SECONDS = 6000
 STRENGTH_RERUN2_CHECKPOINT_INTERVAL = 512
+STRENGTH_RERUN3_ID = 'archetype-strength-20261125-v3-rerun3'
+STRENGTH_RERUN3_CAMPAIGN_HOURS = 320
+STRENGTH_RERUN3_WORKERS = 8
+STRENGTH_RERUN3_SEEDS = tuple(range(2026112501, 2026112510))
+STRENGTH_EXTENDED_IDS = (STRENGTH_RERUN2_ID, STRENGTH_RERUN3_ID)
 STRENGTH_RERUN2_SEEDS = tuple(range(2026112401, 2026112410))
 STRENGTH_SEEDS = tuple(range(2026112201, 2026112210))
 STRENGTH_OPPONENTS = ('random', 'casual', 'strong', 'master')
@@ -37,7 +42,7 @@ def valid_run_id(kind, run_id):
     if type(kind) is not str or type(run_id) is not str:
         return False
     if kind == 'strength':
-        return run_id in (STRENGTH_RUN_ID, STRENGTH_RERUN2_ID)
+        return run_id in (STRENGTH_RUN_ID, STRENGTH_RERUN2_ID, STRENGTH_RERUN3_ID)
     return kind in ('pilot', 'health') and re.fullmatch(
         f'archetype-{kind}-20261116-v3-[A-Za-z0-9-]{{1,48}}', run_id) is not None
 
@@ -45,7 +50,8 @@ def valid_run_id(kind, run_id):
 def strength_campaign_hours(run_id):
     if not valid_run_id('strength', run_id):
         raise ValueError('Unknown v3 strength campaign run')
-    return STRENGTH_RERUN2_CAMPAIGN_HOURS if run_id == STRENGTH_RERUN2_ID else STRENGTH_CAMPAIGN_HOURS
+    return {STRENGTH_RERUN2_ID: STRENGTH_RERUN2_CAMPAIGN_HOURS,
+            STRENGTH_RERUN3_ID: STRENGTH_RERUN3_CAMPAIGN_HOURS}.get(run_id, STRENGTH_CAMPAIGN_HOURS)
 
 
 def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_sha256=None):
@@ -63,11 +69,13 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
              if kind=='pilot' else list(combinations(names,2)))
     seeds = PILOT_SEEDS if kind=='pilot' else HEALTH_SEEDS
     strength = kind == 'strength'
-    strength_rerun2 = strength and run_id == STRENGTH_RERUN2_ID
+    strength_rerun2 = strength and run_id in STRENGTH_EXTENDED_IDS
+    strength_rerun3 = strength and run_id == STRENGTH_RERUN3_ID
     opponents = STRENGTH_OPPONENTS if strength else (None,)
     if strength:
         pairs = [(name, name) for name in names]
-        seeds = STRENGTH_RERUN2_SEEDS if strength_rerun2 else STRENGTH_SEEDS
+        seeds = (STRENGTH_RERUN3_SEEDS if strength_rerun3 else
+                 STRENGTH_RERUN2_SEEDS if strength_rerun2 else STRENGTH_SEEDS)
     cells = []
     # Interleave baselines within each mirrored seed pair to avoid censoring
     # every observation for a baseline when budget or a host failure stops a run.
@@ -87,6 +95,8 @@ def build_plan(revision, run_id, *, kind='pilot', builtin_source=None, runtime_s
         policy.update(max_seconds=STRENGTH_RERUN2_WALL_SECONDS,
                       max_cpu_seconds_per_game=STRENGTH_RERUN2_CPU_SECONDS,
                       strength_run_id=run_id)
+    if strength_rerun3:
+        policy['workers'] = STRENGTH_RERUN3_WORKERS
     policy['health_gate']['max_resource_limit_cells'] = 0
     trace = {'schema':TRACE_SCHEMA,'checkpoint_interval':CHECKPOINT_INTERVAL,'max_bytes':MAX_TRACE_BYTES,
              'progress_interval':16,'state_hash':'sha256_canonical_complete_snapshot',
