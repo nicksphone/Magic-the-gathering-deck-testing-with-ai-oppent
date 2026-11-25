@@ -92,12 +92,13 @@ class SlotBudget:
     campaign_seconds=LEGACY_CAMPAIGN_HOURS*3600
     pilot_with_overhead_seconds=18*3600
 
-    def __init__(self,*,started,prior_charged_seconds=0.):
+    def __init__(self,*,started,prior_charged_seconds=0.,workers=2):
+        self.workers=workers
         self.started=started
         self.prior_charged_seconds=prior_charged_seconds
 
     def charged_seconds(self,now):
-        return max(0.,2*(now-self.started))
+        return max(0.,self.workers*(now-self.started))
 
     def remaining_campaign_seconds(self,now):
         return max(0.,self.campaign_seconds-self.prior_charged_seconds-self.charged_seconds(now))
@@ -335,8 +336,11 @@ def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
     if digest(runtime)!=plan['runtime_sha256']:
         raise ValueError('Runtime differs from pre-registration')
     cpus=sorted(os.sched_getaffinity(0))
-    if len(cpus)<3 or available_memory()<5*1024**3:
-        raise ValueError('Two affinity slots plus controller/5GiB headroom required')
+    workers=plan['policy'].get('workers',2)
+    if type(workers) is not int or not 2<=workers<=8:
+        raise ValueError('Planned worker count must be an integer from 2 to 8')
+    if len(cpus)<workers+1 or available_memory()<max(5*1024**3,(2*workers+1)*1024**3):
+        raise ValueError('Planned affinity slots plus controller and memory headroom required')
     from scripts.archetype_game_v3 import admit_decks
     admit_decks(plan['source_matrix'])
     directory=Path(directory)
@@ -353,14 +357,16 @@ def _admit_run(plan,directory,*,kind,budget_factory,reporter,prefix):
                          wall_seconds=plan['policy']['max_seconds'])
         if kind=='strength':
             extra['wall_seconds']=plan['policy']['max_seconds']
+            if workers!=2:
+                extra['workers']=workers
         budget=budget_factory(started=started,prior_charged_seconds=claim.prior_charged_seconds,**extra)
         return _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,
                                  reporter=reporter,prefix=prefix,kind=kind)
 
 
 @contextmanager
-def _pool(stop):
-    with ThreadPoolExecutor(max_workers=2)as pool:
+def _pool(stop,workers=2):
+    with ThreadPoolExecutor(max_workers=workers)as pool:
         try:
             yield pool
         except BaseException:
@@ -370,7 +376,7 @@ def _pool(stop):
 
 def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,claim,*,
                       reporter=pilot_report,prefix='PILOT',kind='pilot'):
-    stop=threading.Event();rows={};pending={};next_index=0;available=cpus[:2]
+    stop=threading.Event();rows={};pending={};next_index=0;workers=plan['policy'].get('workers',2);available=cpus[:workers]
     previous_handlers={}
     def cancel(_signal,_frame):
         stop.set()
@@ -380,7 +386,7 @@ def _registered_pilot(plan,directory,source,runtime,cpus,started,budget,offset,c
         publish(directory/'plan.json',plan);publish(directory/'source.json',source);publish(directory/'runtime.json',runtime)
         for signum in (signal.SIGINT,signal.SIGTERM):
             previous_handlers[signum]=signal.signal(signum,cancel)
-        with _pool(stop)as pool:
+        with _pool(stop,workers)as pool:
             while True:
                 if abs(host_offset()-offset)>.25:
                     stop.set()
