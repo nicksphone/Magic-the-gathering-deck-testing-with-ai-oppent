@@ -11,6 +11,7 @@ import random
 import re
 from typing import Callable, Literal, TypedDict
 
+from ai.interactive_budget import checkpoint as _interactive_checkpoint
 from game_state.state import CardInstance, MatchState, StackItem, Step, Zone
 from game_state.copying import copy_match_state, _copy_card_field
 from rules_engine.engine import RulesEngine
@@ -182,18 +183,21 @@ def _require_simulation_frontier(state, player_id=None, action=None):
 
 
 def simulation_take_action(engine, state, player_id, action, **kwargs):
+    _interactive_checkpoint()
     _require_simulation_frontier(state, player_id, action)
     return engine.take_action(state, player_id, action, **kwargs)
 
 
 def simulation_checked_action(state, engine, player_id, action):
     from rules_engine.action_validation import checked_action
+    _interactive_checkpoint()
     _require_simulation_frontier(state, player_id, action)
     return checked_action(state, engine, player_id, action)
 
 
 def simulation_resolve_top(state):
     from rules_engine.stack_engine import resolve_top_of_stack
+    _interactive_checkpoint()
     _require_simulation_frontier(state)
     return resolve_top_of_stack(state)
 
@@ -262,6 +266,7 @@ def decision_projection_scope(state, player_id, combat_expansion_limit=None):
 def planning_copy(state, *, memo=None):
     """Copy all gameplay state, but not diagnostic history unused by search."""
     # Keep the existing card-fields/hotpaths benchmark's dynamic hook active.
+    _interactive_checkpoint()
     return copy_match_state(state, memo=memo, include_history=False,
                             _field_copier=_copy_card_field)
 
@@ -529,6 +534,7 @@ def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=
             # This forecast owns its scratch state and discards it on refusal.
             # Keep the normal copy route for actions that read the pre-copy
             # state during validation, such as blockers.
+            _interactive_checkpoint()
             _require_simulation_frontier(projected, player_id, action)
             _apply_checked_action(projected, projected, rules, player_id, deepcopy(action))
         else:
