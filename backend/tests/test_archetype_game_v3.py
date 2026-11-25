@@ -486,3 +486,37 @@ def test_replay_checks_restored_snapshot_bytes_without_decoding_them(monkeypatch
     result = module.replay_trace(iter(rows))
     assert result['matched'] and result['restart_roundtrips'] == 2
     assert len(decoded) == 8  # initial and final, plus before, after and restore payload
+
+
+def test_sparse_replay_decodes_full_views_only_for_evidence_that_uses_them(monkeypatch):
+    import json
+
+    module = subject()
+    from scripts.archetype_trace_v3 import TraceWriter, read_records
+    stream = io.BytesIO()
+    writer = TraceWriter(stream)
+    module.play_game(decks(), decks(), seed=8899, game_id='sparse-unit',
+                     policy={'max_ticks': 4, 'max_turns': 100, 'snapshot_checkpoint_interval': 256},
+                     identity={'cell_id': 'unit'}, emit=writer.emit, choose=choose)
+    rows = list(read_records(io.BytesIO(stream.getvalue())))
+    loads = json.loads
+    decoded = []
+    boundaries = []
+    progress = []
+
+    def observe(data):
+        value = loads(data)
+        if type(value) is dict and 'cards' in value and 'rng_state' in value:
+            decoded.append(value)
+        return value
+
+    monkeypatch.setattr(module, 'json', SimpleNamespace(loads=observe))
+    result = module.replay_trace(
+        iter(rows), boundary_steps={3}, boundary=lambda _, row: boundaries.append(row),
+        on_step=lambda row: progress.append(row['step']),
+    )
+    assert result['matched'] and result['restart_roundtrips'] == 4
+    assert [row['step'] for row in boundaries] == [3]
+    assert progress == [0, 1, 2, 3]
+    assert len(decoded) == 8  # 4 restore payloads, initial/final and the terminal checkpoint pair
+    assert boundaries[0]['after'] == rows[-1]['snapshot']
