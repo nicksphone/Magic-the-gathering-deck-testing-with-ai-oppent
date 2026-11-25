@@ -3,13 +3,11 @@ from rules_engine.type_effects import effective_types
 
 import re
 from copy import copy, deepcopy
-from functools import lru_cache
 from typing import Any
 
 from game_state.state import MatchState, StackItem, Zone, object_incarnation
 from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.query_context import rule_query_scope
 
 
 TRANSFORM_DRAW_RE = re.compile(
@@ -738,34 +736,6 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     return triggers
 
 
-@lru_cache(maxsize=2048)
-def _printed_trigger_text(raw_oracle: str, name: str):
-    from rules_engine.foretell import without_created_clauses
-    from rules_engine.kicker import kicked_cast_clauses
-
-    oracle = without_created_clauses(without_reminder_text(raw_oracle.lower()), name.lower())
-    clauses = tuple((row['clause'], row['instruction']) for row in kicked_cast_clauses(oracle))
-    excluded = {clause for clause, _ in clauses}
-    remainder = '\n'.join(line for line in oracle.splitlines() if line.strip() not in excluded)
-    return remainder, clauses
-
-
-def _eligible_printed_triggers(state, source_ids):
-    from rules_engine.continuous import printed_abilities_suppressed
-
-    eligible = []
-    # Collect only source eligibility under the shared layer view. Trigger
-    # staging and once-per-turn publication happen after it closes.
-    with rule_query_scope(state):
-        for cid in dict.fromkeys(source_ids):
-            card = _departed_card_view(state, cid)
-            suppressed = (printed_abilities_suppressed(state, cid) if card.zone == Zone.BATTLEFIELD
-                          else card.last_known_battlefield.get('printed_abilities_suppressed', False))
-            if not suppressed:
-                eligible.append((cid, card))
-    return eligible
-
-
 def _collect_triggers_unbound(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     if event == 'nonmana_ability_activated':
         from rules_engine.activation_copy import collect_activation_copy_triggers
@@ -895,25 +865,32 @@ def _collect_triggers_unbound(state: MatchState, event: str, payload: dict[str, 
                 and state.cards[cid].last_known_battlefield
                 and state.cards[cid].last_known_battlefield["controller"] == pid
             )
-        for cid, card in _eligible_printed_triggers(state, source_ids):
+        for cid in dict.fromkeys(source_ids):
+            card = _departed_card_view(state, cid)
+            if (printed_abilities_suppressed(state, cid) if card.zone == Zone.BATTLEFIELD
+                    else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
+                continue
             raw_oracle = card.oracle_text or ""
             if 'Planeswalker' in card.types:
                 from rules_engine.loyalty_instructions import companion_text
                 raw_oracle = companion_text(card)
-            oracle, kicker_clauses = _printed_trigger_text(raw_oracle, card.name)
-            from rules_engine.kicker import paired_permanent_kicker, validate_kicker_count
+            oracle = without_reminder_text(raw_oracle.lower())
+            from rules_engine.foretell import without_created_clauses
+            oracle = without_created_clauses(oracle, card.name.lower())
+            from rules_engine.kicker import kicked_cast_clauses, paired_permanent_kicker, validate_kicker_count
+            kicker_clauses = kicked_cast_clauses(oracle)
             if (event == 'spell_cast' and payload.get('controller') == card.controller
                     and (payload.get('stack_payload') or {}).get('__kicked')):
                 from rules_engine.oracle_effects import infer_effect_from_oracle
-                for _, instruction in kicker_clauses:
+                for clause in kicker_clauses:
                     proxy = copy(card)
-                    proxy.oracle_text, proxy.card_faces, proxy.types = instruction, [], []
-                    stats = re.fullmatch(r'this creature has base power and toughness (\d+)/(\d+) until end of turn\.', instruction)
+                    proxy.oracle_text, proxy.card_faces, proxy.types = clause['instruction'], [], []
+                    stats = re.fullmatch(r'this creature has base power and toughness (\d+)/(\d+) until end of turn\.', clause['instruction'])
                     if stats:
                         key, data = 'set_base_stats', {'target_card_id': cid, 'base_power': int(stats[1]), 'base_toughness': int(stats[2])}
-                    elif instruction.startswith('put '):
+                    elif clause['instruction'].startswith('put '):
                         from rules_engine.spell_cost_clauses import NUMBERS
-                        count = instruction.split()[1]
+                        count = clause['instruction'].split()[1]
                         key, data = 'add_counters', {'target_card_id': cid, 'counter': '+1/+1',
                                                     'amount': int(count) if count.isdigit() else NUMBERS[count]}
                     else:
@@ -922,6 +899,8 @@ def _collect_triggers_unbound(state: MatchState, event: str, payload: dict[str, 
                         data['effect_timestamp'] = object_incarnation(card)
                     out.append({'source_card_id': cid, 'controller': card.controller,
                                 'label': f'{card.name} kicked-cast trigger', 'effect_key': key, 'payload': data})
+            oracle = '\n'.join(line for line in oracle.splitlines()
+                               if line.strip() not in {entry['clause'] for entry in kicker_clauses})
             transform_draw = bool(TRANSFORM_DRAW_RE.search(oracle))
             once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
             if transform_draw and event in {"transformed", "enters_battlefield"}:

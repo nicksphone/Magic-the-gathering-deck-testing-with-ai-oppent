@@ -71,30 +71,3 @@ def test_nonbattlefield_creature_does_not_require_continuous_queries():
     card.move_to_zone(Zone.GRAVEYARD)
     with patch.object(sba, 'effective_types', side_effect=AssertionError('irrelevant layer query')):
         assert not sba.creature_has_lethal_state(state, card.id)
-
-
-def test_ordered_legal_offers_reuse_only_the_current_query_scope(monkeypatch):
-    from rules_engine import engine
-    from rules_engine.query_context import rule_query_scope
-    from tests.test_ai_recurring_engines import fixture
-
-    state = fixture()
-    rules = engine.RulesEngine()
-    original = engine.legal_moves
-    calls = []
-
-    def counted(position, seat):
-        calls.append(seat)
-        return original(position, seat)
-
-    monkeypatch.setattr(engine, 'legal_moves', counted)
-    with rule_query_scope(state):
-        expected = rules.legal_moves(state, state.priority_player)
-        modified = rules.legal_moves(state, state.priority_player)
-        assert modified == expected and modified is not expected
-        modified[0]['type'] = 'changed'
-        assert rules.legal_moves(state, state.priority_player) == expected
-        assert len(calls) == 1
-    state.winner = 1
-    assert rules.legal_moves(state, state.priority_player) == []
-    assert len(calls) == 2

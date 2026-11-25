@@ -1513,11 +1513,9 @@ class AIAgent:
                     raise UncertainSimulation('Combat expansion allowance denied')
                 return score - previous + current
             return score
-        from rules_engine.query_context import rule_query_scope
         pid = sim.priority_player
-        with rule_query_scope(sim):
-            available = self.engine.legal_moves(sim, pid)
-            legal = self._rank_moves(sim, available, pid, shallow=True)
+        available = self.engine.legal_moves(sim, pid)
+        legal = self._rank_moves(sim, available, pid, shallow=True)
         if not combat_expansion_available():
             raise UncertainSimulation('Combat expansion allowance denied')
         if not legal:
@@ -1563,12 +1561,10 @@ class AIAgent:
         if not stack_items or getattr(state, "winner", None) is not None:
             return 0.0
         pid = getattr(state, "priority_player", player_id)
-        from rules_engine.query_context import rule_query_scope
-        with rule_query_scope(state):
-            legal = self.engine.legal_moves(state, pid)
-            if not legal:
-                return 0.0
-            top_actions = self._strategic_top_actions(state, legal, pid, limit=3, _speculative=True)
+        legal = self.engine.legal_moves(state, pid)
+        if not legal:
+            return 0.0
+        top_actions = self._strategic_top_actions(state, legal, pid, limit=3, _speculative=True)
         if not combat_expansion_available():
             raise UncertainSimulation('Combat expansion allowance denied')
         if not top_actions:
@@ -1591,9 +1587,8 @@ class AIAgent:
                 val = self._strategic_position_score(sim, player_id)
             else:
                 reply_pid = getattr(sim, "priority_player", pid)
-                with rule_query_scope(sim):
-                    reply_legal = self.engine.legal_moves(sim, reply_pid)
-                    replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2, _speculative=True)
+                reply_legal = self.engine.legal_moves(sim, reply_pid)
+                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2, _speculative=True)
                 if not combat_expansion_available():
                     raise UncertainSimulation('Combat expansion allowance denied')
                 if not replies:

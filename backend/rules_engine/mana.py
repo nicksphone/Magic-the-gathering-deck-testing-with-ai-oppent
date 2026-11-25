@@ -413,6 +413,8 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
     if plan is not None and (not optimize_paid or not plan[0]):
         return plan
     from rules_engine.mana_abilities import paid_candidates, activate_planned_mana_ability, PaidManaStep
+    candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context,
+                                     include_free=post_payment_condition is not None))
     pool, _ = available_pool(state.players[player_id], payment_context)
     needed = {color: max(0, req[color] - pool[color]) for color in MANA_COLORS}
     from rules_engine.mana_abilities import output_bundles
@@ -422,10 +424,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         cid, spec, color = candidate
         bundle = output_bundles(state, state.cards[cid], spec, payment_context=payment_context).get(color, {})
         return sum(min(needed[c], bundle.get(c, 0)) for c in MANA_COLORS)
-    with rule_query_scope(state):
-        candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context,
-                                         include_free=post_payment_condition is not None))
-        candidates.sort(key=usefulness, reverse=True)
+    candidates.sort(key=usefulness, reverse=True)
     if not candidates:
         return plan
     best, best_score = plan, None
@@ -475,10 +474,9 @@ def _remaining_mana_score(state, player_id, payment_context):
                 weights[color] = min(4, weights[color] + 1)
     pool, _ = available_pool(state.players[player_id], payment_context)
     score = sum(amount * weights[color] for color, amount in pool.items())
-    with rule_query_scope(state):
-        for cid in state.players[player_id].battlefield:
-            score += max((amount * weights[color] for color, amount in
-                          mana_source_outputs(state, player_id, cid, payment_context=payment_context).items()), default=0)
+    for cid in state.players[player_id].battlefield:
+        score += max((amount * weights[color] for color, amount in
+                      mana_source_outputs(state, player_id, cid, payment_context=payment_context).items()), default=0)
     return (*material, score + state.players[player_id].life / 10)
 
 
