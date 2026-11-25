@@ -365,3 +365,34 @@ def test_rerun2_plan_cli_selects_exact_id_without_writing(monkeypatch, tmp_path)
     with pytest.raises(SystemExit):
         strength.main(['plan', str(output), '--run-id', 'unknown-run'])
     assert not output.exists()
+
+
+RERUN3_ID = 'archetype-strength-20261125-v3-rerun3'
+
+
+def test_rerun3_uses_eight_workers_and_leaves_legacy_plans_at_two():
+    from scripts.archetype_plan_v3 import validate_plan, strength_campaign_hours
+    from scripts.archetype_pilot_v3 import SlotBudget
+    from scripts.archetype_strength_v3 import StrengthBudget
+    p = plan(RERUN3_ID)
+    validate_plan(p)
+    assert p['policy']['workers'] == 8
+    assert p['seeds'] == list(range(2026112501, 2026112510))
+    assert len(p['cells']) == 648
+    assert (p['policy']['max_cpu_seconds_per_game'], p['policy']['max_seconds']) == (4800, 6000)
+    assert p['policy']['snapshot_checkpoint_interval'] == 512
+    assert strength_campaign_hours(RERUN3_ID) == p['worker_hour_budget']['campaign'] == 320
+    assert plan()['policy']['workers'] == 2
+    assert plan(RERUN2_ID)['policy']['workers'] == 2
+    wrong = deepcopy(p)
+    wrong['policy']['workers'] = 2
+    with pytest.raises(ValueError):
+        validate_plan(wrong)
+    assert SlotBudget(started=0.).charged_seconds(10.) == 20.
+    assert SlotBudget(started=0., workers=8).charged_seconds(10.) == 80.
+    budget = StrengthBudget(started=0., prior_charged_seconds=0., wall_seconds=6000,
+                            run_id=RERUN3_ID, workers=8)
+    assert budget.can_launch(now=0., unstarted=1, pending_deadlines=[])
+    assert not StrengthBudget(started=0., prior_charged_seconds=320*3600 - 6000*8,
+                              wall_seconds=6000, run_id=RERUN3_ID,
+                              workers=8).can_launch(now=0., unstarted=1, pending_deadlines=[])

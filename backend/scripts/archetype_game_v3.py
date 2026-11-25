@@ -11,7 +11,7 @@ from scripts.archetype_matrix_game import (
 from scripts.archetype_plan_v3 import (
     MAX_WALL_SECONDS, STANDARD_WALL_SECONDS, STRENGTH_CHECKPOINT_INTERVAL,
     STRENGTH_RERUN2_CHECKPOINT_INTERVAL, STRENGTH_RERUN2_CPU_SECONDS,
-    STRENGTH_RERUN2_ID, STRENGTH_RERUN2_WALL_SECONDS,
+    STRENGTH_EXTENDED_IDS, STRENGTH_RERUN2_WALL_SECONDS,
 )
 from scripts.archetype_trace_v3 import (
     CHAIN_KEYS, TRACE_SCHEMA, CpuAccounting, canonical, checkpoint_reasons, digest, record_digest,
@@ -68,7 +68,7 @@ def _policy(policy):
         limits = {'max_seconds': STRENGTH_RERUN2_WALL_SECONDS,
                   'max_cpu_seconds_per_game': STRENGTH_RERUN2_CPU_SECONDS,
                   'snapshot_checkpoint_interval': STRENGTH_RERUN2_CHECKPOINT_INTERVAL}
-        if (type(policy['strength_run_id']) is not str or policy['strength_run_id'] != STRENGTH_RERUN2_ID
+        if (type(policy['strength_run_id']) is not str or policy['strength_run_id'] not in STRENGTH_EXTENDED_IDS
                 or any(type(policy.get(key)) is not int or policy[key] != value
                        for key, value in limits.items())):
             raise ValueError('Invalid strength rerun2 trace policy')
@@ -96,7 +96,7 @@ def _checkpoints(policy, before, after, step, *, final):
     if interval is None:
         return checkpoint_reasons(before, after, step, final=final)
     expected = (STRENGTH_RERUN2_CHECKPOINT_INTERVAL
-                if policy.get('strength_run_id') == STRENGTH_RERUN2_ID else STRENGTH_CHECKPOINT_INTERVAL)
+                if policy.get('strength_run_id') in STRENGTH_EXTENDED_IDS else STRENGTH_CHECKPOINT_INTERVAL)
     if type(interval) is not int or interval != expected:
         raise ValueError('Invalid strength checkpoint interval')
     return checkpoint_reasons(before, after, step, final=final, interval=interval, dense=False)

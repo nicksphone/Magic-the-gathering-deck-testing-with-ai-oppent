@@ -8,13 +8,13 @@ import sys
 import time
 
 from scripts.archetype_plan_v3 import (
-    MAX_CPU_SECONDS, MEMORY_BYTES, STRENGTH_RERUN2_CPU_SECONDS, STRENGTH_RERUN2_ID, validate_plan,
+    MAX_CPU_SECONDS, MEMORY_BYTES, STRENGTH_EXTENDED_IDS, STRENGTH_RERUN2_CPU_SECONDS, validate_plan,
 )
 from scripts.archetype_trace_v3 import MAX_TRACE_BYTES, TRACE_SCHEMA, CpuAccounting, TraceLimit, canonical, digest, is_sha, load_json
 
 
 def validate_limits(cpu, cpu_seconds, memory_bytes, *, run_id=None):
-    ceiling = STRENGTH_RERUN2_CPU_SECONDS if run_id == STRENGTH_RERUN2_ID else MAX_CPU_SECONDS
+    ceiling = STRENGTH_RERUN2_CPU_SECONDS if run_id in STRENGTH_EXTENDED_IDS else MAX_CPU_SECONDS
     if (type(cpu) is not int or cpu not in os.sched_getaffinity(0)
             or type(cpu_seconds) is not int or not 1 <= cpu_seconds <= ceiling
             or type(memory_bytes) is not int or memory_bytes != MEMORY_BYTES):
@@ -235,7 +235,7 @@ def main(argv=None,*,kind='pilot'):
         raise ValueError('Worker request exceeds its bound')
     request=load_json(data);validate_request(request,kind=kind)
     run_id=request['plan']['run_id']
-    rerun_limits = {'run_id': run_id} if run_id == STRENGTH_RERUN2_ID else {}
+    rerun_limits = {'run_id': run_id} if run_id in STRENGTH_EXTENDED_IDS else {}
     controls=apply_limits(request['cpu'],request['cpu_seconds'],request['memory_bytes'],**rerun_limits)
     signal.signal(signal.SIGALRM,signal.SIG_DFL)
     signal.setitimer(signal.ITIMER_REAL,request['wall_seconds'])
